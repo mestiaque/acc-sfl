@@ -17,6 +17,12 @@
                     <i class="fa-solid fa-file-excel mr-1"></i> Export Excel
                 </a>
                 @can('ac_balance_receive.add')
+                <a href="{{ route('acc-sfl.import-template.download') }}" class="btn btn-light btn-sm d-none">
+                    <i class="fa-solid fa-download mr-1"></i> Download Import Template
+                </a>
+                <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#balanceImportModal">
+                    <i class="fa-solid fa-file-import mr-1"></i> Balance Import
+                </button>
                 <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" data-toggle="modal" data-target="#createReceiveModal">
                     <i class="fa-solid fa-plus"></i> Add Balance Receive
                 </button>
@@ -152,7 +158,7 @@
                             @foreach($particulars as $master)
                             <optgroup label="{{ $master->name }}">
                                 @foreach($master->particulars as $particular)
-                                <option value="{{ $particular->id }}">{{ $particular->name }}</option>
+                                <option value="{{ $particular->id }}">{{ $particular->code ? "{$particular->code} - " : '' }}{{ $particular->name }}</option>
                                 @endforeach
                             </optgroup>
                             @endforeach
@@ -240,9 +246,26 @@
 </div>
 
 @include('acc-sfl::admin.partials.delete-confirm-modal', ['modalId' => 'deleteReceiveModal', 'label' => 'balance receive'])
+
+@include('acc-sfl::admin.partials.excel-import-modal', [
+    'modalId' => 'balanceImportModal',
+    'title' => 'Import Balance Receive from Excel',
+    'previewUrl' => route('acc-sfl.balance-receives.import.preview'),
+    'saveUrl' => route('acc-sfl.balance-receives.import.save'),
+    'columns' => [
+        ['key' => 'date', 'label' => 'Date'],
+        ['key' => 'branch', 'label' => 'Branch'],
+        ['key' => 'account', 'label' => 'Account'],
+        ['key' => 'particular_code', 'label' => 'Particular Code'],
+        ['key' => 'particular_name', 'label' => 'Particular Name'],
+        ['key' => 'amount', 'label' => 'Amount', 'align' => 'right'],
+        ['key' => 'description', 'label' => 'Description'],
+    ],
+])
 @endsection
 
 @push('js')
+@include('acc-sfl::admin.partials.select2-init')
 <script>
     $(function () {
         $('#editReceiveModal').on('show.bs.modal', function (event) {

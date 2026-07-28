@@ -3,15 +3,23 @@
 use Illuminate\Support\Facades\Route;
 use ME\AccSfl\Http\Controllers\AccountController;
 use ME\AccSfl\Http\Controllers\BalanceReceiveController;
+use ME\AccSfl\Http\Controllers\BalanceReceiveImportController;
+use ME\AccSfl\Http\Controllers\BalanceReceiveReportController;
 use ME\AccSfl\Http\Controllers\BranchController;
 use ME\AccSfl\Http\Controllers\DashboardController;
 use ME\AccSfl\Http\Controllers\ExpenseController;
+use ME\AccSfl\Http\Controllers\ExpenseImportController;
 use ME\AccSfl\Http\Controllers\ExpenseIouController;
+use ME\AccSfl\Http\Controllers\ExpenseIouReportController;
+use ME\AccSfl\Http\Controllers\ExpenseReportController;
+use ME\AccSfl\Http\Controllers\ImportTemplateController;
 use ME\AccSfl\Http\Controllers\MasterParticularController;
 use ME\AccSfl\Http\Controllers\ParticularController;
 use ME\AccSfl\Http\Controllers\PaymentMethodController;
 use ME\AccSfl\Http\Controllers\ReportController;
+use ME\AccSfl\Http\Controllers\StatementReportController;
 use ME\AccSfl\Http\Controllers\TransactionController;
+use ME\AccSfl\Http\Controllers\TransactionReportController;
 
 $route = config('acc-sfl.route');
 
@@ -41,6 +49,8 @@ Route::middleware($route['middleware'] ?? ['web', 'auth'])
         Route::get('particulars/print', [ParticularController::class, 'print'])->name('particulars.print');
         Route::get('particulars/export', [ParticularController::class, 'export'])->name('particulars.export');
 
+        Route::get('import-template', [ImportTemplateController::class, 'download'])->name('import-template.download');
+
         // ->parameters() override needed: Str::singular('balance-receives') incorrectly
         // yields 'balance-receife', which would break the {balance_receive} route model
         // binding used by BalanceReceiveController and BalanceReceiveRequest.
@@ -49,10 +59,14 @@ Route::middleware($route['middleware'] ?? ['web', 'auth'])
             ->only(['index', 'store', 'update', 'destroy']);
         Route::get('balance-receives/print', [BalanceReceiveController::class, 'print'])->name('balance-receives.print');
         Route::get('balance-receives/export', [BalanceReceiveController::class, 'export'])->name('balance-receives.export');
+        Route::post('balance-receives/import/preview', [BalanceReceiveImportController::class, 'preview'])->name('balance-receives.import.preview');
+        Route::post('balance-receives/import/save', [BalanceReceiveImportController::class, 'save'])->name('balance-receives.import.save');
 
         Route::resource('expenses', ExpenseController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
         Route::get('expenses/print', [ExpenseController::class, 'print'])->name('expenses.print');
         Route::get('expenses/export', [ExpenseController::class, 'export'])->name('expenses.export');
+        Route::post('expenses/import/preview', [ExpenseImportController::class, 'preview'])->name('expenses.import.preview');
+        Route::post('expenses/import/save', [ExpenseImportController::class, 'save'])->name('expenses.import.save');
 
         Route::resource('expense-ious', ExpenseIouController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::get('expense-ious/print', [ExpenseIouController::class, 'print'])->name('expense-ious.print');
@@ -70,5 +84,35 @@ Route::middleware($route['middleware'] ?? ['web', 'auth'])
             Route::get('yearly', [ReportController::class, 'yearly'])->name('yearly');
             Route::get('yearly/print', [ReportController::class, 'yearlyPrint'])->name('yearly.print');
             Route::get('yearly/export', [ReportController::class, 'yearlyExport'])->name('yearly.export');
+        });
+
+        Route::prefix('reports/balance-receive')->name('reports.balance-receive.')->group(function () {
+            Route::get('/', [BalanceReceiveReportController::class, 'index'])->name('index');
+            Route::get('print', [BalanceReceiveReportController::class, 'print'])->name('print');
+            Route::get('export', [BalanceReceiveReportController::class, 'export'])->name('export');
+        });
+
+        Route::prefix('reports/expense')->name('reports.expense.')->group(function () {
+            Route::get('/', [ExpenseReportController::class, 'index'])->name('index');
+            Route::get('print', [ExpenseReportController::class, 'print'])->name('print');
+            Route::get('export', [ExpenseReportController::class, 'export'])->name('export');
+        });
+
+        Route::prefix('reports/expense-iou')->name('reports.expense-iou.')->group(function () {
+            Route::get('/', [ExpenseIouReportController::class, 'index'])->name('index');
+            Route::get('print', [ExpenseIouReportController::class, 'print'])->name('print');
+            Route::get('export', [ExpenseIouReportController::class, 'export'])->name('export');
+        });
+
+        Route::prefix('reports/transaction')->name('reports.transaction.')->group(function () {
+            Route::get('/', [TransactionReportController::class, 'index'])->name('index');
+            Route::get('print', [TransactionReportController::class, 'print'])->name('print');
+            Route::get('export', [TransactionReportController::class, 'export'])->name('export');
+        });
+
+        Route::prefix('reports/statement')->name('reports.statement.')->group(function () {
+            Route::get('/', [StatementReportController::class, 'index'])->name('index');
+            Route::get('print', [StatementReportController::class, 'print'])->name('print');
+            Route::get('export', [StatementReportController::class, 'export'])->name('export');
         });
     });

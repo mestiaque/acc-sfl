@@ -23,6 +23,11 @@ return [
                     'children' => [
                         ['title' => 'Monthly Cash Flow', 'icon' => 'fa-solid fa-calendar-days', 'route' => '/admin/acc-sfl/reports/cash-flow/monthly', 'icon_color' => 'text-info', 'permission' => 'ac_report'],
                         ['title' => 'Yearly Cash Flow Overview', 'icon' => 'fa-solid fa-calendar-week', 'route' => '/admin/acc-sfl/reports/cash-flow/yearly', 'icon_color' => 'text-info', 'permission' => 'ac_report'],
+                        ['title' => 'Balance Receive Report', 'icon' => 'fa-solid fa-hand-holding-dollar', 'route' => '/admin/acc-sfl/reports/balance-receive', 'icon_color' => 'text-info', 'permission' => 'ac_report'],
+                        ['title' => 'Expense Report', 'icon' => 'fa-solid fa-money-bill-wave', 'route' => '/admin/acc-sfl/reports/expense', 'icon_color' => 'text-info', 'permission' => 'ac_report'],
+                        ['title' => 'Expense IOU Report', 'icon' => 'fa-solid fa-file-invoice-dollar', 'route' => '/admin/acc-sfl/reports/expense-iou', 'icon_color' => 'text-info', 'permission' => 'ac_report'],
+                        ['title' => 'Transaction Report', 'icon' => 'fa-solid fa-right-left', 'route' => '/admin/acc-sfl/reports/transaction', 'icon_color' => 'text-info', 'permission' => 'ac_report'],
+                        ['title' => 'Statement Report', 'icon' => 'fa-solid fa-file-lines', 'route' => '/admin/acc-sfl/reports/statement', 'icon_color' => 'text-info', 'permission' => 'ac_report'],
                     ],
                 ],
                 [

@@ -27,9 +27,9 @@ class ExpenseIouController extends Controller
         $branches = AcBranch::query()->active()->orderBy('name')->get();
         $accounts = AcAccount::query()->active()->visibleToCurrentUser()->orderBy('name')->get();
         $paymentMethods = AcPaymentMethod::query()->active()->orderBy('name')->get();
-        $users = \App\Models\User::query()->orderBy('name')->get(['id', 'name']);
+        $employees = $this->activeEmployees();
 
-        return view('acc-sfl::admin.expense-ious.index', compact('expenseIous', 'branches', 'accounts', 'paymentMethods', 'users'));
+        return view('acc-sfl::admin.expense-ious.index', compact('expenseIous', 'branches', 'accounts', 'paymentMethods', 'employees'));
     }
 
     public function print(Request $request): View
@@ -109,5 +109,24 @@ class ExpenseIouController extends Controller
         $expenseIou->delete();
 
         return back()->with('success', 'Expense IOU deleted successfully.');
+    }
+
+    /**
+     * HR is an optional integration for this module (see AcExpenseIou::employee()), so
+     * this is guarded rather than a hard dependency - installs without the HR package
+     * simply get an empty employee dropdown instead of a fatal error.
+     */
+    private function activeEmployees(): \Illuminate\Support\Collection
+    {
+        if (! class_exists(\ME\Hr\Models\HrEmployee::class)) {
+            return collect();
+        }
+
+        return \ME\Hr\Models\HrEmployee::query()
+            ->whereNull('exited_at')
+            ->where(fn ($q) => $q->whereNull('employment_status')->orWhereIn('employment_status', ['', 'regular', 'active']))
+            ->with(['department:id,name', 'designation:id,name'])
+            ->orderBy('employee_id')
+            ->get(['id', 'employee_id', 'name', 'department_id', 'designation_id']);
     }
 }

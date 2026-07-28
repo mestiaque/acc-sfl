@@ -104,3 +104,7 @@
     </div>
 </div>
 @endsection
+
+@push('js')
+@include('acc-sfl::admin.partials.select2-init')
+@endpush

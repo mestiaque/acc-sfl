@@ -43,7 +43,7 @@ return [
             'permissions' => ['list' => 'List', 'view' => 'View', 'all' => 'All'],
         ],
         'ac_report' => [
-            'label' => 'Cash Flow Reports',
+            'label' => 'Reports',
             'permissions' => ['view' => 'View', 'export' => 'Export', 'all' => 'All'],
         ],
     ],

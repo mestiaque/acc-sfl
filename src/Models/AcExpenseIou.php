@@ -55,9 +55,15 @@ class AcExpenseIou extends Model
         return $this->belongsTo(AcPaymentMethod::class, 'payment_method_id');
     }
 
+    /**
+     * References an HR employee (ME\Hr\Models\HrEmployee), not a system login user - most
+     * employees who take cash advances have no `users` row at all. HR is an optional
+     * integration for this module, so this class is referenced by name only when the
+     * relation is actually used, never eagerly loaded when HR isn't installed.
+     */
     public function employee(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'employee_id');
+        return $this->belongsTo(\ME\Hr\Models\HrEmployee::class, 'employee_id');
     }
 
     public function transactions(): MorphMany

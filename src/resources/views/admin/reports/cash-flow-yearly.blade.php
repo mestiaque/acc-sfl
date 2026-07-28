@@ -28,7 +28,7 @@
                     <label class="form-label mb-1">Fiscal Year</label>
                     <select name="fiscal_year" class="form-control form-control-sm">
                         @for($y = now()->year - 3; $y <= now()->year + 1; $y++)
-                        <option value="{{ $y }}" @selected($report['fiscal_year_start'] == $y)>FY {{ $y }}-{{ substr((string) ($y + 1), -2) }} (Jul {{ $y }} - Jun {{ $y + 1 }})</option>
+                        <option value="{{ $y }}" @selected($report['fiscal_year_start'] == $y)>{{ $y }}/{{ substr((string) ($y + 1), -2) }} (Jul {{ $y }} - Jun {{ $y + 1 }})</option>
                         @endfor
                     </select>
                 </div>
@@ -57,5 +57,11 @@
 
 <style>
     .cash-flow-table th, .cash-flow-table td { white-space: nowrap; font-size: 0.8rem; }
+    .cash-flow-scroll { max-height: 65vh; overflow-y: auto; }
+    .cash-flow-scroll table.cash-flow-table { border-collapse: separate; border-spacing: 0; }
+    .cash-flow-scroll thead th { position: sticky; top: 0; z-index: 2; background-color: #343a40; color: #fff; }
+    .float-end { float: right; }
+    .cf-amt { display: flex; justify-content: space-between; gap: 6px; }
+    .cf-cur { opacity: 0.7; }
 </style>
 @endsection

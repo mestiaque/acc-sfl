@@ -65,5 +65,11 @@
 
 <style>
     .cash-flow-table th, .cash-flow-table td { white-space: nowrap; font-size: 0.8rem; }
+    .cash-flow-scroll { max-height: 65vh; overflow-y: auto; }
+    .cash-flow-scroll table.cash-flow-table { border-collapse: separate; border-spacing: 0; }
+    .cash-flow-scroll thead th { position: sticky; top: 0; z-index: 2; background-color: #343a40; color: #fff; }
+    .float-end { float: right; }
+    .cf-amt { display: flex; justify-content: space-between; gap: 6px; }
+    .cf-cur { opacity: 0.7; }
 </style>
 @endsection

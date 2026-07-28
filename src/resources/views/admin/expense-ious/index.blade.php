@@ -170,8 +170,8 @@
                         <label>Employee (optional)</label>
                         <select name="employee_id" class="form-control">
                             <option value="">-- None --</option>
-                            @foreach($users as $user)
-                            <option value="{{ $user->id }}">{{ $user->name }}</option>
+                            @foreach($employees as $employee)
+                            <option value="{{ $employee->id }}">{{ $employee->employee_id }} - {{ $employee->name }}{{ $employee->department ? ' ('.$employee->department->name.(($employee->designation) ? ' / '.$employee->designation->name : '').')' : '' }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -296,6 +296,7 @@
 @endsection
 
 @push('js')
+@include('acc-sfl::admin.partials.select2-init')
 <script>
     $(function () {
         $('#editIouModal').on('show.bs.modal', function (event) {

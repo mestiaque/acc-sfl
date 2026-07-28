@@ -16,15 +16,21 @@
     .table-success { background: #c3e6cb; }
     .table-warning { background: #ffeeba; }
     .table-secondary { background: #d6d8db; }
+    .table-danger { background: #f5c6cb; }
+    .table-dark { background: #343a40 !important; color: #fff !important; }
     .text-white { color: #fff !important; }
     .pl-4 { padding-left: 18px !important; }
     .font-weight-bold { font-weight: bold; }
     .signoff { margin-top: 24px; width: 100%; border-collapse: collapse; }
     .signoff td { border: 1px solid #999; padding: 6px 10px; font-size: 11px; }
+    .float-end { float: right; }
+    .cf-amt { display: flex; justify-content: space-between; gap: 6px; }
+    .cf-cur { opacity: 0.7; }
 </style>
 @endpush
 
 @section('contents')
+@include('acc-sfl::admin.reports.partials.print-loader')
 <div class="print-header">
     <div class="company-info">
         <div class="company-name">{{ config('acc-sfl.company.name') }}</div>

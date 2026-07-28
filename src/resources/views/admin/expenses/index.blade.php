@@ -17,6 +17,12 @@
                     <i class="fa-solid fa-file-excel mr-1"></i> Export Excel
                 </a>
                 @can('ac_expense.add')
+                <a href="{{ route('acc-sfl.import-template.download') }}" class="btn btn-light btn-sm d-none">
+                    <i class="fa-solid fa-download mr-1"></i> Download Import Template
+                </a>
+                <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#expenseImportModal">
+                    <i class="fa-solid fa-file-import mr-1"></i> Expense Import
+                </button>
                 <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" data-toggle="modal" data-target="#createExpenseModal">
                     <i class="fa-solid fa-plus"></i> Add Expense
                 </button>
@@ -119,11 +125,11 @@
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-6 form-group">
                             <label>Expense Date <span class="text-danger">*</span></label>
                             <input type="date" name="expense_date" class="form-control" value="{{ now()->toDateString() }}" required>
                         </div>
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-6 form-group">
                             <label>Branch <span class="text-danger">*</span></label>
                             <select name="branch_id" class="form-control" required>
                                 <option value="">-- Select --</option>
@@ -132,7 +138,9 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-4 form-group">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 form-group">
                             <label>Account <span class="text-danger">*</span></label>
                             <select name="account_id" class="form-control" required>
                                 <option value="">-- Select --</option>
@@ -141,9 +149,7 @@
                                 @endforeach
                             </select>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4 form-group">
+                        <div class="col-md-6 form-group">
                             <label>Payment Method <span class="text-danger">*</span></label>
                             <select name="payment_method_id" class="form-control" required>
                                 <option value="">-- Select --</option>
@@ -152,53 +158,63 @@
                                 @endforeach
                             </select>
                         </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-4 form-group">
                             <label>Company Name</label>
                             <input type="text" name="company_name" class="form-control">
                         </div>
-                        <div class="col-md-2 form-group">
+                        <div class="col-md-4 form-group">
                             <label>Receiver Name</label>
                             <input type="text" name="receiver_name" class="form-control">
                         </div>
-                        <div class="col-md-2 form-group">
+                        <div class="col-md-4 form-group">
                             <label>Receiver Mobile</label>
                             <input type="text" name="receiver_mobile" class="form-control">
                         </div>
                     </div>
 
-                    <hr>
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h6 class="mb-0">Expense Items</h6>
-                        <button type="button" class="btn btn-primary btn-sm" id="addExpenseItemRow"><i class="fa-solid fa-plus mr-1"></i> Add Item</button>
+                    <div class="form-group">
+                        <label>Particular <span class="text-danger">*</span></label>
+                        <select name="items[0][particular_id]" class="form-control" required>
+                            <option value="">-- Select --</option>
+                            @foreach($particulars as $master)
+                            <optgroup label="{{ $master->name }}">
+                                @foreach($master->particulars as $particular)
+                                <option value="{{ $particular->id }}">{{ $particular->code ? "{$particular->code} - " : '' }}{{ $particular->name }}</option>
+                                @endforeach
+                            </optgroup>
+                            @endforeach
+                        </select>
                     </div>
-                    <div class="table-responsive">
-                        <table class="table table-sm table-bordered" id="expenseItemsTable">
-                            <thead>
-                                <tr>
-                                    <th style="min-width:180px">Particular</th>
-                                    <th style="min-width:110px">Invoice</th>
-                                    <th style="min-width:80px">Qty</th>
-                                    <th style="min-width:80px">UOM</th>
-                                    <th style="min-width:100px">Rate</th>
-                                    <th style="min-width:100px">Amount</th>
-                                    <th style="min-width:120px">Description</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                            <tfoot>
-                                <tr>
-                                    <th colspan="5" class="text-right">Total</th>
-                                    <th id="expenseItemsTotal">0.00</th>
-                                    <th colspan="2"></th>
-                                </tr>
-                            </tfoot>
-                        </table>
+                    <div class="row">
+                        <div class="col-md-4 form-group">
+                            <label>Qty <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" min="0.01" name="items[0][qty]" class="form-control item-qty" value="1" required>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label>Rate <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" min="0" name="items[0][rate]" class="form-control item-rate" value="0" required>
+                        </div>
+                        <div class="col-md-4 form-group">
+                            <label>Amount</label>
+                            <input type="text" class="form-control item-amount" value="0.00" readonly>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label>Invoice</label>
+                            <input type="text" name="items[0][invoice]" class="form-control">
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label>UOM</label>
+                            <input type="text" name="items[0][uom]" class="form-control">
+                        </div>
                     </div>
 
                     <div class="form-group">
                         <label>Description</label>
-                        <textarea name="description" class="form-control" rows="2"></textarea>
+                        <textarea name="description" class="form-control" rows="3" data-tinymce="1"></textarea>
                     </div>
                     <div class="form-group">
                         <label>Attachment</label>
@@ -241,7 +257,7 @@
                     </div>
                     <div class="form-group">
                         <label>Description</label>
-                        <textarea name="description" id="edit_expense_description" class="form-control" rows="2"></textarea>
+                        <textarea name="description" id="edit_expense_description" class="form-control" rows="3" data-tinymce="1"></textarea>
                     </div>
                     <div class="form-group">
                         <label>Attachment (upload to replace)</label>
@@ -276,71 +292,72 @@
 </div>
 
 @include('acc-sfl::admin.partials.delete-confirm-modal', ['modalId' => 'deleteExpenseModal', 'label' => 'expense'])
+
+@include('acc-sfl::admin.partials.excel-import-modal', [
+    'modalId' => 'expenseImportModal',
+    'title' => 'Import Expense from Excel',
+    'previewUrl' => route('acc-sfl.expenses.import.preview'),
+    'saveUrl' => route('acc-sfl.expenses.import.save'),
+    'columns' => [
+        ['key' => 'date', 'label' => 'Date'],
+        ['key' => 'branch', 'label' => 'Branch'],
+        ['key' => 'account', 'label' => 'Account'],
+        ['key' => 'payment_method', 'label' => 'Payment Method'],
+        ['key' => 'particular_code', 'label' => 'Particular Code'],
+        ['key' => 'particular_name', 'label' => 'Particular Name'],
+        ['key' => 'qty', 'label' => 'Qty', 'align' => 'right'],
+        ['key' => 'rate', 'label' => 'Rate', 'align' => 'right'],
+        ['key' => 'amount', 'label' => 'Amount', 'align' => 'right'],
+        ['key' => 'invoice', 'label' => 'Invoice'],
+        ['key' => 'uom', 'label' => 'UOM'],
+        ['key' => 'receiver_name', 'label' => 'Receiver Name'],
+        ['key' => 'receiver_mobile', 'label' => 'Receiver Mobile'],
+        ['key' => 'company_name', 'label' => 'Company Name'],
+        ['key' => 'description', 'label' => 'Description'],
+    ],
+])
 @endsection
 
 @push('js')
+@include('acc-sfl::admin.partials.select2-init')
+<script src="https://cdn.jsdelivr.net/npm/tinymce@6.8.5/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
-    var acExpenseParticularOptions = `
-        @foreach($particulars as $master)
-        <optgroup label="{{ $master->name }}">
-            @foreach($master->particulars as $particular)
-            <option value="{{ $particular->id }}">{{ $particular->name }}</option>
-            @endforeach
-        </optgroup>
-        @endforeach
-    `;
-
     function acRecalculateExpenseTotal() {
-        var total = 0;
-        $('#expenseItemsTable tbody tr').each(function () {
-            var qty = parseFloat($(this).find('.item-qty').val()) || 0;
-            var rate = parseFloat($(this).find('.item-rate').val()) || 0;
-            var amount = qty * rate;
-            $(this).find('.item-amount').text(amount.toFixed(2));
-            total += amount;
-        });
-        $('#expenseItemsTotal').text(total.toFixed(2));
+        var qty = parseFloat($('#createExpenseModal .item-qty').val()) || 0;
+        var rate = parseFloat($('#createExpenseModal .item-rate').val()) || 0;
+        $('#createExpenseModal .item-amount').val((qty * rate).toFixed(2));
     }
 
-    function acAddExpenseItemRow() {
-        var index = $('#expenseItemsTable tbody tr').length;
-        var row = $('<tr></tr>');
-        row.html(
-            '<td><select name="items[' + index + '][particular_id]" class="form-control form-control-sm" required>' +
-                '<option value="">-- Select --</option>' + acExpenseParticularOptions +
-            '</select></td>' +
-            '<td><input type="text" name="items[' + index + '][invoice]" class="form-control form-control-sm"></td>' +
-            '<td><input type="number" step="0.01" min="0.01" name="items[' + index + '][qty]" class="form-control form-control-sm item-qty" value="1" required></td>' +
-            '<td><input type="text" name="items[' + index + '][uom]" class="form-control form-control-sm"></td>' +
-            '<td><input type="number" step="0.01" min="0" name="items[' + index + '][rate]" class="form-control form-control-sm item-rate" value="0" required></td>' +
-            '<td class="item-amount align-middle">0.00</td>' +
-            '<td><input type="text" name="items[' + index + '][description]" class="form-control form-control-sm"></td>' +
-            '<td><button type="button" class="btn-custom danger remove-expense-item"><i class="fa-solid fa-xmark"></i></button></td>'
-        );
-        $('#expenseItemsTable tbody').append(row);
+    function acInitExpenseRichText(modal) {
+        if (typeof tinymce === 'undefined') {
+            return;
+        }
+        var selector = '#' + modal.id + ' textarea[data-tinymce="1"]';
+        tinymce.remove(selector);
+        tinymce.init({
+            selector: selector,
+            height: 150,
+            menubar: false,
+            branding: false,
+            plugins: 'lists link code',
+            toolbar: 'undo redo | bold italic underline | bullist numlist | link | code',
+            statusbar: false,
+        });
     }
 
     $(function () {
-        acAddExpenseItemRow();
-
-        $('#addExpenseItemRow').on('click', function () {
-            acAddExpenseItemRow();
-        });
-
-        $('#expenseItemsTable').on('click', '.remove-expense-item', function () {
-            if ($('#expenseItemsTable tbody tr').length > 1) {
-                $(this).closest('tr').remove();
-                acRecalculateExpenseTotal();
-            }
-        });
-
-        $('#expenseItemsTable').on('input', '.item-qty, .item-rate', function () {
+        $('#createExpenseModal').on('input', '.item-qty, .item-rate', function () {
             acRecalculateExpenseTotal();
         });
 
         $('#createExpenseModal').on('hidden.bs.modal', function () {
-            $('#expenseItemsTable tbody').empty();
-            acAddExpenseItemRow();
+            document.getElementById('createExpenseForm').reset();
+            $(this).find('select').trigger('change');
+            acRecalculateExpenseTotal();
+        });
+
+        $('#createExpenseModal, #editExpenseModal').on('shown.bs.modal', function () {
+            acInitExpenseRichText(this);
         });
 
         $('.btn-view-expense').on('click', function () {

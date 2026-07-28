@@ -77,14 +77,16 @@ class CashFlowReportService
     }
 
     /**
-     * Fiscal year is treated as July -> June (common for BD RMG), with four sequential
-     * quarters of 3 months each starting from the fiscal year start month.
+     * The BD fiscal year runs July 1 - June 30: 12 months from July of the start year
+     * through June of the following year, grouped into 4 sequential fiscal quarters
+     * (Jul-Sep, Oct-Dec, Jan-Mar, Apr-Jun), with a single fiscal-year total column at the end.
      */
     public function yearly(int $fiscalYearStartYear, ?int $branchId = null): array
     {
-        $fyStart = Carbon::create($fiscalYearStartYear, 7, 1)->startOfMonth();
+        $start = Carbon::create($fiscalYearStartYear, 7, 1)->startOfMonth();
+        $totalMonths = 12;
 
-        $running = $this->cashBalanceThrough($fyStart->copy()->subDay(), $branchId);
+        $running = $this->cashBalanceThrough($start->copy()->subDay(), $branchId);
         $beginningOfYear = $running;
 
         $months = [];
@@ -92,8 +94,8 @@ class CashFlowReportService
         $grandReceipts = 0.0;
         $grandPayments = 0.0;
 
-        for ($m = 0; $m < 12; $m++) {
-            $monthStart = $fyStart->copy()->addMonthsNoOverflow($m)->startOfMonth();
+        for ($m = 0; $m < $totalMonths; $m++) {
+            $monthStart = $start->copy()->addMonthsNoOverflow($m)->startOfMonth();
             $monthEnd = $monthStart->copy()->endOfMonth();
 
             $monthReceiptTotals = $this->flattenByParticular($this->groupReceipts($monthStart, $monthEnd, $branchId));
@@ -101,16 +103,20 @@ class CashFlowReportService
 
             $totalReceipts = array_sum($monthReceiptTotals);
             $totalPayments = array_sum($monthPaymentTotals);
+            $netChange = $totalReceipts - $totalPayments;
+            $endingBalance = $running + $netChange;
 
             $months[$m] = [
                 'label' => $monthStart->format('M-y'),
-                'quarter' => intdiv($m, 3) + 1,
+                'fiscal_quarter' => intdiv($m, 3) + 1,
+                'calendar_year' => (int) $monthStart->format('y'),
                 'beginning_balance' => $running,
                 'receipts' => $monthReceiptTotals,
                 'total_receipts' => $totalReceipts,
                 'payments' => $monthPaymentTotals,
                 'total_payments' => $totalPayments,
-                'ending_balance' => $running + $totalReceipts - $totalPayments,
+                'net_change' => $netChange,
+                'ending_balance' => $endingBalance,
             ];
 
             $this->accumulate($totalsByParticular, $monthReceiptTotals);
@@ -118,25 +124,39 @@ class CashFlowReportService
 
             $grandReceipts += $totalReceipts;
             $grandPayments += $totalPayments;
-            $running = $months[$m]['ending_balance'];
+            $running = $endingBalance;
         }
 
         $quarters = [];
         foreach (array_chunk($months, 3) as $qi => $chunk) {
-            $quarters[$qi + 1] = [
+            $first = $chunk[array_key_first($chunk)];
+            $last = $chunk[array_key_last($chunk)];
+            $quarters[$qi] = [
+                'label' => 'QUARTER '.$first['fiscal_quarter'].' TOTALS-'.$first['calendar_year'],
                 'total_receipts' => array_sum(array_column($chunk, 'total_receipts')),
                 'total_payments' => array_sum(array_column($chunk, 'total_payments')),
-                'beginning_balance' => $chunk[array_key_first($chunk)]['beginning_balance'],
-                'ending_balance' => $chunk[array_key_last($chunk)]['ending_balance'],
+                'net_change' => array_sum(array_column($chunk, 'net_change')),
+                'beginning_balance' => $first['beginning_balance'],
+                'ending_balance' => $last['ending_balance'],
             ];
         }
 
+        $grandTotal = [
+            'label' => 'FISCAL YEAR TOTALS '.$fiscalYearStartYear.'/'.substr((string) ($fiscalYearStartYear + 1), -2),
+            'total_receipts' => $grandReceipts,
+            'total_payments' => $grandPayments,
+            'net_change' => $grandReceipts - $grandPayments,
+            'beginning_balance' => $beginningOfYear,
+            'ending_balance' => $running,
+        ];
+
         return [
             'fiscal_year_start' => $fiscalYearStartYear,
-            'label' => "FY {$fiscalYearStartYear}-".substr((string) ($fiscalYearStartYear + 1), -2),
+            'label' => 'FY '.$fiscalYearStartYear.'-'.substr((string) ($fiscalYearStartYear + 1), -2),
             'taxonomy' => $this->taxonomy(),
             'months' => $months,
             'quarters' => $quarters,
+            'grand_total' => $grandTotal,
             'totals_by_particular' => $totalsByParticular,
             'beginning_balance' => $beginningOfYear,
             'ending_balance' => $running,
@@ -149,7 +169,7 @@ class CashFlowReportService
     {
         $masters = AcMasterParticular::query()
             ->active()
-            ->with(['particulars' => fn ($q) => $q->active()->orderBy('id')])
+            ->with(['particulars' => fn ($q) => $q->active()->orderBy('code')])
             ->orderBy('id')
             ->get();
 

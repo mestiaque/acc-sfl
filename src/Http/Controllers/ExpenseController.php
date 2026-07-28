@@ -30,7 +30,7 @@ class ExpenseController extends Controller
         $accounts = AcAccount::query()->active()->visibleToCurrentUser()->orderBy('name')->get();
         $paymentMethods = AcPaymentMethod::query()->active()->orderBy('name')->get();
         $particulars = AcMasterParticular::query()->credit()->active()
-            ->with(['particulars' => fn ($q) => $q->active()->orderBy('name')])
+            ->with(['particulars' => fn ($q) => $q->active()->orderBy('code')])
             ->get();
 
         return view('acc-sfl::admin.expenses.index', compact('expenses', 'branches', 'accounts', 'paymentMethods', 'particulars'));

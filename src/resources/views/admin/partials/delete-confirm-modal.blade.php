@@ -19,6 +19,7 @@
         </div>
     </div>
 </div>
+@push('js')
 <script>
     $(function () {
         $('#{{ $modalId }}').on('show.bs.modal', function (event) {
@@ -27,3 +28,4 @@
         });
     });
 </script>
+@endpush

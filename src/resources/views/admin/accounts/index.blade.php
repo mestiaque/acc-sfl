@@ -279,6 +279,7 @@
 @endsection
 
 @push('js')
+@include('acc-sfl::admin.partials.select2-init')
 <script>
     $(function () {
         $('#editAccountModal').on('show.bs.modal', function (event) {
@@ -287,8 +288,8 @@
             $('#edit_account_name').val(btn.data('name'));
             $('#edit_account_employee_id').val(btn.data('employee-id'));
             $('#edit_account_designation').val(btn.data('designation'));
-            $('#edit_account_branch_id').val(btn.data('branch-id'));
-            $('#edit_account_user_id').val(btn.data('user-id'));
+            $('#edit_account_branch_id').val(btn.data('branch-id')).trigger('change');
+            $('#edit_account_user_id').val(btn.data('user-id')).trigger('change');
             $('#edit_account_current_balance').val(btn.data('current-balance'));
             $('#edit_account_is_active').prop('checked', btn.data('active') == 1);
         });

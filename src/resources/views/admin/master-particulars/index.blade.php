@@ -230,6 +230,7 @@
 @endsection
 
 @push('js')
+@include('acc-sfl::admin.partials.select2-init')
 <script>
     $(function () {
         $('#editMasterParticularModal').on('show.bs.modal', function (event) {
@@ -237,7 +238,7 @@
             $(this).find('form').attr('action', btn.data('action'));
             $('#edit_master_particular_name').val(btn.data('name'));
             $('#edit_master_particular_description').val(btn.data('description'));
-            $('#edit_master_particular_type').val(btn.data('type'));
+            $('#edit_master_particular_type').val(btn.data('type')).trigger('change');
             $('#edit_master_particular_is_active').prop('checked', btn.data('active') == 1);
         });
 

@@ -28,7 +28,7 @@ class BalanceReceiveController extends Controller
         $branches = AcBranch::query()->active()->orderBy('name')->get();
         $accounts = AcAccount::query()->active()->visibleToCurrentUser()->orderBy('name')->get();
         $particulars = AcMasterParticular::query()->debit()->active()
-            ->with(['particulars' => fn ($q) => $q->active()->orderBy('name')])
+            ->with(['particulars' => fn ($q) => $q->active()->orderBy('code')])
             ->get();
 
         return view('acc-sfl::admin.balance-receives.index', compact('balanceReceives', 'branches', 'accounts', 'particulars'));

@@ -219,6 +219,7 @@
 @endsection
 
 @push('js')
+@include('acc-sfl::admin.partials.select2-init')
 <script>
     $(function () {
         $('#editBranchModal').on('show.bs.modal', function (event) {

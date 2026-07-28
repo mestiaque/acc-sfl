@@ -28,7 +28,7 @@ class ExpenseIouRequest extends FormRequest
 
         return [
             'account_id' => ['required', 'integer', 'exists:ac_accounts,id'],
-            'employee_id' => ['nullable', 'integer', 'exists:users,id'],
+            'employee_id' => ['nullable', 'integer', 'exists:hr_employees,id'],
             'payment_method_id' => ['required', 'integer', 'exists:ac_payment_methods,id'],
             'branch_id' => ['required', 'integer', 'exists:ac_branches,id'],
             'issue_date' => ['required', 'date'],

@@ -240,12 +240,13 @@
 @endsection
 
 @push('js')
+@include('acc-sfl::admin.partials.select2-init')
 <script>
     $(function () {
         $('#editParticularModal').on('show.bs.modal', function (event) {
             var btn = $(event.relatedTarget);
             $(this).find('form').attr('action', btn.data('action'));
-            $('#edit_particular_master_particular_id').val(btn.data('master-particular-id'));
+            $('#edit_particular_master_particular_id').val(btn.data('master-particular-id')).trigger('change');
             $('#edit_particular_name').val(btn.data('name'));
             $('#edit_particular_code').val(btn.data('code'));
             $('#edit_particular_description').val(btn.data('description'));

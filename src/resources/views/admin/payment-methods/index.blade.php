@@ -184,6 +184,7 @@
 @endsection
 
 @push('js')
+@include('acc-sfl::admin.partials.select2-init')
 <script>
     $(function () {
         $('#editPaymentMethodModal').on('show.bs.modal', function (event) {
