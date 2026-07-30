@@ -2,6 +2,7 @@
 
 namespace ME\AccSfl\Models;
 
+use App\Traits\ActivityLoggable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 
 class AcAccount extends Model
 {
+    use ActivityLoggable;
     use HasFactory;
     use SoftDeletes;
 

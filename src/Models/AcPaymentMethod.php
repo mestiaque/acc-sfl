@@ -2,6 +2,7 @@
 
 namespace ME\AccSfl\Models;
 
+use App\Traits\ActivityLoggable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,6 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class AcPaymentMethod extends Model
 {
+    use ActivityLoggable;
     use HasFactory;
     use SoftDeletes;
 

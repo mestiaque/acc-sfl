@@ -2,6 +2,7 @@
 
 namespace ME\AccSfl\Models;
 
+use App\Traits\ActivityLoggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class AcExpense extends Model
 {
+    use ActivityLoggable;
     use HasFactory;
     use SoftDeletes;
 

@@ -2,6 +2,7 @@
 
 namespace ME\AccSfl\Models;
 
+use App\Traits\ActivityLoggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class AcTransaction extends Model
 {
+    use ActivityLoggable;
     use HasFactory;
 
     protected $table = 'ac_transactions';
