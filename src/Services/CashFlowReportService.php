@@ -7,6 +7,7 @@ use ME\AccSfl\Models\AcAccount;
 use ME\AccSfl\Models\AcBalanceReceive;
 use ME\AccSfl\Models\AcExpenseDetail;
 use ME\AccSfl\Models\AcMasterParticular;
+use ME\AccSfl\Models\AcParticular;
 
 /**
  * Builds the cash-flow-by-particular report (Beginning Balance, itemised Receipts,
@@ -20,15 +21,21 @@ use ME\AccSfl\Models\AcMasterParticular;
  */
 class CashFlowReportService
 {
-    public function monthly(int $year, int $month, ?int $branchId = null): array
-    {
+    public function monthly(
+        int $year,
+        int $month,
+        ?int $branchId = null,
+        ?int $accountId = null,
+        ?int $masterParticularId = null,
+        ?int $particularId = null,
+    ): array {
         $start = Carbon::create($year, $month, 1)->startOfMonth();
         $daysInMonth = (int) $start->daysInMonth;
 
-        $receiptsByDay = $this->groupReceipts($start, $start->copy()->endOfMonth(), $branchId);
-        $paymentsByDay = $this->groupPayments($start, $start->copy()->endOfMonth(), $branchId);
+        $receiptsByDay = $this->groupReceipts($start, $start->copy()->endOfMonth(), $branchId, $accountId, $masterParticularId, $particularId);
+        $paymentsByDay = $this->groupPayments($start, $start->copy()->endOfMonth(), $branchId, $accountId, $masterParticularId, $particularId);
 
-        $running = $this->cashBalanceThrough($start->copy()->subDay(), $branchId);
+        $running = $this->cashBalanceThrough($start->copy()->subDay(), $branchId, $accountId);
         $beginningOfMonth = $running;
 
         $days = [];
@@ -66,7 +73,7 @@ class CashFlowReportService
             'month' => $month,
             'label' => $start->format('F-y'),
             'days_in_month' => $daysInMonth,
-            'taxonomy' => $this->taxonomy(),
+            'taxonomy' => $this->taxonomy($masterParticularId, $particularId),
             'days' => $days,
             'totals_by_particular' => $totalsByParticular,
             'beginning_balance' => $beginningOfMonth,
@@ -81,12 +88,17 @@ class CashFlowReportService
      * through June of the following year, grouped into 4 sequential fiscal quarters
      * (Jul-Sep, Oct-Dec, Jan-Mar, Apr-Jun), with a single fiscal-year total column at the end.
      */
-    public function yearly(int $fiscalYearStartYear, ?int $branchId = null): array
-    {
+    public function yearly(
+        int $fiscalYearStartYear,
+        ?int $branchId = null,
+        ?int $accountId = null,
+        ?int $masterParticularId = null,
+        ?int $particularId = null,
+    ): array {
         $start = Carbon::create($fiscalYearStartYear, 7, 1)->startOfMonth();
         $totalMonths = 12;
 
-        $running = $this->cashBalanceThrough($start->copy()->subDay(), $branchId);
+        $running = $this->cashBalanceThrough($start->copy()->subDay(), $branchId, $accountId);
         $beginningOfYear = $running;
 
         $months = [];
@@ -98,8 +110,8 @@ class CashFlowReportService
             $monthStart = $start->copy()->addMonthsNoOverflow($m)->startOfMonth();
             $monthEnd = $monthStart->copy()->endOfMonth();
 
-            $monthReceiptTotals = $this->flattenByParticular($this->groupReceipts($monthStart, $monthEnd, $branchId));
-            $monthPaymentTotals = $this->flattenByParticular($this->groupPayments($monthStart, $monthEnd, $branchId));
+            $monthReceiptTotals = $this->flattenByParticular($this->groupReceipts($monthStart, $monthEnd, $branchId, $accountId, $masterParticularId, $particularId));
+            $monthPaymentTotals = $this->flattenByParticular($this->groupPayments($monthStart, $monthEnd, $branchId, $accountId, $masterParticularId, $particularId));
 
             $totalReceipts = array_sum($monthReceiptTotals);
             $totalPayments = array_sum($monthPaymentTotals);
@@ -153,7 +165,7 @@ class CashFlowReportService
         return [
             'fiscal_year_start' => $fiscalYearStartYear,
             'label' => 'FY '.$fiscalYearStartYear.'-'.substr((string) ($fiscalYearStartYear + 1), -2),
-            'taxonomy' => $this->taxonomy(),
+            'taxonomy' => $this->taxonomy($masterParticularId, $particularId),
             'months' => $months,
             'quarters' => $quarters,
             'grand_total' => $grandTotal,
@@ -165,11 +177,19 @@ class CashFlowReportService
         ];
     }
 
-    private function taxonomy(): array
+    /**
+     * When a master particular / particular filter is active, only that subset is
+     * returned - Beginning/Ending Balance (a real account cash position) stays
+     * unaffected by these two filters (see cashBalanceThrough), so this narrows only
+     * which rows/totals the receipts & payments breakdown shows.
+     */
+    private function taxonomy(?int $masterParticularId = null, ?int $particularId = null): array
     {
         $masters = AcMasterParticular::query()
             ->active()
-            ->with(['particulars' => fn ($q) => $q->active()->orderBy('code')])
+            ->when($masterParticularId, fn ($q) => $q->where('id', $masterParticularId))
+            ->with(['particulars' => fn ($q) => $q->active()->orderBy('code')
+                ->when($particularId, fn ($q2) => $q2->where('id', $particularId))])
             ->orderBy('id')
             ->get();
 
@@ -179,10 +199,20 @@ class CashFlowReportService
         ];
     }
 
-    private function groupReceipts(Carbon $start, Carbon $end, ?int $branchId): array
-    {
+    private function groupReceipts(
+        Carbon $start,
+        Carbon $end,
+        ?int $branchId,
+        ?int $accountId = null,
+        ?int $masterParticularId = null,
+        ?int $particularId = null,
+    ): array {
         $rows = AcBalanceReceive::query()
             ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+            ->when($accountId, fn ($q) => $q->where('account_id', $accountId))
+            ->when($particularId, fn ($q) => $q->where('particular_id', $particularId))
+            ->when($masterParticularId, fn ($q) => $q->whereIn('particular_id', AcParticular::query()
+                ->where('master_particular_id', $masterParticularId)->pluck('id')))
             ->whereBetween('receive_date', [$start->toDateString(), $end->toDateString()])
             ->selectRaw('particular_id, receive_date, SUM(amount) as total')
             ->groupBy('particular_id', 'receive_date')
@@ -197,11 +227,21 @@ class CashFlowReportService
         return $grouped;
     }
 
-    private function groupPayments(Carbon $start, Carbon $end, ?int $branchId): array
-    {
+    private function groupPayments(
+        Carbon $start,
+        Carbon $end,
+        ?int $branchId,
+        ?int $accountId = null,
+        ?int $masterParticularId = null,
+        ?int $particularId = null,
+    ): array {
         $rows = AcExpenseDetail::query()
             ->join('ac_expenses', 'ac_expenses.id', '=', 'ac_expense_details.expense_id')
             ->when($branchId, fn ($q) => $q->where('ac_expenses.branch_id', $branchId))
+            ->when($accountId, fn ($q) => $q->where('ac_expenses.account_id', $accountId))
+            ->when($particularId, fn ($q) => $q->where('ac_expense_details.particular_id', $particularId))
+            ->when($masterParticularId, fn ($q) => $q->whereIn('ac_expense_details.particular_id', AcParticular::query()
+                ->where('master_particular_id', $masterParticularId)->pluck('id')))
             ->whereBetween('ac_expenses.expense_date', [$start->toDateString(), $end->toDateString()])
             ->selectRaw('ac_expense_details.particular_id as particular_id, ac_expenses.expense_date as expense_date, SUM(ac_expense_details.amount) as total')
             ->groupBy('ac_expense_details.particular_id', 'ac_expenses.expense_date')
@@ -216,20 +256,23 @@ class CashFlowReportService
         return $grouped;
     }
 
-    private function cashBalanceThrough(Carbon $date, ?int $branchId): float
+    private function cashBalanceThrough(Carbon $date, ?int $branchId, ?int $accountId = null): float
     {
         $openingAccounts = (float) AcAccount::query()
             ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+            ->when($accountId, fn ($q) => $q->where('id', $accountId))
             ->sum('opening_balance');
 
         $receipts = (float) AcBalanceReceive::query()
             ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+            ->when($accountId, fn ($q) => $q->where('account_id', $accountId))
             ->where('receive_date', '<=', $date->toDateString())
             ->sum('amount');
 
         $payments = (float) AcExpenseDetail::query()
             ->join('ac_expenses', 'ac_expenses.id', '=', 'ac_expense_details.expense_id')
             ->when($branchId, fn ($q) => $q->where('ac_expenses.branch_id', $branchId))
+            ->when($accountId, fn ($q) => $q->where('ac_expenses.account_id', $accountId))
             ->where('ac_expenses.expense_date', '<=', $date->toDateString())
             ->sum('ac_expense_details.amount');
 

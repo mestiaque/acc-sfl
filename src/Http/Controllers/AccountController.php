@@ -12,6 +12,7 @@ use ME\AccSfl\Exports\AccountExport;
 use ME\AccSfl\Http\Requests\AccountRequest;
 use ME\AccSfl\Models\AcAccount;
 use ME\AccSfl\Models\AcBranch;
+use ME\AccSfl\Models\AcMasterParticular;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AccountController extends Controller
@@ -24,8 +25,12 @@ class AccountController extends Controller
 
         $branches = AcBranch::query()->active()->orderBy('name')->get();
         $users = \App\Models\User::query()->orderBy('name')->get(['id', 'name']);
+        $masterParticulars = AcMasterParticular::query()->active()
+            ->with(['particulars' => fn ($q) => $q->active()->orderBy('code')])
+            ->orderBy('id')
+            ->get();
 
-        return view('acc-sfl::admin.accounts.index', compact('accounts', 'branches', 'users'));
+        return view('acc-sfl::admin.accounts.index', compact('accounts', 'branches', 'users', 'masterParticulars'));
     }
 
     public function print(Request $request): View
@@ -49,7 +54,7 @@ class AccountController extends Controller
     private function filteredQuery(Request $request): Builder
     {
         return AcAccount::query()
-            ->with(['branch', 'user'])
+            ->with(['branch', 'user', 'particulars'])
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->string('search');
                 $query->where(function ($q) use ($search) {
@@ -64,14 +69,28 @@ class AccountController extends Controller
 
     public function store(AccountRequest $request): RedirectResponse
     {
-        DB::transaction(fn () => AcAccount::create($request->validated()));
+        DB::transaction(function () use ($request) {
+            $data = $request->validated();
+            $particularIds = $data['particular_ids'] ?? [];
+            unset($data['particular_ids']);
+
+            $account = AcAccount::create($data);
+            $account->particulars()->sync($particularIds);
+        });
 
         return back()->with('success', 'Account created successfully.');
     }
 
     public function update(AccountRequest $request, AcAccount $account): RedirectResponse
     {
-        DB::transaction(fn () => $account->update($request->validated()));
+        DB::transaction(function () use ($request, $account) {
+            $data = $request->validated();
+            $particularIds = $data['particular_ids'] ?? [];
+            unset($data['particular_ids']);
+
+            $account->update($data);
+            $account->particulars()->sync($particularIds);
+        });
 
         return back()->with('success', 'Account updated successfully.');
     }

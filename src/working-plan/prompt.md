@@ -193,3 +193,24 @@ UI Requirements
 
 
 Code should follow Laravel best practices with clean architecture, relationships, validation, and reusable components.
+
+
+
+
+
+
+
+
+>> branch jodi 1 ta hoy tahole auto selected thakbe 
+>> accounts user jodi login kore tahole se shudhu tar tai dekhte pabe and tar account sob jaygay selected thakbe onno keo dhukle just accounst accounts er select disable dekhabe (for operational)
+>> accounts user jodi login kore tahole se shudhu tar tai dekhte pabe and tar account sob jaygay selected thakbe onno keo dhukle accounts er select e sobgula dekhabe + all dekhte parbe dekhabe (for report)
+>> accounts wise perticular select er option rakhbe checkbox jeno je accounst er je perticular select kora thakbe je jeno setukui dekhte pay, mane se login korle just targulai dekhbe , onno keo login korle sob dekhte parbe 
+
+prottekta report jeno accounts, master perticular, perticular, date range, etc filter kore dekha jay 
+
+
+
+
+
+
+

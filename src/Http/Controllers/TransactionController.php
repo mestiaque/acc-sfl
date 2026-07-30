@@ -48,6 +48,7 @@ class TransactionController extends Controller
     {
         return AcTransaction::query()
             ->with(['branch', 'account', 'paymentMethod', 'creator'])
+            ->when(AcAccount::currentUserTiedAccount(), fn ($q, $tied) => $q->where('account_id', $tied->id))
             ->when($request->filled('account_id'), fn ($q) => $q->where('account_id', $request->integer('account_id')))
             ->when($request->filled('branch_id'), fn ($q) => $q->where('branch_id', $request->integer('branch_id')))
             ->when($request->filled('transaction_type'), fn ($q) => $q->where('transaction_type', $request->string('transaction_type')))

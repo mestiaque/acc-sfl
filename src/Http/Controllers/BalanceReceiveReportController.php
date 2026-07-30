@@ -51,7 +51,8 @@ class BalanceReceiveReportController extends Controller
     private function filteredQuery(Request $request): Builder
     {
         return AcBalanceReceive::query()
-            ->with(['branch', 'account', 'particular.masterParticular', 'creator'])
+            ->with(['branch', 'account', 'particular.masterParticular', 'creator', 'transactions'])
+            ->when(AcAccount::currentUserTiedAccount(), fn ($q, $tied) => $q->where('account_id', $tied->id))
             ->when($request->filled('search'), function ($q) use ($request) {
                 $search = $request->string('search');
                 $q->where(function ($query) use ($search) {
@@ -84,11 +85,14 @@ class BalanceReceiveReportController extends Controller
 
     private function filterOptions(): array
     {
+        $allowedParticularIds = AcAccount::currentUserAllowedParticularIds();
+
         return [
             'branches' => AcBranch::query()->active()->orderBy('name')->get(),
             'accounts' => AcAccount::query()->active()->visibleToCurrentUser()->orderBy('name')->get(),
             'masterParticulars' => AcMasterParticular::query()->debit()->active()
-                ->with(['particulars' => fn ($q) => $q->active()->orderBy('code')])
+                ->with(['particulars' => fn ($q) => $q->active()->orderBy('code')
+                    ->when($allowedParticularIds !== null, fn ($q2) => $q2->whereIn('id', $allowedParticularIds))])
                 ->orderBy('id')
                 ->get(),
         ];

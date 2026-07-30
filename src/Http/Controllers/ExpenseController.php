@@ -29,8 +29,10 @@ class ExpenseController extends Controller
         $branches = AcBranch::query()->active()->orderBy('name')->get();
         $accounts = AcAccount::query()->active()->visibleToCurrentUser()->orderBy('name')->get();
         $paymentMethods = AcPaymentMethod::query()->active()->orderBy('name')->get();
+        $allowedParticularIds = AcAccount::currentUserAllowedParticularIds();
         $particulars = AcMasterParticular::query()->credit()->active()
-            ->with(['particulars' => fn ($q) => $q->active()->orderBy('code')])
+            ->with(['particulars' => fn ($q) => $q->active()->orderBy('code')
+                ->when($allowedParticularIds !== null, fn ($q2) => $q2->whereIn('id', $allowedParticularIds))])
             ->get();
 
         return view('acc-sfl::admin.expenses.index', compact('expenses', 'branches', 'accounts', 'paymentMethods', 'particulars'));
@@ -58,6 +60,7 @@ class ExpenseController extends Controller
     {
         return AcExpense::query()
             ->with(['branch', 'account', 'paymentMethod', 'creator'])
+            ->when(AcAccount::currentUserTiedAccount(), fn ($q, $tied) => $q->where('account_id', $tied->id))
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->string('search');
                 $query->where(function ($q) use ($search) {

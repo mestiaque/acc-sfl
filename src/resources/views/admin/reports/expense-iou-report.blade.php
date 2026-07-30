@@ -24,7 +24,7 @@
             @include('acc-sfl::admin.partials.alerts')
 
             <form method="GET" class="row align-items-end">
-                <div class="col-md-3 mb-2">
+                <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Search</label>
                     <input type="text" name="search" value="{{ request('search') }}" class="form-control form-control-sm" placeholder="IOU no. / receiver">
                 </div>
@@ -55,7 +55,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3 mb-2">
+                <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Payment Method</label>
                     <select name="payment_method_id" class="form-control form-control-sm">
                         <option value="">All Methods</option>
@@ -80,28 +80,34 @@
                     <label class="form-label mb-1">To Date</label>
                     <input type="date" name="to_date" value="{{ request('to_date') }}" class="form-control form-control-sm">
                 </div>
-                <div class="col-md-2 mb-2">
+                {{-- <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Min Amount</label>
                     <input type="number" step="0.01" name="min_amount" value="{{ request('min_amount') }}" class="form-control form-control-sm">
                 </div>
                 <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Max Amount</label>
                     <input type="number" step="0.01" name="max_amount" value="{{ request('max_amount') }}" class="form-control form-control-sm">
-                </div>
+                </div> --}}
                 <div class="col-md-2 mb-2">
                     <button class="btn btn-secondary btn-sm w-100">Filter</button>
                 </div>
                 <div class="col-md-2 mb-2">
                     <a href="{{ route('acc-sfl.reports.expense-iou.index') }}" class="btn btn-light btn-sm w-100">Reset</a>
                 </div>
+                <div class="col-md-2 mb-2">
+                    <div class="badge badge-warning p-2" style="font-size: 0.85rem;">Pending: BDT {{ number_format($totals['pending_amount'], 2) }}</div>
+                </div>
+                <div class="col-md-2 mb-2">
+                    <div class="badge badge-primary p-2" style="font-size: 0.85rem;">Total: BDT {{ number_format($totals['amount'], 2) }}</div>
+                </div>
             </form>
 
-            <div class="d-flex flex-wrap gap-3 mb-3">
+            {{-- <div class="d-flex flex-wrap gap-3 mb-3">
                 <div class="badge badge-secondary p-2" style="font-size: 0.85rem;">Records: {{ $totals['count'] }}</div>
                 <div class="badge badge-warning p-2" style="font-size: 0.85rem;">Pending: BDT {{ number_format($totals['pending_amount'], 2) }}</div>
                 <div class="badge badge-success p-2" style="font-size: 0.85rem;">Adjusted (Complete): BDT {{ number_format($totals['adjusted_amount'], 2) }}</div>
                 <div class="badge badge-primary p-2" style="font-size: 0.85rem;">Total: BDT {{ number_format($totals['amount'], 2) }}</div>
-            </div>
+            </div> --}}
 
             <div class="table-responsive">
                 <table class="table table-bordered table-sm mb-0">

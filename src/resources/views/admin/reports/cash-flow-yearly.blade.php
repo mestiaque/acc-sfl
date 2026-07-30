@@ -24,7 +24,7 @@
             @include('acc-sfl::admin.partials.alerts')
 
             <form method="GET" class="row align-items-end">
-                <div class="col-md-4">
+                <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Fiscal Year</label>
                     <select name="fiscal_year" class="form-control form-control-sm">
                         @for($y = now()->year - 3; $y <= now()->year + 1; $y++)
@@ -32,7 +32,7 @@
                         @endfor
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Branch</label>
                     <select name="branch_id" class="form-control form-control-sm">
                         <option value="">All Branches (Consolidated)</option>
@@ -41,8 +41,42 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-2 mb-2">
+                    <label class="form-label mb-1">Account</label>
+                    <select name="account_id" class="form-control form-control-sm">
+                        <option value="">All Accounts (Consolidated)</option>
+                        @foreach($accounts as $account)
+                        <option value="{{ $account->id }}" @selected((string) $accountId === (string) $account->id)>{{ $account->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label class="form-label mb-1">Master Particular</label>
+                    <select name="master_particular_id" class="form-control form-control-sm">
+                        <option value="">All</option>
+                        @foreach($masterParticulars as $master)
+                        <option value="{{ $master->id }}" @selected((string) $masterParticularId === (string) $master->id)>{{ $master->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label class="form-label mb-1">Particular</label>
+                    <select name="particular_id" class="form-control form-control-sm">
+                        <option value="">All Particulars</option>
+                        @foreach($masterParticulars as $master)
+                        <optgroup label="{{ $master->name }}">
+                            @foreach($master->particulars as $particular)
+                            <option value="{{ $particular->id }}" @selected((string) $particularId === (string) $particular->id)>{{ $particular->code }} - {{ $particular->name }}</option>
+                            @endforeach
+                        </optgroup>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2 mb-2">
                     <button class="btn btn-secondary btn-sm w-100">View</button>
+                </div>
+                <div class="col-md-2 mb-2">
+                    <a href="{{ route('acc-sfl.reports.cash-flow.yearly') }}" class="btn btn-light btn-sm w-100">Reset</a>
                 </div>
             </form>
         </div>
@@ -65,3 +99,7 @@
     .cf-cur { opacity: 0.7; }
 </style>
 @endsection
+
+@push('js')
+@include('acc-sfl::admin.partials.select2-init')
+@endpush

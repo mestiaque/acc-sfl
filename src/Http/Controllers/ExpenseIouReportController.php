@@ -52,6 +52,7 @@ class ExpenseIouReportController extends Controller
     {
         return AcExpenseIou::query()
             ->with(['branch', 'account', 'employee', 'paymentMethod'])
+            ->when(AcAccount::currentUserTiedAccount(), fn ($q, $tied) => $q->where('account_id', $tied->id))
             ->when($request->filled('search'), function ($q) use ($request) {
                 $search = $request->string('search');
                 $q->where(function ($query) use ($search) {

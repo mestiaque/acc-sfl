@@ -101,7 +101,8 @@
                                     data-branch-id="{{ $account->branch_id }}"
                                     data-user-id="{{ $account->user_id }}"
                                     data-current-balance="{{ number_format($account->current_balance, 2) }}"
-                                    data-active="{{ $account->is_active ? '1' : '0' }}">
+                                    data-active="{{ $account->is_active ? '1' : '0' }}"
+                                    data-particular-ids="{{ $account->particulars->pluck('id')->toJson() }}">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
                                 @endcan
@@ -169,6 +170,21 @@
                         <small class="form-text text-muted">Posts an automatic Opening Balance transaction when the account is created.</small>
                     </div>
                     <div class="form-group">
+                        <label>Particular Access (optional)</label>
+                        <small class="form-text text-muted mb-1">Leave all unchecked for unrestricted access. If any are checked, this account's linked user only sees these particulars everywhere.</small>
+                        <div class="border rounded p-2" style="max-height:220px;overflow-y:auto;">
+                            @foreach($masterParticulars as $master)
+                            <div class="font-weight-bold small text-muted mt-1">{{ $master->name }}</div>
+                            @foreach($master->particulars as $particular)
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="create_account_particular_{{ $particular->id }}" name="particular_ids[]" value="{{ $particular->id }}">
+                                <label class="custom-control-label" for="create_account_particular_{{ $particular->id }}">{{ $particular->code }} - {{ $particular->name }}</label>
+                            </div>
+                            @endforeach
+                            @endforeach
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <input type="hidden" name="is_active" value="0">
                         <div class="custom-control custom-switch">
                             <input type="checkbox" class="custom-control-input" id="create_account_is_active" name="is_active" value="1" checked>
@@ -232,6 +248,21 @@
                         <input type="text" id="edit_account_current_balance" class="form-control" readonly>
                     </div>
                     <div class="form-group">
+                        <label>Particular Access (optional)</label>
+                        <small class="form-text text-muted mb-1">Leave all unchecked for unrestricted access. If any are checked, this account's linked user only sees these particulars everywhere.</small>
+                        <div class="border rounded p-2" style="max-height:220px;overflow-y:auto;">
+                            @foreach($masterParticulars as $master)
+                            <div class="font-weight-bold small text-muted mt-1">{{ $master->name }}</div>
+                            @foreach($master->particulars as $particular)
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input edit-account-particular" id="edit_account_particular_{{ $particular->id }}" name="particular_ids[]" value="{{ $particular->id }}">
+                                <label class="custom-control-label" for="edit_account_particular_{{ $particular->id }}">{{ $particular->code }} - {{ $particular->name }}</label>
+                            </div>
+                            @endforeach
+                            @endforeach
+                        </div>
+                    </div>
+                    <div class="form-group">
                         <input type="hidden" name="is_active" value="0">
                         <div class="custom-control custom-switch">
                             <input type="checkbox" class="custom-control-input" id="edit_account_is_active" name="is_active" value="1">
@@ -292,6 +323,11 @@
             $('#edit_account_user_id').val(btn.data('user-id')).trigger('change');
             $('#edit_account_current_balance').val(btn.data('current-balance'));
             $('#edit_account_is_active').prop('checked', btn.data('active') == 1);
+
+            var assignedIds = btn.data('particular-ids') || [];
+            $('.edit-account-particular').each(function () {
+                $(this).prop('checked', assignedIds.indexOf(parseInt($(this).val(), 10)) !== -1);
+            });
         });
 
         $('#viewAccountModal').on('show.bs.modal', function (event) {

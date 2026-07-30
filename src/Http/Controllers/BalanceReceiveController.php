@@ -27,8 +27,10 @@ class BalanceReceiveController extends Controller
 
         $branches = AcBranch::query()->active()->orderBy('name')->get();
         $accounts = AcAccount::query()->active()->visibleToCurrentUser()->orderBy('name')->get();
+        $allowedParticularIds = AcAccount::currentUserAllowedParticularIds();
         $particulars = AcMasterParticular::query()->debit()->active()
-            ->with(['particulars' => fn ($q) => $q->active()->orderBy('code')])
+            ->with(['particulars' => fn ($q) => $q->active()->orderBy('code')
+                ->when($allowedParticularIds !== null, fn ($q2) => $q2->whereIn('id', $allowedParticularIds))])
             ->get();
 
         return view('acc-sfl::admin.balance-receives.index', compact('balanceReceives', 'branches', 'accounts', 'particulars'));
@@ -56,6 +58,7 @@ class BalanceReceiveController extends Controller
     {
         return AcBalanceReceive::query()
             ->with(['branch', 'account', 'particular', 'creator'])
+            ->when(AcAccount::currentUserTiedAccount(), fn ($q, $tied) => $q->where('account_id', $tied->id))
             ->when($request->filled('search'), fn ($q) => $q->where('receive_no', 'like', '%'.$request->string('search').'%'))
             ->when($request->filled('branch_id'), fn ($q) => $q->where('branch_id', $request->integer('branch_id')))
             ->when($request->filled('from_date'), fn ($q) => $q->whereDate('receive_date', '>=', $request->date('from_date')))

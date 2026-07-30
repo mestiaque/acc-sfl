@@ -54,6 +54,7 @@ class ExpenseIouController extends Controller
     {
         return AcExpenseIou::query()
             ->with(['branch', 'account', 'employee', 'paymentMethod'])
+            ->when(AcAccount::currentUserTiedAccount(), fn ($q, $tied) => $q->where('account_id', $tied->id))
             ->when($request->filled('search'), fn ($q) => $q->where('iou_no', 'like', '%'.$request->string('search').'%'))
             ->when($request->filled('branch_id'), fn ($q) => $q->where('branch_id', $request->integer('branch_id')))
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')));

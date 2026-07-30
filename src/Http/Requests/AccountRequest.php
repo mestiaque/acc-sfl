@@ -27,6 +27,8 @@ class AccountRequest extends FormRequest
             // time — changing it afterwards would desync the ledger, so it's locked on update.
             'opening_balance' => $isUpdate ? ['prohibited'] : ['nullable', 'numeric'],
             'is_active' => ['sometimes', 'boolean'],
+            'particular_ids' => ['sometimes', 'array'],
+            'particular_ids.*' => ['integer', 'exists:ac_particulars,id'],
         ];
     }
 }

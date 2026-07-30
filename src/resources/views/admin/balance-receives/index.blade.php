@@ -144,12 +144,15 @@
                     </div>
                     <div class="form-group">
                         <label>Account <span class="text-danger">*</span></label>
-                        <select name="account_id" class="form-control" required>
+                        <select name="account_id" class="form-control" required @disabled($accounts->count() === 1)>
                             <option value="">-- Select Account --</option>
                             @foreach($accounts as $account)
-                            <option value="{{ $account->id }}">{{ $account->name }}</option>
+                            <option value="{{ $account->id }}" @selected($accounts->count() === 1)>{{ $account->name }}</option>
                             @endforeach
                         </select>
+                        @if($accounts->count() === 1)
+                        <input type="hidden" name="account_id" value="{{ $accounts->first()->id }}">
+                        @endif
                     </div>
                     <div class="form-group">
                         <label>Particular <span class="text-danger">*</span></label>

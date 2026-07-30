@@ -8,7 +8,9 @@ use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use ME\AccSfl\Exports\CashFlowMonthlyExport;
 use ME\AccSfl\Exports\CashFlowYearlyExport;
+use ME\AccSfl\Models\AcAccount;
 use ME\AccSfl\Models\AcBranch;
+use ME\AccSfl\Models\AcMasterParticular;
 use ME\AccSfl\Services\CashFlowReportService;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -22,19 +24,21 @@ class ReportController extends Controller
     {
         $this->authorize('ac_report.view');
 
-        [$year, $month, $branchId] = $this->monthlyParams($request);
-        $report = $this->reports->monthly($year, $month, $branchId);
-        $branches = AcBranch::query()->active()->orderBy('name')->get();
+        [$year, $month, $branchId, $accountId, $masterParticularId, $particularId] = $this->monthlyParams($request);
+        $report = $this->reports->monthly($year, $month, $branchId, $accountId, $masterParticularId, $particularId);
 
-        return view('acc-sfl::admin.reports.cash-flow-monthly', compact('report', 'branches', 'branchId'));
+        return view('acc-sfl::admin.reports.cash-flow-monthly', array_merge(
+            compact('report', 'branchId', 'accountId', 'masterParticularId', 'particularId'),
+            $this->filterOptions(),
+        ));
     }
 
     public function monthlyPrint(Request $request): View
     {
         $this->authorize('ac_report.export');
 
-        [$year, $month, $branchId] = $this->monthlyParams($request);
-        $report = $this->reports->monthly($year, $month, $branchId);
+        [$year, $month, $branchId, $accountId, $masterParticularId, $particularId] = $this->monthlyParams($request);
+        $report = $this->reports->monthly($year, $month, $branchId, $accountId, $masterParticularId, $particularId);
 
         return view('acc-sfl::admin.reports.cash-flow-monthly-print', compact('report'));
     }
@@ -43,8 +47,8 @@ class ReportController extends Controller
     {
         $this->authorize('ac_report.export');
 
-        [$year, $month, $branchId] = $this->monthlyParams($request);
-        $report = $this->reports->monthly($year, $month, $branchId);
+        [$year, $month, $branchId, $accountId, $masterParticularId, $particularId] = $this->monthlyParams($request);
+        $report = $this->reports->monthly($year, $month, $branchId, $accountId, $masterParticularId, $particularId);
 
         return Excel::download(new CashFlowMonthlyExport($report), "cash-flow-{$report['label']}.xlsx");
     }
@@ -53,19 +57,21 @@ class ReportController extends Controller
     {
         $this->authorize('ac_report.view');
 
-        [$fyStart, $branchId] = $this->yearlyParams($request);
-        $report = $this->reports->yearly($fyStart, $branchId);
-        $branches = AcBranch::query()->active()->orderBy('name')->get();
+        [$fyStart, $branchId, $accountId, $masterParticularId, $particularId] = $this->yearlyParams($request);
+        $report = $this->reports->yearly($fyStart, $branchId, $accountId, $masterParticularId, $particularId);
 
-        return view('acc-sfl::admin.reports.cash-flow-yearly', compact('report', 'branches', 'branchId'));
+        return view('acc-sfl::admin.reports.cash-flow-yearly', array_merge(
+            compact('report', 'branchId', 'accountId', 'masterParticularId', 'particularId'),
+            $this->filterOptions(),
+        ));
     }
 
     public function yearlyPrint(Request $request): View
     {
         $this->authorize('ac_report.export');
 
-        [$fyStart, $branchId] = $this->yearlyParams($request);
-        $report = $this->reports->yearly($fyStart, $branchId);
+        [$fyStart, $branchId, $accountId, $masterParticularId, $particularId] = $this->yearlyParams($request);
+        $report = $this->reports->yearly($fyStart, $branchId, $accountId, $masterParticularId, $particularId);
 
         return view('acc-sfl::admin.reports.cash-flow-yearly-print', compact('report'));
     }
@@ -74,14 +80,14 @@ class ReportController extends Controller
     {
         $this->authorize('ac_report.export');
 
-        [$fyStart, $branchId] = $this->yearlyParams($request);
-        $report = $this->reports->yearly($fyStart, $branchId);
+        [$fyStart, $branchId, $accountId, $masterParticularId, $particularId] = $this->yearlyParams($request);
+        $report = $this->reports->yearly($fyStart, $branchId, $accountId, $masterParticularId, $particularId);
 
         return Excel::download(new CashFlowYearlyExport($report), "cash-flow-{$report['label']}.xlsx");
     }
 
     /**
-     * @return array{0: int, 1: int, 2: ?int}
+     * @return array{0: int, 1: int, 2: ?int, 3: ?int, 4: ?int, 5: ?int}
      */
     private function monthlyParams(Request $request): array
     {
@@ -91,11 +97,14 @@ class ReportController extends Controller
             $request->integer('year', $today->year),
             $request->integer('month', $today->month),
             $request->filled('branch_id') ? $request->integer('branch_id') : null,
+            $request->filled('account_id') ? $request->integer('account_id') : null,
+            $request->filled('master_particular_id') ? $request->integer('master_particular_id') : null,
+            $request->filled('particular_id') ? $request->integer('particular_id') : null,
         ];
     }
 
     /**
-     * @return array{0: int, 1: ?int}
+     * @return array{0: int, 1: ?int, 2: ?int, 3: ?int, 4: ?int}
      */
     private function yearlyParams(Request $request): array
     {
@@ -107,6 +116,24 @@ class ReportController extends Controller
         return [
             $request->integer('fiscal_year', $defaultFyStart),
             $request->filled('branch_id') ? $request->integer('branch_id') : null,
+            $request->filled('account_id') ? $request->integer('account_id') : null,
+            $request->filled('master_particular_id') ? $request->integer('master_particular_id') : null,
+            $request->filled('particular_id') ? $request->integer('particular_id') : null,
+        ];
+    }
+
+    private function filterOptions(): array
+    {
+        $allowedParticularIds = AcAccount::currentUserAllowedParticularIds();
+
+        return [
+            'branches' => AcBranch::query()->active()->orderBy('name')->get(),
+            'accounts' => AcAccount::query()->active()->visibleToCurrentUser()->orderBy('name')->get(),
+            'masterParticulars' => AcMasterParticular::query()->active()
+                ->with(['particulars' => fn ($q) => $q->active()->orderBy('code')
+                    ->when($allowedParticularIds !== null, fn ($q2) => $q2->whereIn('id', $allowedParticularIds))])
+                ->orderBy('id')
+                ->get(),
         ];
     }
 }

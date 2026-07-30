@@ -60,10 +60,10 @@
 
             @if($statement)
             <div class="d-flex flex-wrap gap-3 mb-3 mt-2">
-                <div class="badge badge-secondary p-2" style="font-size: 0.85rem;">Opening Balance: BDT {{ number_format($statement['opening_balance'], 2) }}</div>
-                <div class="badge badge-success p-2" style="font-size: 0.85rem;">Total Debit: BDT {{ number_format($statement['total_debit'], 2) }}</div>
-                <div class="badge badge-danger p-2" style="font-size: 0.85rem;">Total Credit: BDT {{ number_format($statement['total_credit'], 2) }}</div>
-                <div class="badge badge-primary p-2" style="font-size: 0.85rem;">Closing Balance: BDT {{ number_format($statement['closing_balance'], 2) }}</div>
+                <div class="badge badge-secondary p-2 mr-2" style="font-size: 0.85rem;">Opening Balance: BDT {{ number_format($statement['opening_balance'], 2) }}</div>
+                <div class="badge badge-success p-2 mr-2" style="font-size: 0.85rem;">Total Debit: BDT {{ number_format($statement['total_debit'], 2) }}</div>
+                <div class="badge badge-danger p-2 mr-2" style="font-size: 0.85rem;">Total Credit: BDT {{ number_format($statement['total_credit'], 2) }}</div>
+                <div class="badge badge-primary p-2 mr-2" style="font-size: 0.85rem;">Closing Balance: BDT {{ number_format($statement['closing_balance'], 2) }}</div>
             </div>
 
             <div class="table-responsive cash-flow-scroll">

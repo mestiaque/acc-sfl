@@ -24,7 +24,7 @@
             @include('acc-sfl::admin.partials.alerts')
 
             <form method="GET" class="row align-items-end">
-                <div class="col-md-3 mb-2">
+                <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Search</label>
                     <input type="text" name="search" value="{{ request('search') }}" class="form-control form-control-sm" placeholder="Receive no. / description">
                 </div>
@@ -55,7 +55,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3 mb-2">
+                <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Particular</label>
                     <select name="particular_id" class="form-control form-control-sm">
                         <option value="">All Particulars</option>
@@ -76,25 +76,27 @@
                     <label class="form-label mb-1">To Date</label>
                     <input type="date" name="to_date" value="{{ request('to_date') }}" class="form-control form-control-sm">
                 </div>
-                <div class="col-md-2 mb-2">
+                {{-- <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Min Amount</label>
                     <input type="number" step="0.01" name="min_amount" value="{{ request('min_amount') }}" class="form-control form-control-sm">
                 </div>
                 <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Max Amount</label>
                     <input type="number" step="0.01" name="max_amount" value="{{ request('max_amount') }}" class="form-control form-control-sm">
-                </div>
+                </div> --}}
                 <div class="col-md-2 mb-2">
                     <button class="btn btn-secondary btn-sm w-100">Filter</button>
                 </div>
                 <div class="col-md-2 mb-2">
                     <a href="{{ route('acc-sfl.reports.balance-receive.index') }}" class="btn btn-light btn-sm w-100">Reset</a>
                 </div>
+                <div class="col-md-2 mb-2 offset-md-4">
+                    <div class="badge badge-primary p-2" style="font-size: 0.85rem;">Total Amount: BDT {{ number_format($totals['amount'], 2) }}</div>
+                </div>
             </form>
 
             <div class="d-flex gap-3 mb-3">
-                <div class="badge badge-success p-2" style="font-size: 0.85rem;">Records: {{ $totals['count'] }}</div>
-                <div class="badge badge-primary p-2" style="font-size: 0.85rem;">Total Amount: BDT {{ number_format($totals['amount'], 2) }}</div>
+                {{-- <div class="badge badge-success p-2" style="font-size: 0.85rem;">Records: {{ $totals['count'] }}</div> --}}
             </div>
 
             <div class="table-responsive">
@@ -107,12 +109,19 @@
                             <th>Account</th>
                             <th>Particular</th>
                             <th>Amount</th>
+                            <th>Previous Balance</th>
+                            <th>New Balance</th>
                             <th>Description</th>
                             <th>Recorded By</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($receives as $receive)
+                        @php
+                            $transaction = $receive->transactions->first();
+                            $newBalance = $transaction->balance ?? null;
+                            $previousBalance = $newBalance !== null ? $newBalance - $receive->amount : null;
+                        @endphp
                         <tr>
                             <td>{{ $receive->receive_no }}</td>
                             <td>{{ $receive->receive_date->format('d M Y') }}</td>
@@ -120,11 +129,13 @@
                             <td>{{ $receive->account->name ?? '-' }}</td>
                             <td>{{ $receive->particular ? $receive->particular->code.' - '.$receive->particular->name : '-' }}</td>
                             <td class="text-right">{{ number_format($receive->amount, 2) }}</td>
+                            <td class="text-right">{{ $previousBalance !== null ? number_format($previousBalance, 2) : '-' }}</td>
+                            <td class="text-right">{{ $newBalance !== null ? number_format($newBalance, 2) : '-' }}</td>
                             <td>{{ $receive->description ?: '-' }}</td>
                             <td>{{ $receive->creator->name ?? '-' }}</td>
                         </tr>
                         @empty
-                        <tr><td colspan="8" class="text-center">No data available.</td></tr>
+                        <tr><td colspan="10" class="text-center">No data available.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

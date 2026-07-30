@@ -80,9 +80,17 @@
                             <td>{{ $iou->employee->name ?? $iou->receiver_name ?? '-' }}</td>
                             <td>{{ number_format($iou->amount, 2) }}</td>
                             <td>
-                                <span class="badge {{ $iou->status === 'Adjusted' ? 'badge-success' : 'badge-warning' }}">{{ $iou->status }}</span>
+                                <span class="badge {{ $iou->status === 'Adjusted' ? 'badge-success' : 'badge-warning' }} p-1">{{ $iou->status }}</span>
                             </td>
-                            <td class="text-center">
+                            <td class="text-right" width="150">
+                                @can('ac_expense_iou.edit')
+                                    @if($iou->status === 'Pending')
+                                    <button type="button" class="btn-custom success" title="Adjust" data-toggle="modal" data-target="#adjustIouModal"
+                                        data-action="{{ route('acc-sfl.expense-ious.adjust', $iou) }}" data-no="{{ $iou->iou_no }}">
+                                        <i class="fa-solid fa-check"></i>
+                                    </button>
+                                    @endif
+                                @endcan
                                 <button type="button" class="btn-custom" title="View" data-toggle="modal" data-target="#viewIouModal"
                                     data-no="{{ $iou->iou_no }}" data-issue-date="{{ $iou->issue_date->format('d M Y') }}"
                                     data-adjust-date="{{ $iou->adjust_date?->format('d M Y') ?? '-' }}"
@@ -100,12 +108,6 @@
                                     data-receiver-mobile="{{ $iou->receiver_mobile }}">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
-                                @if($iou->status === 'Pending')
-                                <button type="button" class="btn-custom success" title="Adjust" data-toggle="modal" data-target="#adjustIouModal"
-                                    data-action="{{ route('acc-sfl.expense-ious.adjust', $iou) }}" data-no="{{ $iou->iou_no }}">
-                                    <i class="fa-solid fa-check"></i>
-                                </button>
-                                @endif
                                 @endcan
                                 @can('ac_expense_iou.delete')
                                 <button type="button" class="btn-custom danger" title="Delete" data-toggle="modal" data-target="#deleteIouModal"
@@ -150,12 +152,15 @@
                     </div>
                     <div class="form-group">
                         <label>Account <span class="text-danger">*</span></label>
-                        <select name="account_id" class="form-control" required>
+                        <select name="account_id" class="form-control" required @disabled($accounts->count() === 1)>
                             <option value="">-- Select --</option>
                             @foreach($accounts as $account)
-                            <option value="{{ $account->id }}">{{ $account->name }}</option>
+                            <option value="{{ $account->id }}" @selected($accounts->count() === 1)>{{ $account->name }}</option>
                             @endforeach
                         </select>
+                        @if($accounts->count() === 1)
+                        <input type="hidden" name="account_id" value="{{ $accounts->first()->id }}">
+                        @endif
                     </div>
                     <div class="form-group">
                         <label>Payment Method <span class="text-danger">*</span></label>

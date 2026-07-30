@@ -24,7 +24,7 @@
             @include('acc-sfl::admin.partials.alerts')
 
             <form method="GET" class="row align-items-end">
-                <div class="col-md-3 mb-2">
+                <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Search</label>
                     <input type="text" name="search" value="{{ request('search') }}" class="form-control form-control-sm" placeholder="Description">
                 </div>
@@ -55,7 +55,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3 mb-2">
+                <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Type</label>
                     <select name="transaction_type" class="form-control form-control-sm">
                         <option value="">All Types</option>
@@ -78,14 +78,23 @@
                 <div class="col-md-2 mb-2">
                     <a href="{{ route('acc-sfl.reports.transaction.index') }}" class="btn btn-light btn-sm w-100">Reset</a>
                 </div>
+                <div class="col-md-2 mb-2">
+                    <div class="badge badge-success p-2" style="font-size: 0.85rem;">Total Debit: BDT {{ number_format($totals['debit'], 2) }}</div>
+                </div>
+                <div class="col-md-2 mb-2">
+                    <div class="badge badge-danger p-2" style="font-size: 0.85rem;">Total Credit: BDT {{ number_format($totals['credit'], 2) }}</div>
+                </div>
+                <div class="col-md-2 mb-2">
+                    <div class="badge badge-primary p-2" style="font-size: 0.85rem;">Net: BDT {{ number_format($totals['net'], 2) }}</div>
+                </div>
             </form>
 
-            <div class="d-flex flex-wrap gap-3 mb-3">
+            {{-- <div class="d-flex flex-wrap gap-3 mb-3">
                 <div class="badge badge-secondary p-2" style="font-size: 0.85rem;">Records: {{ $totals['count'] }}</div>
                 <div class="badge badge-success p-2" style="font-size: 0.85rem;">Total Debit: BDT {{ number_format($totals['debit'], 2) }}</div>
                 <div class="badge badge-danger p-2" style="font-size: 0.85rem;">Total Credit: BDT {{ number_format($totals['credit'], 2) }}</div>
                 <div class="badge badge-primary p-2" style="font-size: 0.85rem;">Net: BDT {{ number_format($totals['net'], 2) }}</div>
-            </div>
+            </div> --}}
 
             <div class="table-responsive">
                 <table class="table table-bordered table-sm mb-0">

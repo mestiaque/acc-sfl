@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -41,6 +42,11 @@ class AcParticular extends Model
     public function expenseDetails(): HasMany
     {
         return $this->hasMany(AcExpenseDetail::class, 'particular_id');
+    }
+
+    public function accounts(): BelongsToMany
+    {
+        return $this->belongsToMany(AcAccount::class, 'ac_account_particular', 'particular_id', 'account_id');
     }
 
     public function scopeActive(Builder $query): Builder
