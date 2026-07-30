@@ -43,3 +43,6 @@ class AcExpenseDetail extends Model
         return $this->belongsTo(AcParticular::class, 'particular_id');
     }
 }
+
+
+
