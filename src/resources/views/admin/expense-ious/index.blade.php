@@ -27,11 +27,11 @@
             @include('acc-sfl::admin.partials.alerts')
 
             <form method="GET" class="row mb-3 align-items-end">
-                <div class="col-md-3">
+                <div class="col-md-3 mb-2">
                     <label class="form-label mb-1">Search</label>
                     <input type="text" name="search" value="{{ request('search') }}" class="form-control form-control-sm" placeholder="Search IOU no.">
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Branch</label>
                     <select name="branch_id" class="form-control form-control-sm">
                         <option value="">All Branches</option>
@@ -40,7 +40,25 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-2 mb-2">
+                    <label class="form-label mb-1">Account</label>
+                    <select name="account_id" class="form-control form-control-sm">
+                        <option value="">All Accounts</option>
+                        @foreach($accounts as $account)
+                        <option value="{{ $account->id }}" @selected((string) request('account_id') === (string) $account->id)>{{ $account->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label class="form-label mb-1">Employee</label>
+                    <select name="employee_id" class="form-control form-control-sm">
+                        <option value="">All Employees</option>
+                        @foreach($employees as $employee)
+                        <option value="{{ $employee->id }}" @selected((string) request('employee_id') === (string) $employee->id)>{{ $employee->employee_id }} - {{ $employee->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Status</label>
                     <select name="status" class="form-control form-control-sm">
                         <option value="">All Status</option>
@@ -48,10 +66,18 @@
                         <option value="Adjusted" @selected(request('status') === 'Adjusted')>Adjusted</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-2 mb-2">
+                    <label class="form-label mb-1">From Date</label>
+                    <input type="date" name="from_date" value="{{ request('from_date') }}" class="form-control form-control-sm">
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label class="form-label mb-1">To Date</label>
+                    <input type="date" name="to_date" value="{{ request('to_date') }}" class="form-control form-control-sm">
+                </div>
+                <div class="col-md-2 mb-2">
                     <button class="btn btn-secondary btn-sm w-100">Filter</button>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-2 mb-2">
                     <a href="{{ route('acc-sfl.expense-ious.index') }}" class="btn btn-light btn-sm w-100">Reset</a>
                 </div>
             </form>

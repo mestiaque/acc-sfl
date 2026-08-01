@@ -22,7 +22,11 @@
             @include('acc-sfl::admin.partials.alerts')
 
             <form method="GET" class="row mb-3 align-items-end">
-                <div class="col-md-2">
+                <div class="col-md-2 mb-2">
+                    <label class="form-label mb-1">Search</label>
+                    <input type="text" name="search" value="{{ request('search') }}" class="form-control form-control-sm" placeholder="Description">
+                </div>
+                <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Branch</label>
                     <select name="branch_id" class="form-control form-control-sm">
                         <option value="">All Branches</option>
@@ -31,7 +35,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Account</label>
                     <select name="account_id" class="form-control form-control-sm">
                         <option value="">All Accounts</option>
@@ -40,7 +44,16 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-2 mb-2">
+                    <label class="form-label mb-1">Payment Method</label>
+                    <select name="payment_method_id" class="form-control form-control-sm">
+                        <option value="">All Methods</option>
+                        @foreach($paymentMethods as $method)
+                        <option value="{{ $method->id }}" @selected((string) request('payment_method_id') === (string) $method->id)>{{ $method->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Type</label>
                     <select name="transaction_type" class="form-control form-control-sm">
                         <option value="">All Types</option>
@@ -49,18 +62,18 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">From Date</label>
                     <input type="date" name="from_date" value="{{ request('from_date') }}" class="form-control form-control-sm">
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">To Date</label>
                     <input type="date" name="to_date" value="{{ request('to_date') }}" class="form-control form-control-sm">
                 </div>
-                <div class="col-md-1">
+                <div class="col-md-2 mb-2">
                     <button class="btn btn-secondary btn-sm w-100">Filter</button>
                 </div>
-                <div class="col-md-1">
+                <div class="col-md-2 mb-2">
                     <a href="{{ route('acc-sfl.transactions.index') }}" class="btn btn-light btn-sm w-100">Reset</a>
                 </div>
             </form>

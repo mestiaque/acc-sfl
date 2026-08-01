@@ -22,14 +22,14 @@
             @foreach($days as $day)
             <td class="text-right">{!! $money($day['beginning_balance']) !!}</td>
             @endforeach
-            <td class="text-right">{!! $money(0) !!}</td>
+            <td class="text-right">{!! $money($report['beginning_balance']) !!}</td>
         </tr>
 
-        <tr><th colspan="{{ $totalCols }}" class="bg-success text-white">( + ) CASH RECEIPTS</th></tr>
+        <tr><th colspan="{{ $totalCols }}" class="bg-success text-white"><span class="cf-sticky-label">( + ) CASH RECEIPTS</span></th></tr>
         @foreach($report['taxonomy']['receipts'] as $master)
             @foreach($master->particulars as $particular)
             <tr>
-                <td class="pl-4">{{ strtoupper($particular->name) }}</td>
+                <td class="pl-4">{{ $particular->code }} - {{ strtoupper($particular->name) }}</td>
                 @foreach($days as $day)
                 <td class="text-right">{!! $money($day['receipts'][$particular->id] ?? 0) !!}</td>
                 @endforeach
@@ -45,9 +45,9 @@
             <td class="text-right">{!! $money($report['total_receipts']) !!}</td>
         </tr>
 
-        <tr><th colspan="{{ $totalCols }}" class="bg-danger text-white">( - ) CASH PAYMENTS</th></tr>
+        <tr><th colspan="{{ $totalCols }}" class="bg-danger text-white"><span class="cf-sticky-label">( - ) CASH PAYMENTS</span></th></tr>
         @foreach($report['taxonomy']['payments'] as $master)
-            <tr><th colspan="{{ $totalCols }}" class="bg-warning">{{ strtoupper($master->name) }}</th></tr>
+            <tr><th colspan="{{ $totalCols }}" class="bg-warning"><span class="cf-sticky-label">{{ strtoupper($master->name) }}</span></th></tr>
             @php
                 $masterDayTotals = [];
                 foreach ($days as $d => $day) { $masterDayTotals[$d] = 0; }
@@ -55,7 +55,7 @@
             @endphp
             @foreach($master->particulars as $particular)
             <tr>
-                <td class="pl-4">{{ strtoupper($particular->name) }}</td>
+                <td class="pl-4">{{ $particular->code }} - {{ strtoupper($particular->name) }}</td>
                 @foreach($days as $d => $day)
                 @php
                     $amt = $day['payments'][$particular->id] ?? 0;
@@ -79,8 +79,24 @@
             </tr>
         @endforeach
 
+        <tr class="font-weight-bold table-danger">
+            <th>TOTAL CASH PAYMENTS</th>
+            @foreach($days as $day)
+            <td class="text-right">{!! $money($day['total_payments']) !!}</td>
+            @endforeach
+            <td class="text-right">{!! $money($report['total_payments']) !!}</td>
+        </tr>
+
         <tr class="font-weight-bold table-secondary">
-            <th>ENDING BALANCE</th>
+            <th>NET CASH CHANGE (CASH RECEIPTS &minus; CASH PAYMENTS)</th>
+            @foreach($days as $day)
+            <td class="text-right">{!! $money($day['total_receipts'] - $day['total_payments']) !!}</td>
+            @endforeach
+            <td class="text-right">{!! $money($report['total_receipts'] - $report['total_payments']) !!}</td>
+        </tr>
+
+        <tr class="font-weight-bold table-dark text-white">
+            <th>MONTH-ENDING CASH POSITION</th>
             @foreach($days as $day)
             <td class="text-right">{!! $money($day['ending_balance']) !!}</td>
             @endforeach

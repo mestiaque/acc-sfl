@@ -71,7 +71,7 @@ class ExpenseController extends Controller
     private function filteredQuery(Request $request): Builder
     {
         return AcExpense::query()
-            ->with(['branch', 'account', 'paymentMethod', 'creator'])
+            ->with(['branch', 'account', 'paymentMethod', 'creator', 'details.particular.masterParticular'])
             ->when(AcAccount::currentUserTiedAccount(), fn ($q, $tied) => $q->where('account_id', $tied->id))
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->string('search');
@@ -82,6 +82,16 @@ class ExpenseController extends Controller
                 });
             })
             ->when($request->filled('branch_id'), fn ($q) => $q->where('branch_id', $request->integer('branch_id')))
+            ->when($request->filled('account_id'), fn ($q) => $q->where('account_id', $request->integer('account_id')))
+            ->when($request->filled('payment_method_id'), fn ($q) => $q->where('payment_method_id', $request->integer('payment_method_id')))
+            ->when($request->filled('master_particular_id'), fn ($q) => $q->whereHas(
+                'details.particular',
+                fn ($p) => $p->where('master_particular_id', $request->integer('master_particular_id'))
+            ))
+            ->when($request->filled('particular_id'), fn ($q) => $q->whereHas(
+                'details',
+                fn ($d) => $d->where('particular_id', $request->integer('particular_id'))
+            ))
             ->when($request->filled('from_date'), fn ($q) => $q->whereDate('expense_date', '>=', $request->date('from_date')))
             ->when($request->filled('to_date'), fn ($q) => $q->whereDate('expense_date', '<=', $request->date('to_date')));
     }

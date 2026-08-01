@@ -35,11 +35,11 @@
             @include('acc-sfl::admin.partials.alerts')
 
             <form method="GET" class="row mb-3 align-items-end">
-                <div class="col-md-3">
+                <div class="col-md-3 mb-2">
                     <label class="form-label mb-1">Search</label>
                     <input type="text" name="search" value="{{ request('search') }}" class="form-control form-control-sm" placeholder="Search receive no.">
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Branch</label>
                     <select name="branch_id" class="form-control form-control-sm">
                         <option value="">All Branches</option>
@@ -48,18 +48,49 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-2 mb-2">
+                    <label class="form-label mb-1">Account</label>
+                    <select name="account_id" class="form-control form-control-sm">
+                        <option value="">All Accounts</option>
+                        @foreach($accounts as $account)
+                        <option value="{{ $account->id }}" @selected((string) request('account_id') === (string) $account->id)>{{ $account->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label class="form-label mb-1">Master Particular</label>
+                    <select name="master_particular_id" class="form-control form-control-sm">
+                        <option value="">All</option>
+                        @foreach($particulars as $master)
+                        <option value="{{ $master->id }}" @selected((string) request('master_particular_id') === (string) $master->id)>{{ $master->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <label class="form-label mb-1">Particular</label>
+                    <select name="particular_id" class="form-control form-control-sm">
+                        <option value="">All Particulars</option>
+                        @foreach($particulars as $master)
+                        <optgroup label="{{ $master->name }}">
+                            @foreach($master->particulars as $particular)
+                            <option value="{{ $particular->id }}" @selected((string) request('particular_id') === (string) $particular->id)>{{ $particular->code }} - {{ $particular->name }}</option>
+                            @endforeach
+                        </optgroup>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">From Date</label>
                     <input type="date" name="from_date" value="{{ request('from_date') }}" class="form-control form-control-sm">
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">To Date</label>
                     <input type="date" name="to_date" value="{{ request('to_date') }}" class="form-control form-control-sm">
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-2 mb-2">
                     <button class="btn btn-secondary btn-sm w-100">Filter</button>
                 </div>
-                <div class="col-md-1">
+                <div class="col-md-2 mb-2">
                     <a href="{{ route('acc-sfl.balance-receives.index') }}" class="btn btn-light btn-sm w-100">Reset</a>
                 </div>
             </form>
@@ -84,13 +115,13 @@
                             <td>{{ $receive->receive_date->format('d M Y') }}</td>
                             <td>{{ $receive->branch->name }}</td>
                             <td>{{ $receive->account->name }}</td>
-                            <td>{{ $receive->particular->name }}</td>
+                            <td>{{ $receive->particular->code }} - {{ $receive->particular->name }}</td>
                             <td>{{ number_format($receive->amount, 2) }}</td>
                             <td class="text-center">
                                 <button type="button" class="btn-custom" title="View" data-toggle="modal" data-target="#viewReceiveModal"
                                     data-no="{{ $receive->receive_no }}" data-date="{{ $receive->receive_date->format('d M Y') }}"
                                     data-branch="{{ $receive->branch->name }}" data-account="{{ $receive->account->name }}"
-                                    data-particular="{{ $receive->particular->name }}" data-amount="{{ number_format($receive->amount, 2) }}"
+                                    data-particular="{{ $receive->particular->code }} - {{ $receive->particular->name }}" data-amount="{{ number_format($receive->amount, 2) }}"
                                     data-description="{{ $receive->description }}"
                                     data-attachment="{{ $receive->attachment ? \Illuminate\Support\Facades\Storage::url($receive->attachment) : '' }}"
                                     data-creator="{{ $receive->creator->name ?? '-' }}">

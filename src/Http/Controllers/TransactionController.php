@@ -9,6 +9,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use ME\AccSfl\Exports\TransactionExport;
 use ME\AccSfl\Models\AcAccount;
 use ME\AccSfl\Models\AcBranch;
+use ME\AccSfl\Models\AcPaymentMethod;
 use ME\AccSfl\Models\AcTransaction;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -49,8 +50,10 @@ class TransactionController extends Controller
         return AcTransaction::query()
             ->with(['branch', 'account', 'paymentMethod', 'creator'])
             ->when(AcAccount::currentUserTiedAccount(), fn ($q, $tied) => $q->where('account_id', $tied->id))
+            ->when($request->filled('search'), fn ($q) => $q->where('description', 'like', '%'.$request->string('search').'%'))
             ->when($request->filled('account_id'), fn ($q) => $q->where('account_id', $request->integer('account_id')))
             ->when($request->filled('branch_id'), fn ($q) => $q->where('branch_id', $request->integer('branch_id')))
+            ->when($request->filled('payment_method_id'), fn ($q) => $q->where('payment_method_id', $request->integer('payment_method_id')))
             ->when($request->filled('transaction_type'), fn ($q) => $q->where('transaction_type', $request->string('transaction_type')))
             ->when($request->filled('from_date'), fn ($q) => $q->whereDate('transaction_date', '>=', $request->date('from_date')))
             ->when($request->filled('to_date'), fn ($q) => $q->whereDate('transaction_date', '<=', $request->date('to_date')));
@@ -61,6 +64,7 @@ class TransactionController extends Controller
         return [
             'branches' => AcBranch::query()->active()->orderBy('name')->get(),
             'accounts' => AcAccount::query()->active()->visibleToCurrentUser()->orderBy('name')->get(),
+            'paymentMethods' => AcPaymentMethod::query()->active()->orderBy('name')->get(),
             'transactionTypes' => [
                 AcTransaction::TYPE_OPENING_BALANCE,
                 AcTransaction::TYPE_BALANCE_RECEIVE,

@@ -16,6 +16,8 @@
     .table-success { background: #c3e6cb; }
     .table-warning { background: #ffeeba; }
     .table-secondary { background: #d6d8db; }
+    .table-danger { background: #f5c6cb; }
+    .table-dark { background: #343a40 !important; color: #fff !important; }
     .text-white { color: #fff !important; }
     .pl-4 { padding-left: 18px !important; }
     .font-weight-bold { font-weight: bold; }

@@ -33,11 +33,11 @@
             <td class="text-right">{!! $money($grandTotal['beginning_balance']) !!}</td>
         </tr>
 
-        <tr><th colspan="{{ $totalCols }}" class="bg-success text-white">( + ) CASH RECEIPTS</th></tr>
+        <tr><th colspan="{{ $totalCols }}" class="bg-success text-white"><span class="cf-sticky-label">( + ) CASH RECEIPTS</span></th></tr>
         @foreach($report['taxonomy']['receipts'] as $master)
             @foreach($master->particulars as $particular)
             <tr>
-                <td class="pl-4">{{ strtoupper($particular->name) }}</td>
+                <td class="pl-4">{{ $particular->code }} - {{ strtoupper($particular->name) }}</td>
                 @foreach($monthChunks as $qi => $chunk)
                     @php $quarterSum = 0; @endphp
                     @foreach($chunk as $month)
@@ -64,15 +64,15 @@
             <td class="text-right">{!! $money($grandTotal['total_receipts']) !!}</td>
         </tr>
 
-        <tr><th colspan="{{ $totalCols }}" class="bg-danger text-white">( - ) CASH PAYMENTS</th></tr>
+        <tr><th colspan="{{ $totalCols }}" class="bg-danger text-white"><span class="cf-sticky-label">( - ) CASH PAYMENTS</span></th></tr>
         @foreach($report['taxonomy']['payments'] as $master)
-            <tr><th colspan="{{ $totalCols }}" class="bg-warning">{{ strtoupper($master->name) }}</th></tr>
+            <tr><th colspan="{{ $totalCols }}" class="bg-warning"><span class="cf-sticky-label">{{ strtoupper($master->name) }}</span></th></tr>
             @php
                 $masterGrandTotal = 0;
             @endphp
             @foreach($master->particulars as $particular)
             <tr>
-                <td class="pl-4">{{ strtoupper($particular->name) }}</td>
+                <td class="pl-4">{{ $particular->code }} - {{ strtoupper($particular->name) }}</td>
                 @foreach($monthChunks as $qi => $chunk)
                     @php $quarterSum = 0; @endphp
                     @foreach($chunk as $month)

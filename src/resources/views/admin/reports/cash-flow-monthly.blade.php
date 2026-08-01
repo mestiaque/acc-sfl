@@ -102,6 +102,16 @@
     .cash-flow-scroll { max-height: 65vh; overflow-y: auto; }
     .cash-flow-scroll table.cash-flow-table { border-collapse: separate; border-spacing: 0; }
     .cash-flow-scroll thead th { position: sticky; top: 0; z-index: 2; background-color: #343a40; color: #fff; }
+    .cash-flow-scroll th:first-child, .cash-flow-scroll td:first-child { position: sticky; left: 0; z-index: 1; }
+    .cash-flow-scroll thead th:first-child { z-index: 3; }
+    .cash-flow-scroll tbody td:first-child, .cash-flow-scroll tbody > tr > th:first-child { background-color: #fff; }
+    .cash-flow-scroll tr.table-info > *:first-child { background-color: #d1ecf1; }
+    .cash-flow-scroll tr.table-success > *:first-child { background-color: #c3e6cb; }
+    .cash-flow-scroll tr.table-warning > *:first-child { background-color: #ffeeba; }
+    .cash-flow-scroll tr.table-secondary > *:first-child { background-color: #d6d8db; }
+    .cash-flow-scroll tr.table-danger > *:first-child { background-color: #f5c6cb; }
+    .cash-flow-scroll tr.table-dark > *:first-child { background-color: #343a40 !important; color: #fff; }
+    .cf-sticky-label { position: sticky; left: 8px; display: inline-block; }
     .float-end { float: right; }
     .cf-amt { display: flex; justify-content: space-between; gap: 6px; }
     .cf-cur { opacity: 0.7; }

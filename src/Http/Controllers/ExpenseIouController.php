@@ -57,7 +57,11 @@ class ExpenseIouController extends Controller
             ->when(AcAccount::currentUserTiedAccount(), fn ($q, $tied) => $q->where('account_id', $tied->id))
             ->when($request->filled('search'), fn ($q) => $q->where('iou_no', 'like', '%'.$request->string('search').'%'))
             ->when($request->filled('branch_id'), fn ($q) => $q->where('branch_id', $request->integer('branch_id')))
-            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')));
+            ->when($request->filled('account_id'), fn ($q) => $q->where('account_id', $request->integer('account_id')))
+            ->when($request->filled('employee_id'), fn ($q) => $q->where('employee_id', $request->integer('employee_id')))
+            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
+            ->when($request->filled('from_date'), fn ($q) => $q->whereDate('issue_date', '>=', $request->date('from_date')))
+            ->when($request->filled('to_date'), fn ($q) => $q->whereDate('issue_date', '<=', $request->date('to_date')));
     }
 
     public function store(ExpenseIouRequest $request): RedirectResponse
