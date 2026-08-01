@@ -14,6 +14,10 @@ return [
             'label' => 'Payment Methods',
             'permissions' => ['list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'all' => 'All'],
         ],
+        'ac_fiscal_year' => [
+            'label' => 'Fiscal Year',
+            'permissions' => ['list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'all' => 'All'],
+        ],
         'ac_account' => [
             'label' => 'Accounts',
             'permissions' => ['list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'all' => 'All'],
@@ -28,11 +32,11 @@ return [
         ],
         'ac_balance_receive' => [
             'label' => 'Balance Receive',
-            'permissions' => ['list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'all' => 'All'],
+            'permissions' => ['list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'import' => 'Import', 'all' => 'All'],
         ],
         'ac_expense' => [
             'label' => 'Expense',
-            'permissions' => ['list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'all' => 'All'],
+            'permissions' => ['list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'import' => 'Import', 'all' => 'All'],
         ],
         'ac_expense_iou' => [
             'label' => 'Expense IOU',

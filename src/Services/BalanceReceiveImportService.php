@@ -79,94 +79,114 @@ class BalanceReceiveImportService
 
             $cell = fn (string $heading) => $columnIndex[$heading] !== null ? trim((string) ($row[$columnIndex[$heading]] ?? '')) : '';
 
-            $dateRaw = $cell('Date');
-            $branchName = $cell('Branch');
-            $accountName = $cell('Account');
-            $particularCode = $cell('Particular Code');
-            $particularName = $cell('Particular Name');
-            $amountRaw = $cell('Amount');
-            $description = $cell('Description');
+            $fields = [
+                'date' => $cell('Date'),
+                'branch' => $cell('Branch'),
+                'account' => $cell('Account'),
+                'particular_code' => $cell('Particular Code'),
+                'particular_name' => $cell('Particular Name'),
+                'amount' => $cell('Amount'),
+                'description' => $cell('Description'),
+            ];
 
-            if ($dateRaw === '' && $branchName === '' && $accountName === '' && $particularCode === '' && $amountRaw === '') {
+            if ($fields['date'] === '' && $fields['branch'] === '' && $fields['account'] === '' && $fields['particular_code'] === '' && $fields['amount'] === '') {
                 continue;
             }
 
-            $errors = [];
-
-            $date = $this->parseDate($dateRaw);
-            if ($dateRaw === '') {
-                $errors[] = 'Date is required.';
-            } elseif (! $date) {
-                $errors[] = "Invalid date '{$dateRaw}'.";
-            }
-
-            $branch = $branchName !== '' ? AcBranch::query()->whereRaw('LOWER(name) = ?', [strtolower($branchName)])->first() : null;
-            if ($branchName === '') {
-                $errors[] = 'Branch is required.';
-            } elseif (! $branch) {
-                $errors[] = "Branch '{$branchName}' not found.";
-            }
-
-            $account = $accountName !== '' ? AcAccount::query()->whereRaw('LOWER(name) = ?', [strtolower($accountName)])->first() : null;
-            if ($accountName === '') {
-                $errors[] = 'Account is required.';
-            } elseif (! $account) {
-                $errors[] = "Account '{$accountName}' not found.";
-            }
-
-            $particular = $particularCode !== '' ? AcParticular::query()->where('code', $particularCode)->first() : null;
-            if ($particularCode === '') {
-                $errors[] = 'Particular Code is required.';
-            } elseif (! $particular) {
-                $errors[] = "Particular code '{$particularCode}' not found.";
-            }
-
-            $amount = null;
-            if ($amountRaw === '') {
-                $errors[] = 'Amount is required.';
-            } elseif (! is_numeric($amountRaw)) {
-                $errors[] = "Amount '{$amountRaw}' is not a valid number.";
-            } else {
-                $amount = (float) $amountRaw;
-                if ($amount <= 0) {
-                    $errors[] = 'Amount must be greater than 0.';
-                }
-            }
-
-            $result = [
-                'row' => $rowNumber,
-                'date' => $dateRaw,
-                'branch' => $branchName,
-                'account' => $accountName,
-                'particular_code' => $particularCode,
-                'particular_name' => $particularName,
-                'amount' => $amountRaw,
-                'description' => $description,
-                'errors' => $errors,
-                'saved' => false,
-            ];
-
-            if (empty($errors) && $save) {
-                try {
-                    AcBalanceReceive::create([
-                        'receive_date' => $date->toDateString(),
-                        'branch_id' => $branch->id,
-                        'account_id' => $account->id,
-                        'particular_id' => $particular->id,
-                        'amount' => $amount,
-                        'description' => $description !== '' ? $description : null,
-                        'created_by' => Auth::id(),
-                    ]);
-                    $result['saved'] = true;
-                } catch (\Throwable $e) {
-                    $result['errors'][] = 'Save failed: '.$e->getMessage();
-                }
-            }
-
-            $results[] = $result;
+            $results[] = ['row' => $rowNumber, ...$this->validateRow($fields, $save)];
         }
 
         return ['error' => null, 'rows' => $results];
+    }
+
+    /**
+     * Validates a single row's fields (same shape used by process() and by the "recheck a
+     * row after an inline edit" endpoint) and, when $save is true and the row is valid,
+     * persists it. Returns the same row shape as process() minus the 'row' number, which
+     * the caller already knows (spreadsheet row, or the value the client echoes back).
+     */
+    public function validateRow(array $fields, bool $save = false): array
+    {
+        $dateRaw = trim((string) ($fields['date'] ?? ''));
+        $branchName = trim((string) ($fields['branch'] ?? ''));
+        $accountName = trim((string) ($fields['account'] ?? ''));
+        $particularCode = trim((string) ($fields['particular_code'] ?? ''));
+        $particularName = trim((string) ($fields['particular_name'] ?? ''));
+        $amountRaw = trim((string) ($fields['amount'] ?? ''));
+        $description = trim((string) ($fields['description'] ?? ''));
+
+        $errors = [];
+
+        $date = $this->parseDate($dateRaw);
+        if ($dateRaw === '') {
+            $errors[] = 'Date is required.';
+        } elseif (! $date) {
+            $errors[] = "Invalid date '{$dateRaw}'.";
+        }
+
+        $branch = $branchName !== '' ? AcBranch::query()->whereRaw('LOWER(name) = ?', [strtolower($branchName)])->first() : null;
+        if ($branchName === '') {
+            $errors[] = 'Branch is required.';
+        } elseif (! $branch) {
+            $errors[] = "Branch '{$branchName}' not found.";
+        }
+
+        $account = $accountName !== '' ? AcAccount::query()->whereRaw('LOWER(name) = ?', [strtolower($accountName)])->first() : null;
+        if ($accountName === '') {
+            $errors[] = 'Account is required.';
+        } elseif (! $account) {
+            $errors[] = "Account '{$accountName}' not found.";
+        }
+
+        $particular = $particularCode !== '' ? AcParticular::query()->where('code', $particularCode)->first() : null;
+        if ($particularCode === '') {
+            $errors[] = 'Particular Code is required.';
+        } elseif (! $particular) {
+            $errors[] = "Particular code '{$particularCode}' not found.";
+        }
+
+        $amount = null;
+        if ($amountRaw === '') {
+            $errors[] = 'Amount is required.';
+        } elseif (! is_numeric($amountRaw)) {
+            $errors[] = "Amount '{$amountRaw}' is not a valid number.";
+        } else {
+            $amount = (float) $amountRaw;
+            if ($amount <= 0) {
+                $errors[] = 'Amount must be greater than 0.';
+            }
+        }
+
+        $result = [
+            'date' => $dateRaw,
+            'branch' => $branchName,
+            'account' => $accountName,
+            'particular_code' => $particularCode,
+            'particular_name' => $particularName,
+            'amount' => $amountRaw,
+            'description' => $description,
+            'errors' => $errors,
+            'saved' => false,
+        ];
+
+        if (empty($errors) && $save) {
+            try {
+                AcBalanceReceive::create([
+                    'receive_date' => $date->toDateString(),
+                    'branch_id' => $branch->id,
+                    'account_id' => $account->id,
+                    'particular_id' => $particular->id,
+                    'amount' => $amount,
+                    'description' => $description !== '' ? $description : null,
+                    'created_by' => Auth::id(),
+                ]);
+                $result['saved'] = true;
+            } catch (\Throwable $e) {
+                $result['errors'][] = 'Save failed: '.$e->getMessage();
+            }
+        }
+
+        return $result;
     }
 
     private function findSheet(Spreadsheet $spreadsheet, string $preferredName): Worksheet

@@ -27,9 +27,9 @@
                 <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Fiscal Year</label>
                     <select name="fiscal_year" class="form-control form-control-sm">
-                        @for($y = now()->year - 3; $y <= now()->year + 1; $y++)
-                        <option value="{{ $y }}" @selected($report['fiscal_year_start'] == $y)>{{ $y }}/{{ substr((string) ($y + 1), -2) }} (Jul {{ $y }} - Jun {{ $y + 1 }})</option>
-                        @endfor
+                        @foreach($fiscalYears as $fy)
+                        <option value="{{ $fy->id }}" @selected($fiscalYearId === $fy->id)>{{ $fy->label }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div class="col-md-2 mb-2">

@@ -84,18 +84,23 @@ class CashFlowReportService
     }
 
     /**
-     * The BD fiscal year runs July 1 - June 30: 12 months from July of the start year
-     * through June of the following year, grouped into 4 sequential fiscal quarters
-     * (Jul-Sep, Oct-Dec, Jan-Mar, Apr-Jun), with a single fiscal-year total column at the end.
+     * Builds the report for the 12 months starting at $start (whatever month that is -
+     * the AcFiscalYear master record decides that, not this service), grouped into 4
+     * sequential fiscal quarters, with a single fiscal-year total column at the end.
      */
     public function yearly(
-        int $fiscalYearStartYear,
+        Carbon $start,
         ?int $branchId = null,
         ?int $accountId = null,
         ?int $masterParticularId = null,
         ?int $particularId = null,
     ): array {
-        $start = Carbon::create($fiscalYearStartYear, 7, 1)->startOfMonth();
+        $start = $start->copy()->startOfMonth();
+        $fiscalYearStartYear = $start->year;
+        $fiscalYearEndYear = $start->copy()->addMonthsNoOverflow(11)->year;
+        $fiscalYearLabel = $fiscalYearStartYear === $fiscalYearEndYear
+            ? (string) $fiscalYearStartYear
+            : $fiscalYearStartYear.'-'.substr((string) $fiscalYearEndYear, -2);
         $totalMonths = 12;
 
         $running = $this->cashBalanceThrough($start->copy()->subDay(), $branchId, $accountId);
@@ -154,7 +159,7 @@ class CashFlowReportService
         }
 
         $grandTotal = [
-            'label' => 'FISCAL YEAR TOTALS '.$fiscalYearStartYear.'/'.substr((string) ($fiscalYearStartYear + 1), -2),
+            'label' => 'FISCAL YEAR TOTALS '.$fiscalYearLabel,
             'total_receipts' => $grandReceipts,
             'total_payments' => $grandPayments,
             'net_change' => $grandReceipts - $grandPayments,
@@ -164,7 +169,7 @@ class CashFlowReportService
 
         return [
             'fiscal_year_start' => $fiscalYearStartYear,
-            'label' => 'FY '.$fiscalYearStartYear.'-'.substr((string) ($fiscalYearStartYear + 1), -2),
+            'label' => 'FY '.$fiscalYearLabel,
             'taxonomy' => $this->taxonomy($masterParticularId, $particularId),
             'months' => $months,
             'quarters' => $quarters,

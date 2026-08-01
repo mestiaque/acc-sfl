@@ -16,13 +16,15 @@
                 <a href="{{ route('acc-sfl.expenses.export', request()->query()) }}" class="btn btn-light btn-sm">
                     <i class="fa-solid fa-file-excel mr-1"></i> Export Excel
                 </a>
-                @can('ac_expense.add')
+                @can('ac_expense.import')
                 <a href="{{ route('acc-sfl.import-template.download') }}" class="btn btn-light btn-sm d-none">
                     <i class="fa-solid fa-download mr-1"></i> Download Import Template
                 </a>
-                <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#expenseImportModal">
+                <a href="{{ route('acc-sfl.expenses.import') }}" class="btn btn-light btn-sm">
                     <i class="fa-solid fa-file-import mr-1"></i> Expense Import
-                </button>
+                </a>
+                @endcan
+                @can('ac_expense.add')
                 <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" data-toggle="modal" data-target="#createExpenseModal">
                     <i class="fa-solid fa-plus"></i> Add Expense
                 </button>
@@ -88,6 +90,9 @@
                                 <button type="button" class="btn-custom btn-view-expense" title="View" data-url="{{ route('acc-sfl.expenses.show', $expense) }}">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
+                                <a class="btn-custom" title="Print Slip" target="_blank" href="{{ route('acc-sfl.expenses.slip', $expense) }}">
+                                    <i class="fa-solid fa-print"></i>
+                                </a>
                                 @can('ac_expense.edit')
                                 <button type="button" class="btn-custom yellow" title="Edit" data-toggle="modal" data-target="#editExpenseModal"
                                     data-action="{{ route('acc-sfl.expenses.update', $expense) }}"
@@ -295,30 +300,6 @@
 </div>
 
 @include('acc-sfl::admin.partials.delete-confirm-modal', ['modalId' => 'deleteExpenseModal', 'label' => 'expense'])
-
-@include('acc-sfl::admin.partials.excel-import-modal', [
-    'modalId' => 'expenseImportModal',
-    'title' => 'Import Expense from Excel',
-    'previewUrl' => route('acc-sfl.expenses.import.preview'),
-    'saveUrl' => route('acc-sfl.expenses.import.save'),
-    'columns' => [
-        ['key' => 'date', 'label' => 'Date'],
-        ['key' => 'branch', 'label' => 'Branch'],
-        ['key' => 'account', 'label' => 'Account'],
-        ['key' => 'payment_method', 'label' => 'Payment Method'],
-        ['key' => 'particular_code', 'label' => 'Particular Code'],
-        ['key' => 'particular_name', 'label' => 'Particular Name'],
-        ['key' => 'qty', 'label' => 'Qty', 'align' => 'right'],
-        ['key' => 'rate', 'label' => 'Rate', 'align' => 'right'],
-        ['key' => 'amount', 'label' => 'Amount', 'align' => 'right'],
-        ['key' => 'invoice', 'label' => 'Invoice'],
-        ['key' => 'uom', 'label' => 'UOM'],
-        ['key' => 'receiver_name', 'label' => 'Receiver Name'],
-        ['key' => 'receiver_mobile', 'label' => 'Receiver Mobile'],
-        ['key' => 'company_name', 'label' => 'Company Name'],
-        ['key' => 'description', 'label' => 'Description'],
-    ],
-])
 @endsection
 
 @push('js')

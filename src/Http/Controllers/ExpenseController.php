@@ -16,6 +16,7 @@ use ME\AccSfl\Models\AcBranch;
 use ME\AccSfl\Models\AcExpense;
 use ME\AccSfl\Models\AcMasterParticular;
 use ME\AccSfl\Models\AcPaymentMethod;
+use ME\AccSfl\Services\NumberToWordsService;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ExpenseController extends Controller
@@ -45,6 +46,17 @@ class ExpenseController extends Controller
         $expenses = $this->filteredQuery($request)->latest('id')->get();
 
         return view('acc-sfl::admin.expenses.print', compact('expenses'));
+    }
+
+    public function slip(AcExpense $expense, NumberToWordsService $numberToWords): View
+    {
+        $this->authorize('ac_expense.view');
+
+        $expense->load(['branch', 'account', 'paymentMethod', 'creator', 'details.particular']);
+
+        $amountInWords = $numberToWords->taka((float) $expense->total_amount);
+
+        return view('acc-sfl::admin.expenses.slip', compact('expense', 'amountInWords'));
     }
 
     public function export(Request $request): BinaryFileResponse

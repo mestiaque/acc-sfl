@@ -1,6 +1,6 @@
 @extends('printMaster2')
 
-@section('title')Cash Flow FY{{ $report['fiscal_year_start'] }}@endsection
+@section('title')Cash Flow {{ $report['label'] }}@endsection
 
 @push('css')
 <style>

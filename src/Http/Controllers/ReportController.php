@@ -10,6 +10,7 @@ use ME\AccSfl\Exports\CashFlowMonthlyExport;
 use ME\AccSfl\Exports\CashFlowYearlyExport;
 use ME\AccSfl\Models\AcAccount;
 use ME\AccSfl\Models\AcBranch;
+use ME\AccSfl\Models\AcFiscalYear;
 use ME\AccSfl\Models\AcMasterParticular;
 use ME\AccSfl\Services\CashFlowReportService;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -57,11 +58,12 @@ class ReportController extends Controller
     {
         $this->authorize('ac_report.view');
 
-        [$fyStart, $branchId, $accountId, $masterParticularId, $particularId] = $this->yearlyParams($request);
+        [$fyStart, $fiscalYearId, $branchId, $accountId, $masterParticularId, $particularId] = $this->yearlyParams($request);
         $report = $this->reports->yearly($fyStart, $branchId, $accountId, $masterParticularId, $particularId);
+        $fiscalYears = AcFiscalYear::query()->orderByDesc('start_year')->orderByDesc('start_month')->get();
 
         return view('acc-sfl::admin.reports.cash-flow-yearly', array_merge(
-            compact('report', 'branchId', 'accountId', 'masterParticularId', 'particularId'),
+            compact('report', 'fiscalYears', 'fiscalYearId', 'branchId', 'accountId', 'masterParticularId', 'particularId'),
             $this->filterOptions(),
         ));
     }
@@ -70,7 +72,7 @@ class ReportController extends Controller
     {
         $this->authorize('ac_report.export');
 
-        [$fyStart, $branchId, $accountId, $masterParticularId, $particularId] = $this->yearlyParams($request);
+        [$fyStart, $fiscalYearId, $branchId, $accountId, $masterParticularId, $particularId] = $this->yearlyParams($request);
         $report = $this->reports->yearly($fyStart, $branchId, $accountId, $masterParticularId, $particularId);
 
         return view('acc-sfl::admin.reports.cash-flow-yearly-print', compact('report'));
@@ -80,7 +82,7 @@ class ReportController extends Controller
     {
         $this->authorize('ac_report.export');
 
-        [$fyStart, $branchId, $accountId, $masterParticularId, $particularId] = $this->yearlyParams($request);
+        [$fyStart, $fiscalYearId, $branchId, $accountId, $masterParticularId, $particularId] = $this->yearlyParams($request);
         $report = $this->reports->yearly($fyStart, $branchId, $accountId, $masterParticularId, $particularId);
 
         return Excel::download(new CashFlowYearlyExport($report), "cash-flow-{$report['label']}.xlsx");
@@ -104,22 +106,52 @@ class ReportController extends Controller
     }
 
     /**
-     * @return array{0: int, 1: ?int, 2: ?int, 3: ?int, 4: ?int}
+     * @return array{0: Carbon, 1: ?int, 2: ?int, 3: ?int, 4: ?int, 5: ?int}
      */
     private function yearlyParams(Request $request): array
     {
-        $today = Carbon::today();
-        // The fiscal year (July -> June) containing "today" starts this calendar year
-        // if today is on/after July, otherwise it started the previous calendar year.
-        $defaultFyStart = $today->month >= 7 ? $today->year : $today->year - 1;
+        $fiscalYear = $this->resolveFiscalYear($request);
 
         return [
-            $request->integer('fiscal_year', $defaultFyStart),
+            $fiscalYear ? $fiscalYear->startDate() : $this->fallbackFiscalYearStart(),
+            $fiscalYear?->id,
             $request->filled('branch_id') ? $request->integer('branch_id') : null,
             $request->filled('account_id') ? $request->integer('account_id') : null,
             $request->filled('master_particular_id') ? $request->integer('master_particular_id') : null,
             $request->filled('particular_id') ? $request->integer('particular_id') : null,
         ];
+    }
+
+    /**
+     * Resolves which AcFiscalYear master record the report should run for: the one picked
+     * in the "fiscal_year" query param, or - failing that - whichever fiscal year contains
+     * today, or - failing that (no fiscal years defined yet) - the most recent one.
+     */
+    private function resolveFiscalYear(Request $request): ?AcFiscalYear
+    {
+        if ($request->filled('fiscal_year')) {
+            $fiscalYear = AcFiscalYear::find($request->integer('fiscal_year'));
+            if ($fiscalYear) {
+                return $fiscalYear;
+            }
+        }
+
+        $today = Carbon::today();
+
+        return AcFiscalYear::query()->get()->first(fn (AcFiscalYear $fy) => $today->between($fy->startDate(), $fy->endDate()))
+            ?? AcFiscalYear::query()->orderByDesc('start_year')->orderByDesc('start_month')->first();
+    }
+
+    /**
+     * Used only if the Fiscal Year master table is empty - keeps the report from
+     * breaking by falling back to the BD July -> June fiscal year containing today.
+     */
+    private function fallbackFiscalYearStart(): Carbon
+    {
+        $today = Carbon::today();
+        $year = $today->month >= 7 ? $today->year : $today->year - 1;
+
+        return Carbon::create($year, 7, 1)->startOfMonth();
     }
 
     private function filterOptions(): array

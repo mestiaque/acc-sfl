@@ -20,6 +20,7 @@ return [
                         ['title' => 'Branches', 'icon' => 'fa-solid fa-code-branch', 'route' => '/admin/acc-sfl/branches', 'icon_color' => 'text-secondary', 'permission' => 'ac_branch'],
                         ['title' => 'Accounts', 'icon' => 'fa-solid fa-wallet', 'route' => '/admin/acc-sfl/accounts', 'icon_color' => 'text-secondary', 'permission' => 'ac_account'],
                         ['title' => 'Payment Methods', 'icon' => 'fa-solid fa-credit-card', 'route' => '/admin/acc-sfl/payment-methods', 'icon_color' => 'text-secondary', 'permission' => 'ac_payment_method'],
+                        ['title' => 'Fiscal Year', 'icon' => 'fa-solid fa-calendar-days', 'route' => '/admin/acc-sfl/fiscal-years', 'icon_color' => 'text-secondary', 'permission' => 'ac_fiscal_year'],
                         ['title' => 'Master Particulars', 'icon' => 'fa-solid fa-list-check', 'route' => '/admin/acc-sfl/master-particulars', 'icon_color' => 'text-secondary', 'permission' => 'ac_master_particular'],
                         ['title' => 'Particulars', 'icon' => 'fa-solid fa-list', 'route' => '/admin/acc-sfl/particulars', 'icon_color' => 'text-secondary', 'permission' => 'ac_particular'],
                     ],

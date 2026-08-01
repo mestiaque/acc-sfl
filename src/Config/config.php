@@ -15,6 +15,9 @@ return [
 
     'company' => [
         'name' => 'Suhana Fashions Limited',
+        'subtitle' => '',
         'address' => 'Kathgora, Jirabo, Ashulia, Savar. Dhaka',
+        'mobile' => '',
+        'email' => '',
     ],
 ];

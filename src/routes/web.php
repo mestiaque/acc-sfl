@@ -12,6 +12,7 @@ use ME\AccSfl\Http\Controllers\ExpenseImportController;
 use ME\AccSfl\Http\Controllers\ExpenseIouController;
 use ME\AccSfl\Http\Controllers\ExpenseIouReportController;
 use ME\AccSfl\Http\Controllers\ExpenseReportController;
+use ME\AccSfl\Http\Controllers\FiscalYearController;
 use ME\AccSfl\Http\Controllers\ImportTemplateController;
 use ME\AccSfl\Http\Controllers\MasterParticularController;
 use ME\AccSfl\Http\Controllers\ParticularController;
@@ -37,6 +38,12 @@ Route::middleware($route['middleware'] ?? ['web', 'auth'])
         Route::get('payment-methods/print', [PaymentMethodController::class, 'print'])->name('payment-methods.print');
         Route::get('payment-methods/export', [PaymentMethodController::class, 'export'])->name('payment-methods.export');
 
+        Route::resource('fiscal-years', FiscalYearController::class)
+            ->parameters(['fiscal-years' => 'fiscal_year'])
+            ->only(['index', 'store', 'update', 'destroy']);
+        Route::get('fiscal-years/print', [FiscalYearController::class, 'print'])->name('fiscal-years.print');
+        Route::get('fiscal-years/export', [FiscalYearController::class, 'export'])->name('fiscal-years.export');
+
         Route::resource('accounts', AccountController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::get('accounts/print', [AccountController::class, 'print'])->name('accounts.print');
         Route::get('accounts/export', [AccountController::class, 'export'])->name('accounts.export');
@@ -59,14 +66,21 @@ Route::middleware($route['middleware'] ?? ['web', 'auth'])
             ->only(['index', 'store', 'update', 'destroy']);
         Route::get('balance-receives/print', [BalanceReceiveController::class, 'print'])->name('balance-receives.print');
         Route::get('balance-receives/export', [BalanceReceiveController::class, 'export'])->name('balance-receives.export');
+        Route::get('balance-receives/import', [BalanceReceiveImportController::class, 'create'])->name('balance-receives.import');
         Route::post('balance-receives/import/preview', [BalanceReceiveImportController::class, 'preview'])->name('balance-receives.import.preview');
         Route::post('balance-receives/import/save', [BalanceReceiveImportController::class, 'save'])->name('balance-receives.import.save');
+        Route::post('balance-receives/import/recheck', [BalanceReceiveImportController::class, 'recheck'])->name('balance-receives.import.recheck');
 
+        // Registered before the resource's GET {expense} show route so the literal
+        // "import" segment isn't swallowed as an expense id.
+        Route::get('expenses/import', [ExpenseImportController::class, 'create'])->name('expenses.import');
         Route::resource('expenses', ExpenseController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
         Route::get('expenses/print', [ExpenseController::class, 'print'])->name('expenses.print');
+        Route::get('expenses/{expense}/slip', [ExpenseController::class, 'slip'])->name('expenses.slip');
         Route::get('expenses/export', [ExpenseController::class, 'export'])->name('expenses.export');
         Route::post('expenses/import/preview', [ExpenseImportController::class, 'preview'])->name('expenses.import.preview');
         Route::post('expenses/import/save', [ExpenseImportController::class, 'save'])->name('expenses.import.save');
+        Route::post('expenses/import/recheck', [ExpenseImportController::class, 'recheck'])->name('expenses.import.recheck');
 
         Route::resource('expense-ious', ExpenseIouController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::get('expense-ious/print', [ExpenseIouController::class, 'print'])->name('expense-ious.print');
