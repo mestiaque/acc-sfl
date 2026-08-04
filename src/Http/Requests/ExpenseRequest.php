@@ -51,9 +51,9 @@ class ExpenseRequest extends FormRequest
                 },
             ],
             'items.*.invoice' => ['nullable', 'string', 'max:100'],
-            'items.*.qty' => ['required', 'numeric', 'min:0.01'],
+            'items.*.qty' => ['nullable', 'numeric', 'min:0.01'],
             'items.*.uom' => ['nullable', 'string', 'max:50'],
-            'items.*.rate' => ['required', 'numeric', 'min:0'],
+            'items.*.rate' => ['nullable', 'numeric', 'min:0'],
             'items.*.description' => ['nullable', 'string'],
         ];
     }

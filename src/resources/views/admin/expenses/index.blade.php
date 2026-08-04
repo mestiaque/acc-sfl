@@ -240,12 +240,12 @@
                     </div>
                     <div class="row">
                         <div class="col-md-4 form-group">
-                            <label>Qty <span class="text-danger">*</span></label>
-                            <input type="number" step="0.01" min="0.01" name="items[0][qty]" class="form-control item-qty" value="1" required>
+                            <label>Qty</label>
+                            <input type="number" step="0.01" min="0.01" name="items[0][qty]" class="form-control item-qty">
                         </div>
                         <div class="col-md-4 form-group">
-                            <label>Rate <span class="text-danger">*</span></label>
-                            <input type="number" step="0.01" min="0" name="items[0][rate]" class="form-control item-rate" value="0" required>
+                            <label>Rate</label>
+                            <input type="number" step="0.01" min="0" name="items[0][rate]" class="form-control item-rate" value="0">
                         </div>
                         <div class="col-md-4 form-group">
                             <label>Amount</label>
