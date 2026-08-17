@@ -6,6 +6,7 @@
             <th>Branch</th>
             <th>Account</th>
             <th>Payment Method</th>
+            <th>Employee</th>
             <th>Total Amount</th>
         </tr>
     </thead>
@@ -17,10 +18,11 @@
             <td>{{ $expense->branch->name }}</td>
             <td>{{ $expense->account->name }}</td>
             <td>{{ $expense->paymentMethod->name }}</td>
+            <td>{{ $expense->employee->name ?? '-' }}</td>
             <td>{{ number_format($expense->total_amount, 2) }}</td>
         </tr>
         @empty
-        <tr><td colspan="6" style="text-align:center">No data available.</td></tr>
+        <tr><td colspan="7" style="text-align:center">No data available.</td></tr>
         @endforelse
     </tbody>
 </table>

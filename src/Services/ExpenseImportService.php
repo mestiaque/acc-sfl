@@ -2,6 +2,7 @@
 
 namespace ME\AccSfl\Services;
 
+use App\Services\ApprovalService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -233,6 +234,7 @@ class ExpenseImportService
                     'company_name' => $companyName !== '' ? $companyName : null,
                     'receiver_name' => $receiverName !== '' ? $receiverName : null,
                     'receiver_mobile' => $receiverMobile !== '' ? $receiverMobile : null,
+                    'invoice' => $invoice !== '' ? $invoice : null,
                     'total_amount' => $totalAmount,
                     'description' => $description !== '' ? $description : null,
                     'created_by' => Auth::id(),
@@ -240,12 +242,22 @@ class ExpenseImportService
 
                 $expense->details()->create([
                     'particular_id' => $particular->id,
-                    'invoice' => $invoice !== '' ? $invoice : null,
                     'qty' => $qty,
                     'uom' => $uom !== '' ? $uom : null,
                     'rate' => $rate,
                     'amount' => $totalAmount,
-                    'description' => $description !== '' ? $description : null,
+                ]);
+
+                // Same as the manual Add Expense form: nothing posts to the ledger until
+                // approved, so every imported row must raise its own approval request.
+                app(ApprovalService::class)->request([
+                    'module' => 'accounts.expense',
+                    'approvable' => $expense,
+                    'title' => "Expense Approval - {$expense->expense_no}",
+                    'description' => 'Imported expense of '.$totalAmount
+                        .($companyName !== '' ? " for {$companyName}" : '').'.',
+                    'route_name' => 'acc-sfl.expenses.index',
+                    'requested_by' => Auth::id(),
                 ]);
 
                 $result['saved'] = true;

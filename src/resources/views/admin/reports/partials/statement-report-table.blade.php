@@ -4,50 +4,67 @@
 <table>
     <thead>
         <tr>
-            <th colspan="7">
+            <th colspan="14">
                 Account: {{ $statement['account']->name }} ({{ $statement['account']->branch->name ?? '-' }})
                 &nbsp;|&nbsp; Period: {{ $statement['from_date']->format('d M Y') }} to {{ $statement['to_date']->format('d M Y') }}
             </th>
         </tr>
         <tr>
+            <th>Month</th>
             <th>Date</th>
-            <th>Type</th>
-            <th>Payment Method</th>
+            <th>Particular</th>
             <th>Description</th>
-            <th>Debit</th>
-            <th>Credit</th>
+            <th>A/C Code</th>
+            <th>Invoice / Challan No.</th>
+            <th>Receiver</th>
+            <th>Qty</th>
+            <th>Unit of Measure</th>
+            <th>Rate</th>
+            <th>Expense</th>
+            <th>Receive</th>
             <th>Balance</th>
+            <th>Remarks</th>
         </tr>
     </thead>
     <tbody>
         <tr class="subtotal-row">
-            <td colspan="6" style="text-align:right"><strong>OPENING BALANCE</strong></td>
+            <td colspan="12" style="text-align:right"><strong>OPENING BALANCE</strong></td>
             <td style="text-align:right"><strong>{{ $money($statement['opening_balance']) }}</strong></td>
+            <td></td>
         </tr>
-        @forelse($statement['transactions'] as $transaction)
+        @forelse($statement['rows'] as $row)
         <tr>
-            <td>{{ $transaction->transaction_date->format('d M Y') }}</td>
-            <td>{{ $transaction->transaction_type }}</td>
-            <td>{{ $transaction->paymentMethod->name ?? '-' }}</td>
-            <td>{{ $transaction->description ?: '-' }}</td>
-            <td style="text-align:right">{{ $transaction->debit > 0 ? $money($transaction->debit) : '-' }}</td>
-            <td style="text-align:right">{{ $transaction->credit > 0 ? $money($transaction->credit) : '-' }}</td>
-            <td style="text-align:right">{{ $money($transaction->balance) }}</td>
+            <td>{{ $row['date'] ? strtoupper($row['date']->format('F')) : '-' }}</td>
+            <td>{{ $row['date']?->format('d-m-y') ?? '-' }}</td>
+            <td>{{ $row['particular'] ?: '-' }}</td>
+            <td>{{ $row['description'] ?: '-' }}</td>
+            <td>{{ $row['ac_code'] ?: '-' }}</td>
+            <td>{{ $row['invoice'] ?: '-' }}</td>
+            <td>{{ $row['receiver'] ?: '-' }}</td>
+            <td style="text-align:right">{{ $row['qty'] !== null ? $money($row['qty']) : '-' }}</td>
+            <td>{{ $row['uom'] ?: '-' }}</td>
+            <td style="text-align:right">{{ $row['rate'] !== null ? $money($row['rate']) : '-' }}</td>
+            <td style="text-align:right">{{ $row['expense'] !== null ? $money($row['expense']) : '-' }}</td>
+            <td style="text-align:right">{{ $row['receive'] !== null ? $money($row['receive']) : '-' }}</td>
+            <td style="text-align:right">{{ $money($row['balance']) }}</td>
+            <td>{{ $row['remarks'] ?: '-' }}</td>
         </tr>
         @empty
-        <tr><td colspan="7" style="text-align:center">No transactions in this period.</td></tr>
+        <tr><td colspan="14" style="text-align:center">No transactions in this period.</td></tr>
         @endforelse
     </tbody>
     <tfoot>
         <tr class="subtotal-row">
-            <th colspan="4" style="text-align:right">PERIOD TOTAL</th>
-            <th style="text-align:right">{{ $money($statement['total_debit']) }}</th>
-            <th style="text-align:right">{{ $money($statement['total_credit']) }}</th>
+            <th colspan="10" style="text-align:right">PERIOD TOTAL</th>
+            <th style="text-align:right">{{ $money($statement['total_expense']) }}</th>
+            <th style="text-align:right">{{ $money($statement['total_receive']) }}</th>
+            <th></th>
             <th></th>
         </tr>
         <tr class="grandtotal-row">
-            <th colspan="6" style="text-align:right">CLOSING BALANCE</th>
+            <th colspan="12" style="text-align:right">CLOSING BALANCE</th>
             <th style="text-align:right">{{ $money($statement['closing_balance']) }}</th>
+            <th></th>
         </tr>
     </tfoot>
 </table>

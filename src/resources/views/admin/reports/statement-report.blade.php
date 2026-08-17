@@ -61,8 +61,8 @@
             @if($statement)
             <div class="d-flex flex-wrap gap-3 mb-3 mt-2">
                 <div class="badge badge-secondary p-2 mr-2" style="font-size: 0.85rem;">Opening Balance: BDT {{ number_format($statement['opening_balance'], 2) }}</div>
-                <div class="badge badge-success p-2 mr-2" style="font-size: 0.85rem;">Total Debit: BDT {{ number_format($statement['total_debit'], 2) }}</div>
-                <div class="badge badge-danger p-2 mr-2" style="font-size: 0.85rem;">Total Credit: BDT {{ number_format($statement['total_credit'], 2) }}</div>
+                <div class="badge badge-success p-2 mr-2" style="font-size: 0.85rem;">Total Receive: BDT {{ number_format($statement['total_receive'], 2) }}</div>
+                <div class="badge badge-danger p-2 mr-2" style="font-size: 0.85rem;">Total Expense: BDT {{ number_format($statement['total_expense'], 2) }}</div>
                 <div class="badge badge-primary p-2 mr-2" style="font-size: 0.85rem;">Closing Balance: BDT {{ number_format($statement['closing_balance'], 2) }}</div>
             </div>
 
@@ -70,38 +70,54 @@
                 <table class="table table-bordered table-sm mb-0">
                     <thead>
                         <tr>
+                            <th>Month</th>
                             <th>Date</th>
-                            <th>Type</th>
-                            <th>Payment Method</th>
+                            <th>Particular</th>
                             <th>Description</th>
-                            <th>Debit</th>
-                            <th>Credit</th>
+                            <th>A/C Code</th>
+                            <th>Invoice / Challan No.</th>
+                            <th>Receiver</th>
+                            <th>Qty</th>
+                            <th>Unit of Measure</th>
+                            <th>Rate</th>
+                            <th>Expense</th>
+                            <th>Receive</th>
                             <th>Balance</th>
+                            <th>Remarks</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr class="table-secondary font-weight-bold">
-                            <td colspan="6" class="text-right">OPENING BALANCE</td>
+                            <td colspan="12" class="text-right">OPENING BALANCE</td>
                             <td class="text-right">{{ number_format($statement['opening_balance'], 2) }}</td>
+                            <td></td>
                         </tr>
-                        @forelse($statement['transactions'] as $transaction)
+                        @forelse($statement['rows'] as $row)
                         <tr>
-                            <td>{{ $transaction->transaction_date->format('d M Y') }}</td>
-                            <td>{{ $transaction->transaction_type }}</td>
-                            <td>{{ $transaction->paymentMethod->name ?? '-' }}</td>
-                            <td>{{ $transaction->description ?: '-' }}</td>
-                            <td class="text-success">{{ $transaction->debit > 0 ? number_format($transaction->debit, 2) : '-' }}</td>
-                            <td class="text-danger">{{ $transaction->credit > 0 ? number_format($transaction->credit, 2) : '-' }}</td>
-                            <td>{{ number_format($transaction->balance, 2) }}</td>
+                            <td>{{ $row['date'] ? strtoupper($row['date']->format('F')) : '-' }}</td>
+                            <td>{{ $row['date']?->format('d-m-y') ?? '-' }}</td>
+                            <td>{{ $row['particular'] ?: '-' }}</td>
+                            <td>{{ $row['description'] ?: '-' }}</td>
+                            <td>{{ $row['ac_code'] ?: '-' }}</td>
+                            <td>{{ $row['invoice'] ?: '-' }}</td>
+                            <td>{{ $row['receiver'] ?: '-' }}</td>
+                            <td class="text-right">{{ $row['qty'] !== null ? number_format($row['qty'], 2) : '-' }}</td>
+                            <td>{{ $row['uom'] ?: '-' }}</td>
+                            <td class="text-right">{{ $row['rate'] !== null ? number_format($row['rate'], 2) : '-' }}</td>
+                            <td class="text-danger text-right">{{ $row['expense'] !== null ? number_format($row['expense'], 2) : '-' }}</td>
+                            <td class="text-success text-right">{{ $row['receive'] !== null ? number_format($row['receive'], 2) : '-' }}</td>
+                            <td class="text-right">{{ number_format($row['balance'], 2) }}</td>
+                            <td>{{ $row['remarks'] ?: '-' }}</td>
                         </tr>
                         @empty
-                        <tr><td colspan="7" class="text-center">No transactions in this period.</td></tr>
+                        <tr><td colspan="14" class="text-center">No transactions in this period.</td></tr>
                         @endforelse
                     </tbody>
                     <tfoot>
                         <tr class="table-dark text-white font-weight-bold">
-                            <td colspan="6" class="text-right">CLOSING BALANCE</td>
+                            <td colspan="12" class="text-right">CLOSING BALANCE</td>
                             <td class="text-right">{{ number_format($statement['closing_balance'], 2) }}</td>
+                            <td></td>
                         </tr>
                     </tfoot>
                 </table>

@@ -36,7 +36,7 @@ return [
         ],
         'ac_expense' => [
             'label' => 'Expense',
-            'permissions' => ['list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'import' => 'Import', 'all' => 'All'],
+            'permissions' => ['list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'import' => 'Import', 'approve' => 'Approve', 'all' => 'All'],
         ],
         'ac_expense_iou' => [
             'label' => 'Expense IOU',

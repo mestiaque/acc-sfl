@@ -26,7 +26,7 @@
             <form method="GET" class="row align-items-end">
                 <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Search</label>
-                    <input type="text" name="search" value="{{ request('search') }}" class="form-control form-control-sm" placeholder="IOU no. / receiver">
+                    <input type="text" name="search" value="{{ request('search') }}" class="form-control form-control-sm" placeholder="IOU no.">
                 </div>
                 <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Branch</label>

@@ -210,7 +210,13 @@ prottekta report jeno accounts, master perticular, perticular, date range, etc f
 
 
 
-
-
+Expense Date * | Branch * 
+Account * | Payment Method * 
+Company Name | Receiver Name | Receiver Mobile
+Invoice
+Particular * UOM | Qty | Rate | Amount | [checkbox] | +
+Particular * UOM | Qty | Rate | Amount | [checkbox] | -
+Particular * UOM | Qty | Rate | Amount | [checkbox] | -
+Description
 
 

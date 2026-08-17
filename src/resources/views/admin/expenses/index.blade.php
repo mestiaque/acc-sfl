@@ -25,9 +25,9 @@
                 </a>
                 @endcan
                 @can('ac_expense.add')
-                <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" data-toggle="modal" data-target="#createExpenseModal">
+                <a href="{{ route('acc-sfl.expenses.create') }}" class="btn btn-primary btn-sm rounded-pill px-3">
                     <i class="fa-solid fa-plus"></i> Add Expense
-                </button>
+                </a>
                 @endcan
             </div>
         </div>
@@ -88,6 +88,15 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="col-md-3 mb-2">
+                    <label class="form-label mb-1">Employee</label>
+                    <select name="employee_id" class="form-control form-control-sm">
+                        <option value="">All Employees</option>
+                        @foreach($employees as $employee)
+                        <option value="{{ $employee->id }}" @selected((string) request('employee_id') === (string) $employee->id)>{{ $employee->employee_id }} - {{ $employee->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">From Date</label>
                     <input type="date" name="from_date" value="{{ request('from_date') }}" class="form-control form-control-sm">
@@ -95,6 +104,15 @@
                 <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">To Date</label>
                     <input type="date" name="to_date" value="{{ request('to_date') }}" class="form-control form-control-sm">
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label class="form-label mb-1">Status</label>
+                    <select name="status" class="form-control form-control-sm">
+                        <option value="">All Statuses</option>
+                        <option value="pending" @selected(request('status') === 'pending')>Pending</option>
+                        <option value="approved" @selected(request('status') === 'approved')>Approved</option>
+                        <option value="rejected" @selected(request('status') === 'rejected')>Rejected</option>
+                    </select>
                 </div>
                 <div class="col-md-2 mb-2">
                     <button class="btn btn-secondary btn-sm w-100">Filter</button>
@@ -114,7 +132,9 @@
                             <th>Account</th>
                             <th>Particular</th>
                             <th>Payment Method</th>
+                            <th>Employee</th>
                             <th>Total Amount</th>
+                            <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -128,7 +148,11 @@
                             <td>{{ $expense->account->name }}</td>
                             <td>{{ $detail && $detail->particular ? $detail->particular->code.' - '.$detail->particular->name : '-' }}</td>
                             <td>{{ $expense->paymentMethod->name }}</td>
+                            <td>{{ $expense->employee->name ?? '-' }}</td>
                             <td>{{ number_format($expense->total_amount, 2) }}</td>
+                            <td>
+                                <span class="badge {{ ['pending' => 'badge-warning', 'approved' => 'badge-success', 'rejected' => 'badge-danger'][$expense->status] ?? 'badge-secondary' }} p-1">{{ ucfirst($expense->status) }}</span>
+                            </td>
                             <td class="text-center">
                                 <button type="button" class="btn-custom btn-view-expense" title="View" data-url="{{ route('acc-sfl.expenses.show', $expense) }}">
                                     <i class="fa-solid fa-eye"></i>
@@ -136,13 +160,32 @@
                                 <a class="btn-custom" title="Print Slip" target="_blank" href="{{ route('acc-sfl.expenses.slip', $expense) }}">
                                     <i class="fa-solid fa-print"></i>
                                 </a>
+                                @can('ac_expense.approve')
+                                @if($expense->status === 'pending')
+                                <button type="button" class="btn-custom success" title="Approve" data-toggle="modal" data-target="#approveExpenseModal"
+                                    data-action="{{ route('acc-sfl.expenses.approve', $expense) }}">
+                                    <i class="fa-solid fa-check"></i>
+                                </button>
+                                <button type="button" class="btn-custom danger" title="Reject" data-toggle="modal" data-target="#rejectExpenseModal"
+                                    data-action="{{ route('acc-sfl.expenses.reject', $expense) }}">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                                @endif
+                                @endcan
                                 @can('ac_expense.edit')
+                                @if($expense->status === 'pending')
+                                <a class="btn-custom yellow" title="Edit" href="{{ route('acc-sfl.expenses.edit', $expense) }}">
+                                    <i class="fa-solid fa-pen"></i>
+                                </a>
+                                @else
                                 <button type="button" class="btn-custom yellow" title="Edit" data-toggle="modal" data-target="#editExpenseModal"
                                     data-action="{{ route('acc-sfl.expenses.update', $expense) }}"
                                     data-company="{{ $expense->company_name }}" data-receiver-name="{{ $expense->receiver_name }}"
-                                    data-receiver-mobile="{{ $expense->receiver_mobile }}" data-description="{{ $expense->description }}">
+                                    data-receiver-mobile="{{ $expense->receiver_mobile }}" data-invoice="{{ $expense->invoice }}"
+                                    data-employee-id="{{ $expense->employee_id }}" data-description="{{ $expense->description }}">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
+                                @endif
                                 @endcan
                                 @can('ac_expense.delete')
                                 <button type="button" class="btn-custom danger" title="Delete" data-toggle="modal" data-target="#deleteExpenseModal"
@@ -157,126 +200,6 @@
                 </table>
             </div>
             {{ $expenses->links('pagination::bootstrap-5') }}
-        </div>
-    </div>
-</div>
-
-{{-- Create Modal --}}
-<div class="modal fade" id="createExpenseModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <form method="POST" action="{{ route('acc-sfl.expenses.store') }}" enctype="multipart/form-data" id="createExpenseForm">
-                @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title">Add Expense</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6 form-group">
-                            <label>Expense Date <span class="text-danger">*</span></label>
-                            <input type="date" name="expense_date" class="form-control" value="{{ now()->toDateString() }}" required>
-                        </div>
-                        <div class="col-md-6 form-group">
-                            <label>Branch <span class="text-danger">*</span></label>
-                            <select name="branch_id" class="form-control" required>
-                                <option value="">-- Select --</option>
-                                @foreach($branches as $branch)
-                                <option value="{{ $branch->id }}" @selected($branches->count() === 1)>{{ $branch->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 form-group">
-                            <label>Account <span class="text-danger">*</span></label>
-                            <select name="account_id" class="form-control" required @disabled($accounts->count() === 1)>
-                                <option value="">-- Select --</option>
-                                @foreach($accounts as $account)
-                                <option value="{{ $account->id }}" @selected($accounts->count() === 1)>{{ $account->name }}</option>
-                                @endforeach
-                            </select>
-                            @if($accounts->count() === 1)
-                            <input type="hidden" name="account_id" value="{{ $accounts->first()->id }}">
-                            @endif
-                        </div>
-                        <div class="col-md-6 form-group">
-                            <label>Payment Method <span class="text-danger">*</span></label>
-                            <select name="payment_method_id" class="form-control" required>
-                                <option value="">-- Select --</option>
-                                @foreach($paymentMethods as $method)
-                                <option value="{{ $method->id }}">{{ $method->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4 form-group">
-                            <label>Company Name</label>
-                            <input type="text" name="company_name" class="form-control">
-                        </div>
-                        <div class="col-md-4 form-group">
-                            <label>Receiver Name</label>
-                            <input type="text" name="receiver_name" class="form-control">
-                        </div>
-                        <div class="col-md-4 form-group">
-                            <label>Receiver Mobile</label>
-                            <input type="text" name="receiver_mobile" class="form-control">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Particular <span class="text-danger">*</span></label>
-                        <select name="items[0][particular_id]" class="form-control" required>
-                            <option value="">-- Select --</option>
-                            @foreach($particulars as $master)
-                            <optgroup label="{{ $master->name }}">
-                                @foreach($master->particulars as $particular)
-                                <option value="{{ $particular->id }}">{{ $particular->code ? "{$particular->code} - " : '' }}{{ $particular->name }}</option>
-                                @endforeach
-                            </optgroup>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-4 form-group">
-                            <label>Qty</label>
-                            <input type="number" step="0.01" min="0.01" name="items[0][qty]" class="form-control item-qty">
-                        </div>
-                        <div class="col-md-4 form-group">
-                            <label>Rate</label>
-                            <input type="number" step="0.01" min="0" name="items[0][rate]" class="form-control item-rate" value="0">
-                        </div>
-                        <div class="col-md-4 form-group">
-                            <label>Amount</label>
-                            <input type="text" class="form-control item-amount" value="0.00" readonly>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 form-group">
-                            <label>Invoice</label>
-                            <input type="text" name="items[0][invoice]" class="form-control">
-                        </div>
-                        <div class="col-md-6 form-group">
-                            <label>UOM</label>
-                            <input type="text" name="items[0][uom]" class="form-control">
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Description</label>
-                        <textarea name="description" class="form-control" rows="3" data-tinymce="1"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Attachment</label>
-                        <input type="file" name="attachment" class="form-control-file">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Save</button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
@@ -305,6 +228,19 @@
                     <div class="form-group">
                         <label>Receiver Mobile</label>
                         <input type="text" name="receiver_mobile" id="edit_expense_receiver_mobile" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Invoice</label>
+                        <input type="text" name="invoice" id="edit_expense_invoice" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Employee</label>
+                        <select name="employee_id" id="edit_expense_employee" class="form-control">
+                            <option value="">-- None --</option>
+                            @foreach($employees as $employee)
+                            <option value="{{ $employee->id }}">{{ $employee->employee_id }} - {{ $employee->name }}</option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Description</label>
@@ -343,18 +279,63 @@
 </div>
 
 @include('acc-sfl::admin.partials.delete-confirm-modal', ['modalId' => 'deleteExpenseModal', 'label' => 'expense'])
+
+{{-- Approve Modal --}}
+<div class="modal fade" id="approveExpenseModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="POST" id="approveExpenseForm">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title">Approve Expense</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2">Approving posts this expense to the ledger and deducts it from the account balance. Continue?</p>
+                    <div class="form-group mb-0">
+                        <label>Remarks (optional)</label>
+                        <textarea name="remarks" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success btn-sm"><i class="fa-solid fa-check mr-1"></i> Approve</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Reject Modal --}}
+<div class="modal fade" id="rejectExpenseModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="POST" id="rejectExpenseForm">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title">Reject Expense</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-0">
+                        <label>Remarks <span class="text-danger">*</span></label>
+                        <textarea name="remarks" class="form-control" rows="2" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-xmark mr-1"></i> Reject</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('js')
 @include('acc-sfl::admin.partials.select2-init')
 <script src="https://cdn.jsdelivr.net/npm/tinymce@6.8.5/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
-    function acRecalculateExpenseTotal() {
-        var qty = parseFloat($('#createExpenseModal .item-qty').val()) || 0;
-        var rate = parseFloat($('#createExpenseModal .item-rate').val()) || 0;
-        $('#createExpenseModal .item-amount').val((qty * rate).toFixed(2));
-    }
-
     function acInitExpenseRichText(modal) {
         if (typeof tinymce === 'undefined') {
             return;
@@ -373,18 +354,16 @@
     }
 
     $(function () {
-        $('#createExpenseModal').on('input', '.item-qty, .item-rate', function () {
-            acRecalculateExpenseTotal();
-        });
-
-        $('#createExpenseModal').on('hidden.bs.modal', function () {
-            document.getElementById('createExpenseForm').reset();
-            $(this).find('select').trigger('change');
-            acRecalculateExpenseTotal();
-        });
-
-        $('#createExpenseModal, #editExpenseModal').on('shown.bs.modal', function () {
+        $('#editExpenseModal').on('shown.bs.modal', function () {
             acInitExpenseRichText(this);
+        });
+
+        $('#approveExpenseModal').on('show.bs.modal', function (event) {
+            $(this).find('form').attr('action', $(event.relatedTarget).data('action'));
+        });
+
+        $('#rejectExpenseModal').on('show.bs.modal', function (event) {
+            $(this).find('form').attr('action', $(event.relatedTarget).data('action'));
         });
 
         $('.btn-view-expense').on('click', function () {
@@ -404,6 +383,8 @@
             $('#edit_expense_company').val(btn.data('company'));
             $('#edit_expense_receiver_name').val(btn.data('receiver-name'));
             $('#edit_expense_receiver_mobile').val(btn.data('receiver-mobile'));
+            $('#edit_expense_invoice').val(btn.data('invoice'));
+            $('#edit_expense_employee').val(btn.data('employee-id') || '').trigger('change');
             $('#edit_expense_description').val(btn.data('description'));
         });
     });

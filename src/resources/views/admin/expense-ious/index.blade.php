@@ -103,7 +103,7 @@
                             <td>{{ $iou->issue_date->format('d M Y') }}</td>
                             <td>{{ $iou->branch->name }}</td>
                             <td>{{ $iou->account->name }}</td>
-                            <td>{{ $iou->employee->name ?? $iou->receiver_name ?? '-' }}</td>
+                            <td>{{ $iou->employee->name ?? '-' }}</td>
                             <td>{{ number_format($iou->amount, 2) }}</td>
                             <td>
                                 <span class="badge {{ $iou->status === 'Adjusted' ? 'badge-success' : 'badge-warning' }} p-1">{{ $iou->status }}</span>
@@ -123,15 +123,13 @@
                                     data-branch="{{ $iou->branch->name }}" data-account="{{ $iou->account->name }}"
                                     data-employee="{{ $iou->employee->name ?? '-' }}" data-payment-method="{{ $iou->paymentMethod->name }}"
                                     data-amount="{{ number_format($iou->amount, 2) }}" data-status="{{ $iou->status }}"
-                                    data-description="{{ $iou->description }}" data-receiver-name="{{ $iou->receiver_name }}"
-                                    data-receiver-mobile="{{ $iou->receiver_mobile }}">
+                                    data-description="{{ $iou->description }}">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
                                 @can('ac_expense_iou.edit')
                                 <button type="button" class="btn-custom yellow" title="Edit" data-toggle="modal" data-target="#editIouModal"
                                     data-action="{{ route('acc-sfl.expense-ious.update', $iou) }}"
-                                    data-description="{{ $iou->description }}" data-receiver-name="{{ $iou->receiver_name }}"
-                                    data-receiver-mobile="{{ $iou->receiver_mobile }}">
+                                    data-description="{{ $iou->description }}">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
                                 @endcan
@@ -198,9 +196,9 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Employee (optional)</label>
-                        <select name="employee_id" class="form-control">
-                            <option value="">-- None --</option>
+                        <label>Employee <span class="text-danger">*</span></label>
+                        <select name="employee_id" class="form-control" required>
+                            <option value="">-- Select --</option>
                             @foreach($employees as $employee)
                             <option value="{{ $employee->id }}">{{ $employee->employee_id }} - {{ $employee->name }}{{ $employee->department ? ' ('.$employee->department->name.(($employee->designation) ? ' / '.$employee->designation->name : '').')' : '' }}</option>
                             @endforeach
@@ -209,14 +207,6 @@
                     <div class="form-group">
                         <label>Amount <span class="text-danger">*</span></label>
                         <input type="number" step="0.01" min="0.01" name="amount" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Receiver Name</label>
-                        <input type="text" name="receiver_name" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>Receiver Mobile</label>
-                        <input type="text" name="receiver_mobile" class="form-control">
                     </div>
                     <div class="form-group">
                         <label>Description</label>
@@ -244,15 +234,7 @@
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-muted small">Account, amount and dates are locked after issue. Only receiver/description can be updated.</p>
-                    <div class="form-group">
-                        <label>Receiver Name</label>
-                        <input type="text" name="receiver_name" id="edit_iou_receiver_name" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>Receiver Mobile</label>
-                        <input type="text" name="receiver_mobile" id="edit_iou_receiver_mobile" class="form-control">
-                    </div>
+                    <p class="text-muted small">Employee, account, amount and dates are locked after issue. Only the description can be updated.</p>
                     <div class="form-group">
                         <label>Description</label>
                         <textarea name="description" id="edit_iou_description" class="form-control" rows="2"></textarea>
@@ -312,7 +294,6 @@
                     <tr><th>Payment Method</th><td id="view_iou_payment_method"></td></tr>
                     <tr><th>Amount</th><td id="view_iou_amount"></td></tr>
                     <tr><th>Status</th><td id="view_iou_status"></td></tr>
-                    <tr><th>Receiver</th><td id="view_iou_receiver"></td></tr>
                     <tr><th>Description</th><td id="view_iou_description"></td></tr>
                 </table>
             </div>
@@ -333,8 +314,6 @@
         $('#editIouModal').on('show.bs.modal', function (event) {
             var btn = $(event.relatedTarget);
             $(this).find('form').attr('action', btn.data('action'));
-            $('#edit_iou_receiver_name').val(btn.data('receiver-name'));
-            $('#edit_iou_receiver_mobile').val(btn.data('receiver-mobile'));
             $('#edit_iou_description').val(btn.data('description'));
         });
 
@@ -355,9 +334,6 @@
             $('#view_iou_payment_method').text(btn.data('payment-method'));
             $('#view_iou_amount').text(btn.data('amount'));
             $('#view_iou_status').text(btn.data('status'));
-            var receiver = btn.data('receiver-name') || '-';
-            if (btn.data('receiver-mobile')) { receiver += ' (' + btn.data('receiver-mobile') + ')'; }
-            $('#view_iou_receiver').text(receiver);
             $('#view_iou_description').text(btn.data('description') || '-');
         });
     });

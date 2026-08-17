@@ -18,6 +18,10 @@ class AcExpense extends Model
 
     protected $table = 'ac_expenses';
 
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_APPROVED = 'approved';
+    public const STATUS_REJECTED = 'rejected';
+
     protected $fillable = [
         'expense_no',
         'expense_date',
@@ -27,15 +31,22 @@ class AcExpense extends Model
         'company_name',
         'receiver_name',
         'receiver_mobile',
+        'employee_id',
+        'invoice',
         'total_amount',
         'description',
         'attachment',
         'created_by',
+        'status',
+        'approved_by',
+        'approved_at',
+        'approval_remarks',
     ];
 
     protected $casts = [
         'expense_date' => 'date',
         'total_amount' => 'decimal:2',
+        'approved_at' => 'datetime',
     ];
 
     public function branch(): BelongsTo
@@ -56,6 +67,36 @@ class AcExpense extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class, 'created_by');
+    }
+
+    /**
+     * References an HR employee (ME\Hr\Models\HrEmployee), not a system login user - mirrors
+     * AcExpenseIou::employee(). HR is an optional integration for this module, so this class
+     * is referenced by name only when the relation is actually used.
+     */
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(\ME\Hr\Models\HrEmployee::class, 'employee_id');
+    }
+
+    public function approver(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'approved_by');
+    }
+
+    public function scopePending($query)
+    {
+        return $query->where('status', self::STATUS_PENDING);
+    }
+
+    public function scopeApproved($query)
+    {
+        return $query->where('status', self::STATUS_APPROVED);
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->where('status', self::STATUS_REJECTED);
     }
 
     public function details(): HasMany

@@ -74,9 +74,11 @@ Route::middleware($route['middleware'] ?? ['web', 'auth'])
         // Registered before the resource's GET {expense} show route so the literal
         // "import" segment isn't swallowed as an expense id.
         Route::get('expenses/import', [ExpenseImportController::class, 'create'])->name('expenses.import');
-        Route::resource('expenses', ExpenseController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+        Route::resource('expenses', ExpenseController::class)->only(['index', 'create', 'edit', 'show', 'store', 'update', 'destroy']);
         Route::get('expenses/print', [ExpenseController::class, 'print'])->name('expenses.print');
         Route::get('expenses/{expense}/slip', [ExpenseController::class, 'slip'])->name('expenses.slip');
+        Route::post('expenses/{expense}/approve', [ExpenseController::class, 'approve'])->name('expenses.approve');
+        Route::post('expenses/{expense}/reject', [ExpenseController::class, 'reject'])->name('expenses.reject');
         Route::get('expenses/export', [ExpenseController::class, 'export'])->name('expenses.export');
         Route::post('expenses/import/preview', [ExpenseImportController::class, 'preview'])->name('expenses.import.preview');
         Route::post('expenses/import/save', [ExpenseImportController::class, 'save'])->name('expenses.import.save');

@@ -78,12 +78,31 @@
                     </select>
                 </div>
                 <div class="col-md-2 mb-2">
+                    <label class="form-label mb-1">Employee</label>
+                    <select name="employee_id" class="form-control form-control-sm">
+                        <option value="">All Employees</option>
+                        @foreach($employees as $employee)
+                        <option value="{{ $employee->id }}" @selected((string) request('employee_id') === (string) $employee->id)>{{ $employee->employee_id }} - {{ $employee->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">From Date</label>
                     <input type="date" name="from_date" value="{{ request('from_date') }}" class="form-control form-control-sm">
                 </div>
                 <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">To Date</label>
                     <input type="date" name="to_date" value="{{ request('to_date') }}" class="form-control form-control-sm">
+                </div>
+                <div class="col-md-2 mb-2">
+                    <label class="form-label mb-1">Status</label>
+                    @php($currentStatus = request('status', 'approved'))
+                    <select name="status" class="form-control form-control-sm">
+                        <option value="approved" @selected($currentStatus === 'approved')>Approved</option>
+                        <option value="pending" @selected($currentStatus === 'pending')>Pending</option>
+                        <option value="rejected" @selected($currentStatus === 'rejected')>Rejected</option>
+                        <option value="all" @selected($currentStatus === 'all')>All</option>
+                    </select>
                 </div>
                 {{-- <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Min Amount</label>
@@ -100,46 +119,48 @@
                     <a href="{{ route('acc-sfl.reports.expense.index') }}" class="btn btn-light btn-sm w-100">Reset</a>
                 </div>
                 <div class="col-md-2 mb-2 offset-md-2">
-                    {{-- <a href="{{ route('acc-sfl.reports.expense.index') }}" class="btn btn-light btn-sm w-100">Reset</a> --}}
-                    <div class="badge badge-primary p-2" style="font-size: 0.85rem;">Total Amount: BDT {{ number_format($totals['amount'], 2) }}</div>
+                    <div class="badge badge-primary p-2" style="font-size: 0.85rem;">Total Expense: BDT {{ number_format($totals['amount'], 2) }}</div>
                 </div>
             </form>
-
-            {{-- <div class="d-flex gap-3 mb-3">
-                <div class="badge badge-success p-2" style="font-size: 0.85rem;">Records: {{ $totals['count'] }}</div>
-            </div> --}}
 
             <div class="table-responsive">
                 <table class="table table-bordered table-sm mb-0">
                     <thead>
                         <tr>
-                            <th>Expense No.</th>
+                            <th>Month</th>
                             <th>Date</th>
-                            <th>Branch</th>
-                            <th>Account</th>
-                            <th>Payment Method</th>
                             <th>Particular</th>
-                            <th>Amount</th>
-                            <th>Receiver</th>
                             <th>Description</th>
+                            <th>A/C Code</th>
+                            <th>Invoice / Challan No.</th>
+                            <th>Receiver</th>
+                            <th>Qty</th>
+                            <th>Unit of Measure</th>
+                            <th>Rate</th>
+                            <th>Expense</th>
+                            <th>Balance</th>
+                            <th>Remarks</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($expenses as $expense)
-                        @php($detail = $expense->details->first())
+                        @forelse($rows as $row)
                         <tr>
-                            <td>{{ $expense->expense_no }}</td>
-                            <td>{{ $expense->expense_date->format('d M Y') }}</td>
-                            <td>{{ $expense->branch->name ?? '-' }}</td>
-                            <td>{{ $expense->account->name ?? '-' }}</td>
-                            <td>{{ $expense->paymentMethod->name ?? '-' }}</td>
-                            <td>{{ $detail && $detail->particular ? $detail->particular->code.' - '.$detail->particular->name : '-' }}</td>
-                            <td class="text-right">{{ number_format($expense->total_amount, 2) }}</td>
-                            <td>{{ $expense->receiver_name ?: '-' }}</td>
-                            <td>{{ $expense->description ?: '-' }}</td>
+                            <td>{{ $row['date'] ? strtoupper($row['date']->format('F')) : '-' }}</td>
+                            <td>{{ $row['date']?->format('d-m-y') ?? '-' }}</td>
+                            <td>{{ $row['particular'] ?: '-' }}</td>
+                            <td>{{ $row['description'] ?: '-' }}</td>
+                            <td>{{ $row['ac_code'] ?: '-' }}</td>
+                            <td>{{ $row['invoice'] ?: '-' }}</td>
+                            <td>{{ $row['receiver'] ?: '-' }}</td>
+                            <td class="text-right">{{ $row['qty'] !== null ? number_format($row['qty'], 2) : '-' }}</td>
+                            <td>{{ $row['uom'] ?: '-' }}</td>
+                            <td class="text-right">{{ $row['rate'] !== null ? number_format($row['rate'], 2) : '-' }}</td>
+                            <td class="text-right">{{ number_format($row['expense'], 2) }}</td>
+                            <td class="text-right">{{ $row['balance'] !== null ? number_format($row['balance'], 2) : '-' }}</td>
+                            <td>{{ $row['remarks'] ?: '-' }}</td>
                         </tr>
                         @empty
-                        <tr><td colspan="9" class="text-center">No data available.</td></tr>
+                        <tr><td colspan="13" class="text-center">No data available.</td></tr>
                         @endforelse
                     </tbody>
                 </table>

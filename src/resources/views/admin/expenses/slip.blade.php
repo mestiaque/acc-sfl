@@ -36,6 +36,12 @@
         <div><span class="slip-label">Branch:</span> {{ $expense->branch->name }}</div>
         <div><span class="slip-label">Account:</span> {{ $expense->account->name }}</div>
         <div><span class="slip-label">Payment Method:</span> {{ $expense->paymentMethod->name }}</div>
+        @if($expense->employee)
+        <div><span class="slip-label">Employee:</span> {{ $expense->employee->name }}</div>
+        @endif
+        @if($expense->invoice)
+        <div><span class="slip-label">Invoice:</span> {{ $expense->invoice }}</div>
+        @endif
     </div>
 
     <div class="slip-field">
@@ -51,7 +57,6 @@
         <thead>
             <tr>
                 <th>Cash Paid To</th>
-                <th>Invoice</th>
                 <th class="text-right">Qty</th>
                 <th>UOM</th>
                 <th class="text-right">Rate</th>
@@ -62,7 +67,6 @@
             @forelse($expense->details as $detail)
             <tr>
                 <td>{{ $detail->particular->name ?? $expense->description }}</td>
-                <td>{{ $detail->invoice ?: '-' }}</td>
                 <td class="text-right">{{ number_format($detail->qty, 2) }}</td>
                 <td>{{ $detail->uom ?: '-' }}</td>
                 <td class="text-right">{{ number_format($detail->rate, 2) }}</td>
@@ -71,17 +75,17 @@
             @empty
             <tr>
                 <td>{{ $expense->description ?: '-' }}</td>
-                <td>-</td><td class="text-right">-</td><td>-</td><td class="text-right">-</td>
+                <td class="text-right">-</td><td>-</td><td class="text-right">-</td>
                 <td class="text-right">{{ number_format($expense->total_amount, 2) }}</td>
             </tr>
             @endforelse
             @for($i = 0; $i < max(0, 3 - $expense->details->count()); $i++)
-            <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>
             @endfor
         </tbody>
         <tfoot>
             <tr>
-                <th colspan="5" class="text-right">Total</th>
+                <th colspan="4" class="text-right">Total</th>
                 <th class="text-right">{{ number_format($expense->total_amount, 2) }}</th>
             </tr>
         </tfoot>

@@ -1,39 +1,46 @@
 <table>
     <thead>
         <tr>
-            <th>Expense No.</th>
+            <th>Month</th>
             <th>Date</th>
-            <th>Branch</th>
-            <th>Account</th>
-            <th>Payment Method</th>
             <th>Particular</th>
-            <th>Amount</th>
-            <th>Receiver</th>
             <th>Description</th>
+            <th>A/C Code</th>
+            <th>Invoice / Challan No.</th>
+            <th>Receiver</th>
+            <th>Qty</th>
+            <th>Unit of Measure</th>
+            <th>Rate</th>
+            <th>Expense</th>
+            <th>Balance</th>
+            <th>Remarks</th>
         </tr>
     </thead>
     <tbody>
-        @forelse($expenses as $expense)
-        @php($detail = $expense->details->first())
+        @forelse($rows as $row)
         <tr>
-            <td>{{ $expense->expense_no }}</td>
-            <td>{{ $expense->expense_date->format('d M Y') }}</td>
-            <td>{{ $expense->branch->name ?? '-' }}</td>
-            <td>{{ $expense->account->name ?? '-' }}</td>
-            <td>{{ $expense->paymentMethod->name ?? '-' }}</td>
-            <td>{{ $detail && $detail->particular ? $detail->particular->code.' - '.$detail->particular->name : '-' }}</td>
-            <td class="text-right">{{ number_format($expense->total_amount, 2) }}</td>
-            <td>{{ $expense->receiver_name ?: '-' }}</td>
-            <td>{{ $expense->description ?: '-' }}</td>
+            <td>{{ $row['date'] ? strtoupper($row['date']->format('F')) : '-' }}</td>
+            <td>{{ $row['date']?->format('d-m-y') ?? '-' }}</td>
+            <td>{{ $row['particular'] ?: '-' }}</td>
+            <td>{{ $row['description'] ?: '-' }}</td>
+            <td>{{ $row['ac_code'] ?: '-' }}</td>
+            <td>{{ $row['invoice'] ?: '-' }}</td>
+            <td>{{ $row['receiver'] ?: '-' }}</td>
+            <td style="text-align:right">{{ $row['qty'] !== null ? number_format($row['qty'], 2) : '-' }}</td>
+            <td>{{ $row['uom'] ?: '-' }}</td>
+            <td style="text-align:right">{{ $row['rate'] !== null ? number_format($row['rate'], 2) : '-' }}</td>
+            <td style="text-align:right">{{ number_format($row['expense'], 2) }}</td>
+            <td style="text-align:right">{{ $row['balance'] !== null ? number_format($row['balance'], 2) : '-' }}</td>
+            <td>{{ $row['remarks'] ?: '-' }}</td>
         </tr>
         @empty
-        <tr><td colspan="9" style="text-align:center">No data available.</td></tr>
+        <tr><td colspan="13" style="text-align:center">No data available.</td></tr>
         @endforelse
     </tbody>
     @if($totals['count'] > 0)
     <tfoot>
         <tr class="grandtotal-row">
-            <th colspan="6" style="text-align:right">TOTAL ({{ $totals['count'] }} records)</th>
+            <th colspan="10" style="text-align:right">TOTAL ({{ $totals['count'] }} records)</th>
             <th style="text-align:right">{{ number_format($totals['amount'], 2) }}</th>
             <th colspan="2"></th>
         </tr>

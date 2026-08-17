@@ -21,21 +21,17 @@ class ExpenseIouRequest extends FormRequest
         if ($this->route('expense_iou')) {
             return [
                 'description' => ['nullable', 'string'],
-                'receiver_name' => ['nullable', 'string', 'max:255'],
-                'receiver_mobile' => ['nullable', 'string', 'max:30'],
             ];
         }
 
         return [
             'account_id' => ['required', 'integer', 'exists:ac_accounts,id'],
-            'employee_id' => ['nullable', 'integer', 'exists:hr_employees,id'],
+            'employee_id' => ['required', 'integer', 'exists:hr_employees,id'],
             'payment_method_id' => ['required', 'integer', 'exists:ac_payment_methods,id'],
             'branch_id' => ['required', 'integer', 'exists:ac_branches,id'],
             'issue_date' => ['required', 'date'],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'description' => ['nullable', 'string'],
-            'receiver_name' => ['nullable', 'string', 'max:255'],
-            'receiver_mobile' => ['nullable', 'string', 'max:30'],
         ];
     }
 }
