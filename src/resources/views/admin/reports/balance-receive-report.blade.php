@@ -78,6 +78,18 @@
                     <label class="form-label mb-1">To Date</label>
                     <input type="date" name="to_date" value="{{ request('to_date') }}" class="form-control form-control-sm">
                 </div>
+                <div class="col-md-2 mb-2">
+                    <label class="form-label mb-1">Status</label>
+                    @php
+                        $currentStatus = request('status', 'approved');
+                    @endphp
+                    <select name="status" class="form-control form-control-sm">
+                        <option value="approved" @selected($currentStatus === 'approved')>Approved</option>
+                        <option value="pending" @selected($currentStatus === 'pending')>Pending</option>
+                        <option value="rejected" @selected($currentStatus === 'rejected')>Rejected</option>
+                        <option value="all" @selected($currentStatus === 'all')>All</option>
+                    </select>
+                </div>
                 {{-- <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Min Amount</label>
                     <input type="number" step="0.01" name="min_amount" value="{{ request('min_amount') }}" class="form-control form-control-sm">

@@ -32,7 +32,7 @@ return [
         ],
         'ac_balance_receive' => [
             'label' => 'Balance Receive',
-            'permissions' => ['list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'import' => 'Import', 'all' => 'All'],
+            'permissions' => ['list' => 'List', 'add' => 'Create', 'edit' => 'Edit', 'view' => 'View', 'delete' => 'Delete', 'force_delete' => 'Force Delete', 'import' => 'Import', 'approve' => 'Approve', 'all' => 'All'],
         ],
         'ac_expense' => [
             'label' => 'Expense',

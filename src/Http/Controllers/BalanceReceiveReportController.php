@@ -87,7 +87,17 @@ class BalanceReceiveReportController extends Controller
             ->when($request->filled('from_date'), fn ($q) => $q->whereDate('receive_date', '>=', $request->date('from_date')))
             ->when($request->filled('to_date'), fn ($q) => $q->whereDate('receive_date', '<=', $request->date('to_date')))
             ->when($request->filled('min_amount'), fn ($q) => $q->where('amount', '>=', $request->float('min_amount')))
-            ->when($request->filled('max_amount'), fn ($q) => $q->where('amount', '<=', $request->float('max_amount')));
+            ->when($request->filled('max_amount'), fn ($q) => $q->where('amount', '<=', $request->float('max_amount')))
+            ->when(
+                $request->filled('status') && $request->input('status') !== 'all',
+                fn ($q) => $q->where('status', $request->input('status')),
+                // Unapproved balance receives haven't posted to the ledger and shouldn't appear
+                // in reports by default; pass ?status=pending/rejected to see them, or ?status=all for everything.
+                fn ($q) => $q->when(
+                    !$request->filled('status'),
+                    fn ($q2) => $q2->where('status', AcBalanceReceive::STATUS_APPROVED)
+                )
+            );
     }
 
     private function totals(Request $request): array

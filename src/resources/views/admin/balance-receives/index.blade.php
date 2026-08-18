@@ -88,6 +88,15 @@
                     <input type="date" name="to_date" value="{{ request('to_date') }}" class="form-control form-control-sm">
                 </div>
                 <div class="col-md-2 mb-2">
+                    <label class="form-label mb-1">Status</label>
+                    <select name="status" class="form-control form-control-sm">
+                        <option value="">All Statuses</option>
+                        <option value="pending" @selected(request('status') === 'pending')>Pending</option>
+                        <option value="approved" @selected(request('status') === 'approved')>Approved</option>
+                        <option value="rejected" @selected(request('status') === 'rejected')>Rejected</option>
+                    </select>
+                </div>
+                <div class="col-md-2 mb-2">
                     <button class="btn btn-secondary btn-sm w-100">Filter</button>
                 </div>
                 <div class="col-md-2 mb-2">
@@ -105,6 +114,7 @@
                             <th>Account</th>
                             <th>Particular</th>
                             <th>Amount</th>
+                            <th>Status</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -117,6 +127,9 @@
                             <td>{{ $receive->account->name }}</td>
                             <td>{{ $receive->particular->code }} - {{ $receive->particular->name }}</td>
                             <td>{{ number_format($receive->amount, 2) }}</td>
+                            <td>
+                                <span class="badge {{ ['pending' => 'badge-warning', 'approved' => 'badge-success', 'rejected' => 'badge-danger'][$receive->status] ?? 'badge-secondary' }} p-1">{{ ucfirst($receive->status) }}</span>
+                            </td>
                             <td class="text-center">
                                 <button type="button" class="btn-custom" title="View" data-toggle="modal" data-target="#viewReceiveModal"
                                     data-no="{{ $receive->receive_no }}" data-date="{{ $receive->receive_date->format('d M Y') }}"
@@ -127,6 +140,18 @@
                                     data-creator="{{ $receive->creator->name ?? '-' }}">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
+                                @can('ac_balance_receive.approve')
+                                @if($receive->status === 'pending')
+                                <button type="button" class="btn-custom success" title="Approve" data-toggle="modal" data-target="#approveReceiveModal"
+                                    data-action="{{ route('acc-sfl.balance-receives.approve', $receive) }}">
+                                    <i class="fa-solid fa-check"></i>
+                                </button>
+                                <button type="button" class="btn-custom danger" title="Reject" data-toggle="modal" data-target="#rejectReceiveModal"
+                                    data-action="{{ route('acc-sfl.balance-receives.reject', $receive) }}">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                                @endif
+                                @endcan
                                 @can('ac_balance_receive.edit')
                                 <button type="button" class="btn-custom yellow" title="Edit" data-toggle="modal" data-target="#editReceiveModal"
                                     data-action="{{ route('acc-sfl.balance-receives.update', $receive) }}"
@@ -135,10 +160,20 @@
                                 </button>
                                 @endcan
                                 @can('ac_balance_receive.delete')
+                                @if($receive->status !== 'approved')
                                 <button type="button" class="btn-custom danger" title="Delete" data-toggle="modal" data-target="#deleteReceiveModal"
                                     data-action="{{ route('acc-sfl.balance-receives.destroy', $receive) }}">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
+                                @endif
+                                @endcan
+                                @can('ac_balance_receive.force_delete')
+                                @if($receive->status === 'approved')
+                                <button type="button" class="btn-custom danger d-none" title="Force Delete (reverses posted transaction)" data-toggle="modal" data-target="#forceDeleteReceiveModal"
+                                    data-action="{{ route('acc-sfl.balance-receives.force-delete', $receive) }}">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                                @endif
                                 @endcan
                             </td>
                         </tr>
@@ -282,12 +317,77 @@
 </div>
 
 @include('acc-sfl::admin.partials.delete-confirm-modal', ['modalId' => 'deleteReceiveModal', 'label' => 'balance receive'])
+@include('acc-sfl::admin.partials.delete-confirm-modal', [
+    'modalId' => 'forceDeleteReceiveModal',
+    'title' => 'Confirm Force Delete',
+    'warning' => 'This balance receive has already been approved and posted to the ledger. Force deleting it will reverse the posted transaction (restoring the account balance) and PERMANENTLY delete it — this cannot be undone.',
+    'buttonLabel' => 'Force Delete',
+])
+
+{{-- Approve Modal --}}
+<div class="modal fade" id="approveReceiveModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="POST" id="approveReceiveForm">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title">Approve Balance Receive</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2">Approving posts this balance receive to the ledger and adds it to the account balance. Continue?</p>
+                    <div class="form-group mb-0">
+                        <label>Remarks (optional)</label>
+                        <textarea name="remarks" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success btn-sm"><i class="fa-solid fa-check mr-1"></i> Approve</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Reject Modal --}}
+<div class="modal fade" id="rejectReceiveModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="POST" id="rejectReceiveForm">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title">Reject Balance Receive</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-0">
+                        <label>Remarks <span class="text-danger">*</span></label>
+                        <textarea name="remarks" class="form-control" rows="2" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-xmark mr-1"></i> Reject</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('js')
 @include('acc-sfl::admin.partials.select2-init')
 <script>
     $(function () {
+        $('#approveReceiveModal').on('show.bs.modal', function (event) {
+            $(this).find('form').attr('action', $(event.relatedTarget).data('action'));
+        });
+
+        $('#rejectReceiveModal').on('show.bs.modal', function (event) {
+            $(this).find('form').attr('action', $(event.relatedTarget).data('action'));
+        });
+
         $('#editReceiveModal').on('show.bs.modal', function (event) {
             var btn = $(event.relatedTarget);
             $(this).find('form').attr('action', btn.data('action'));

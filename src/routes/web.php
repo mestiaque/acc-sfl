@@ -64,6 +64,9 @@ Route::middleware($route['middleware'] ?? ['web', 'auth'])
         Route::resource('balance-receives', BalanceReceiveController::class)
             ->parameters(['balance-receives' => 'balance_receive'])
             ->only(['index', 'store', 'update', 'destroy']);
+        Route::post('balance-receives/{balance_receive}/approve', [BalanceReceiveController::class, 'approve'])->name('balance-receives.approve');
+        Route::post('balance-receives/{balance_receive}/reject', [BalanceReceiveController::class, 'reject'])->name('balance-receives.reject');
+        Route::delete('balance-receives/{balance_receive}/force-delete', [BalanceReceiveController::class, 'forceDestroy'])->name('balance-receives.force-delete');
         Route::get('balance-receives/print', [BalanceReceiveController::class, 'print'])->name('balance-receives.print');
         Route::get('balance-receives/export', [BalanceReceiveController::class, 'export'])->name('balance-receives.export');
         Route::get('balance-receives/import', [BalanceReceiveImportController::class, 'create'])->name('balance-receives.import');
