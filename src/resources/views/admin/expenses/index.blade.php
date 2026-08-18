@@ -140,7 +140,9 @@
                     </thead>
                     <tbody>
                         @foreach($expenses as $expense)
-                        @php($detail = $expense->details->first())
+                        @php
+                            $detail = $expense->details->first();
+                        @endphp
                         <tr>
                             <td>{{ $expense->expense_no }}</td>
                             <td>{{ $expense->expense_date->format('d M Y') }}</td>

@@ -4,6 +4,7 @@ namespace ME\AccSfl\Http\Controllers;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use ME\AccSfl\Exports\BalanceReceiveReportExport;
@@ -20,10 +21,11 @@ class BalanceReceiveReportController extends Controller
         $this->authorize('ac_report.view');
 
         $receives = $this->filteredQuery($request)->latest('receive_date')->latest('id')->paginate(20)->withQueryString();
+        $grouped = $this->groupByParticularCode($receives->getCollection());
         $totals = $this->totals($request);
 
         return view('acc-sfl::admin.reports.balance-receive-report', array_merge(
-            compact('receives', 'totals'),
+            compact('receives', 'grouped', 'totals'),
             $this->filterOptions(),
         ));
     }
@@ -33,9 +35,10 @@ class BalanceReceiveReportController extends Controller
         $this->authorize('ac_report.export');
 
         $receives = $this->filteredQuery($request)->latest('receive_date')->latest('id')->get();
+        $grouped = $this->groupByParticularCode($receives);
         $totals = $this->totals($request);
 
-        return view('acc-sfl::admin.reports.balance-receive-report-print', compact('receives', 'totals'));
+        return view('acc-sfl::admin.reports.balance-receive-report-print', compact('grouped', 'totals'));
     }
 
     public function export(Request $request): BinaryFileResponse
@@ -43,9 +46,23 @@ class BalanceReceiveReportController extends Controller
         $this->authorize('ac_report.export');
 
         $receives = $this->filteredQuery($request)->latest('receive_date')->latest('id')->get();
+        $grouped = $this->groupByParticularCode($receives);
         $totals = $this->totals($request);
 
-        return Excel::download(new BalanceReceiveReportExport($receives, $totals), 'balance-receive-report.xlsx');
+        return Excel::download(new BalanceReceiveReportExport($grouped, $totals), 'balance-receive-report.xlsx');
+    }
+
+    /**
+     * Groups by particular code (not master particular - AcMasterParticular has no code
+     * column, see AcParticular::code) so each group's header/subtotal lines up with the
+     * A/C Code column already shown per row. Rows are sorted chronologically within each
+     * group since the base query orders by receive_date desc for pagination purposes only.
+     */
+    private function groupByParticularCode(Collection $receives): Collection
+    {
+        return $receives->sortBy('receive_date')->values()
+            ->groupBy(fn ($receive) => $receive->particular?->code ?? 'N/A')
+            ->sortKeys();
     }
 
     private function filteredQuery(Request $request): Builder
@@ -66,7 +83,7 @@ class BalanceReceiveReportController extends Controller
                 'particular',
                 fn ($p) => $p->where('master_particular_id', $request->integer('master_particular_id'))
             ))
-            ->when($request->filled('particular_id'), fn ($q) => $q->where('particular_id', $request->integer('particular_id')))
+            ->when($request->filled('particular_id'), fn ($q) => $q->whereIn('particular_id', (array) $request->input('particular_id')))
             ->when($request->filled('from_date'), fn ($q) => $q->whereDate('receive_date', '>=', $request->date('from_date')))
             ->when($request->filled('to_date'), fn ($q) => $q->whereDate('receive_date', '<=', $request->date('to_date')))
             ->when($request->filled('min_amount'), fn ($q) => $q->where('amount', '>=', $request->float('min_amount')))

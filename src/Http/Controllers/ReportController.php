@@ -25,11 +25,11 @@ class ReportController extends Controller
     {
         $this->authorize('ac_report.view');
 
-        [$year, $month, $branchId, $accountId, $masterParticularId, $particularId] = $this->monthlyParams($request);
-        $report = $this->reports->monthly($year, $month, $branchId, $accountId, $masterParticularId, $particularId);
+        [$year, $month, $branchId, $accountId, $masterParticularId, $particularIds] = $this->monthlyParams($request);
+        $report = $this->reports->monthly($year, $month, $branchId, $accountId, $masterParticularId, $particularIds);
 
         return view('acc-sfl::admin.reports.cash-flow-monthly', array_merge(
-            compact('report', 'branchId', 'accountId', 'masterParticularId', 'particularId'),
+            compact('report', 'branchId', 'accountId', 'masterParticularId', 'particularIds'),
             $this->filterOptions(),
         ));
     }
@@ -38,8 +38,8 @@ class ReportController extends Controller
     {
         $this->authorize('ac_report.export');
 
-        [$year, $month, $branchId, $accountId, $masterParticularId, $particularId] = $this->monthlyParams($request);
-        $report = $this->reports->monthly($year, $month, $branchId, $accountId, $masterParticularId, $particularId);
+        [$year, $month, $branchId, $accountId, $masterParticularId, $particularIds] = $this->monthlyParams($request);
+        $report = $this->reports->monthly($year, $month, $branchId, $accountId, $masterParticularId, $particularIds);
 
         return view('acc-sfl::admin.reports.cash-flow-monthly-print', compact('report'));
     }
@@ -48,8 +48,8 @@ class ReportController extends Controller
     {
         $this->authorize('ac_report.export');
 
-        [$year, $month, $branchId, $accountId, $masterParticularId, $particularId] = $this->monthlyParams($request);
-        $report = $this->reports->monthly($year, $month, $branchId, $accountId, $masterParticularId, $particularId);
+        [$year, $month, $branchId, $accountId, $masterParticularId, $particularIds] = $this->monthlyParams($request);
+        $report = $this->reports->monthly($year, $month, $branchId, $accountId, $masterParticularId, $particularIds);
 
         return Excel::download(new CashFlowMonthlyExport($report), "cash-flow-{$report['label']}.xlsx");
     }
@@ -58,12 +58,12 @@ class ReportController extends Controller
     {
         $this->authorize('ac_report.view');
 
-        [$fyStart, $fiscalYearId, $branchId, $accountId, $masterParticularId, $particularId] = $this->yearlyParams($request);
-        $report = $this->reports->yearly($fyStart, $branchId, $accountId, $masterParticularId, $particularId);
+        [$fyStart, $fiscalYearId, $branchId, $accountId, $masterParticularId, $particularIds] = $this->yearlyParams($request);
+        $report = $this->reports->yearly($fyStart, $branchId, $accountId, $masterParticularId, $particularIds);
         $fiscalYears = AcFiscalYear::query()->orderByDesc('start_year')->orderByDesc('start_month')->get();
 
         return view('acc-sfl::admin.reports.cash-flow-yearly', array_merge(
-            compact('report', 'fiscalYears', 'fiscalYearId', 'branchId', 'accountId', 'masterParticularId', 'particularId'),
+            compact('report', 'fiscalYears', 'fiscalYearId', 'branchId', 'accountId', 'masterParticularId', 'particularIds'),
             $this->filterOptions(),
         ));
     }
@@ -72,8 +72,8 @@ class ReportController extends Controller
     {
         $this->authorize('ac_report.export');
 
-        [$fyStart, $fiscalYearId, $branchId, $accountId, $masterParticularId, $particularId] = $this->yearlyParams($request);
-        $report = $this->reports->yearly($fyStart, $branchId, $accountId, $masterParticularId, $particularId);
+        [$fyStart, $fiscalYearId, $branchId, $accountId, $masterParticularId, $particularIds] = $this->yearlyParams($request);
+        $report = $this->reports->yearly($fyStart, $branchId, $accountId, $masterParticularId, $particularIds);
 
         return view('acc-sfl::admin.reports.cash-flow-yearly-print', compact('report'));
     }
@@ -82,14 +82,14 @@ class ReportController extends Controller
     {
         $this->authorize('ac_report.export');
 
-        [$fyStart, $fiscalYearId, $branchId, $accountId, $masterParticularId, $particularId] = $this->yearlyParams($request);
-        $report = $this->reports->yearly($fyStart, $branchId, $accountId, $masterParticularId, $particularId);
+        [$fyStart, $fiscalYearId, $branchId, $accountId, $masterParticularId, $particularIds] = $this->yearlyParams($request);
+        $report = $this->reports->yearly($fyStart, $branchId, $accountId, $masterParticularId, $particularIds);
 
         return Excel::download(new CashFlowYearlyExport($report), "cash-flow-{$report['label']}.xlsx");
     }
 
     /**
-     * @return array{0: int, 1: int, 2: ?int, 3: ?int, 4: ?int, 5: ?int}
+     * @return array{0: int, 1: int, 2: ?int, 3: ?int, 4: ?int, 5: ?array}
      */
     private function monthlyParams(Request $request): array
     {
@@ -101,12 +101,12 @@ class ReportController extends Controller
             $request->filled('branch_id') ? $request->integer('branch_id') : null,
             $request->filled('account_id') ? $request->integer('account_id') : null,
             $request->filled('master_particular_id') ? $request->integer('master_particular_id') : null,
-            $request->filled('particular_id') ? $request->integer('particular_id') : null,
+            $request->filled('particular_id') ? (array) $request->input('particular_id') : null,
         ];
     }
 
     /**
-     * @return array{0: Carbon, 1: ?int, 2: ?int, 3: ?int, 4: ?int, 5: ?int}
+     * @return array{0: Carbon, 1: ?int, 2: ?int, 3: ?int, 4: ?int, 5: ?array}
      */
     private function yearlyParams(Request $request): array
     {
@@ -118,7 +118,7 @@ class ReportController extends Controller
             $request->filled('branch_id') ? $request->integer('branch_id') : null,
             $request->filled('account_id') ? $request->integer('account_id') : null,
             $request->filled('master_particular_id') ? $request->integer('master_particular_id') : null,
-            $request->filled('particular_id') ? $request->integer('particular_id') : null,
+            $request->filled('particular_id') ? (array) $request->input('particular_id') : null,
         ];
     }
 

@@ -14,5 +14,5 @@
     <div class="report-title"><span>Expense Report</span></div>
 </div>
 
-@include('acc-sfl::admin.reports.partials.expense-report-table', ['rows' => $rows, 'totals' => $totals])
+@include('acc-sfl::admin.reports.partials.expense-report-table', ['grouped' => $grouped, 'totals' => $totals])
 @endsection

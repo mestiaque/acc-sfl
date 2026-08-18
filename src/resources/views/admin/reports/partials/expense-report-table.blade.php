@@ -17,7 +17,11 @@
         </tr>
     </thead>
     <tbody>
-        @forelse($rows as $row)
+        @forelse($grouped as $code => $group)
+        <tr class="subtotal-row">
+            <td colspan="13"><strong>{{ $code }} - {{ $group->first()['particular'] ?? 'N/A' }}</strong></td>
+        </tr>
+        @foreach($group as $row)
         <tr>
             <td>{{ $row['date'] ? strtoupper($row['date']->format('F')) : '-' }}</td>
             <td>{{ $row['date']?->format('d-m-y') ?? '-' }}</td>
@@ -32,6 +36,12 @@
             <td style="text-align:right">{{ number_format($row['expense'], 2) }}</td>
             <td style="text-align:right">{{ $row['balance'] !== null ? number_format($row['balance'], 2) : '-' }}</td>
             <td>{{ $row['remarks'] ?: '-' }}</td>
+        </tr>
+        @endforeach
+        <tr class="subtotal-row">
+            <td colspan="10" style="text-align:right">TOTAL {{ $code }}</td>
+            <td style="text-align:right">{{ number_format($group->sum('expense'), 2) }}</td>
+            <td colspan="2"></td>
         </tr>
         @empty
         <tr><td colspan="13" style="text-align:center">No data available.</td></tr>

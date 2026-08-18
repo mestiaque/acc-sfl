@@ -59,14 +59,16 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2 mb-2">
+                <div class="col-md-3 mb-2">
                     <label class="form-label mb-1">Particular</label>
-                    <select name="particular_id" class="form-control form-control-sm">
-                        <option value="">All Particulars</option>
+                    @php
+                        $selectedParticularIds = array_map('strval', (array) $particularIds);
+                    @endphp
+                    <select name="particular_id[]" class="form-control form-control-sm" multiple>
                         @foreach($masterParticulars as $master)
                         <optgroup label="{{ $master->name }}">
                             @foreach($master->particulars as $particular)
-                            <option value="{{ $particular->id }}" @selected((string) $particularId === (string) $particular->id)>{{ $particular->code }} - {{ $particular->name }}</option>
+                            <option value="{{ $particular->id }}" @selected(in_array((string) $particular->id, $selectedParticularIds, true))>{{ $particular->code }} - {{ $particular->name }}</option>
                             @endforeach
                         </optgroup>
                         @endforeach

@@ -8,14 +8,14 @@ use Maatwebsite\Excel\Concerns\FromView;
 
 class BalanceReceiveReportExport implements FromView
 {
-    public function __construct(private readonly Collection $receives, private readonly array $totals)
+    public function __construct(private readonly Collection $grouped, private readonly array $totals)
     {
     }
 
     public function view(): View
     {
         return view('acc-sfl::admin.reports.partials.balance-receive-report-table', [
-            'receives' => $this->receives,
+            'grouped' => $this->grouped,
             'totals' => $this->totals,
         ]);
     }

@@ -22,11 +22,13 @@ class ExpenseReportController extends Controller
         $this->authorize('ac_report.view');
 
         $expenses = $this->filteredQuery($request)->latest('expense_date')->latest('id')->paginate(20)->withQueryString();
-        $rows = $this->buildRows($expenses->getCollection());
-        $totals = $this->totals($request);
+        $allRows = $this->buildRows($this->filteredQuery($request)->get(), $request);
+        $rows = $this->buildRows($expenses->getCollection(), $request);
+        $grouped = $this->groupByParticularCode($rows);
+        $totals = $this->totals($allRows);
 
         return view('acc-sfl::admin.reports.expense-report', array_merge(
-            compact('expenses', 'rows', 'totals'),
+            compact('expenses', 'grouped', 'totals'),
             $this->filterOptions(),
         ));
     }
@@ -35,22 +37,35 @@ class ExpenseReportController extends Controller
     {
         $this->authorize('ac_report.export');
 
-        $expenses = $this->filteredQuery($request)->latest('expense_date')->latest('id')->get();
-        $rows = $this->buildRows($expenses);
-        $totals = $this->totals($request);
+        $rows = $this->buildRows($this->filteredQuery($request)->get(), $request);
+        $grouped = $this->groupByParticularCode($rows);
+        $totals = $this->totals($rows);
 
-        return view('acc-sfl::admin.reports.expense-report-print', compact('rows', 'totals'));
+        return view('acc-sfl::admin.reports.expense-report-print', compact('grouped', 'totals'));
     }
 
     public function export(Request $request): BinaryFileResponse
     {
         $this->authorize('ac_report.export');
 
-        $expenses = $this->filteredQuery($request)->latest('expense_date')->latest('id')->get();
-        $rows = $this->buildRows($expenses);
-        $totals = $this->totals($request);
+        $rows = $this->buildRows($this->filteredQuery($request)->get(), $request);
+        $grouped = $this->groupByParticularCode($rows);
+        $totals = $this->totals($rows);
 
-        return Excel::download(new ExpenseReportExport($rows, $totals), 'expense-report.xlsx');
+        return Excel::download(new ExpenseReportExport($grouped, $totals), 'expense-report.xlsx');
+    }
+
+    /**
+     * Groups by particular code (not master particular - AcMasterParticular has no code
+     * column, see AcParticular::code) so each group's header/subtotal lines up with the
+     * A/C Code column already shown per row. Rows are sorted chronologically within each
+     * group since the base query orders by expense_date desc for pagination purposes only.
+     */
+    private function groupByParticularCode(Collection $rows): Collection
+    {
+        return $rows->sortBy('date')->values()
+            ->groupBy(fn ($row) => $row['ac_code'] ?? 'N/A')
+            ->sortKeys();
     }
 
     /**
@@ -59,19 +74,31 @@ class ExpenseReportController extends Controller
      * transaction's balance backwards across those lines (in entry order) so every row shows
      * a real running balance instead of all lines repeating the expense total's balance.
      * Mirrors StatementReportService's identical need for the Account Statement report.
+     *
+     * The particular filter is applied per line here (not just per expense in
+     * filteredQuery()) so a multi-particular selection doesn't drag in an expense's other,
+     * non-matching line items - but every line still counts against the running balance,
+     * whether or not it's emitted, since the balance reflects the expense's full total.
      */
-    private function buildRows(Collection $expenses): Collection
+    private function buildRows(Collection $expenses, Request $request): Collection
     {
-        return $expenses->flatMap(function (AcExpense $expense) {
+        $particularIds = $request->filled('particular_id') ? (array) $request->input('particular_id') : null;
+
+        return $expenses->flatMap(function (AcExpense $expense) use ($particularIds) {
             $transaction = $expense->transactions->first();
             $running = $transaction ? (float) $transaction->balance + (float) $transaction->credit : null;
+            $rows = [];
 
-            return $expense->details->map(function ($detail) use ($expense, &$running) {
+            foreach ($expense->details as $detail) {
                 if ($running !== null) {
                     $running -= (float) $detail->amount;
                 }
 
-                return [
+                if ($particularIds !== null && ! in_array($detail->particular_id, $particularIds, false)) {
+                    continue;
+                }
+
+                $rows[] = [
                     'date' => $expense->expense_date,
                     'particular' => $detail->particular?->name,
                     'description' => $detail->description,
@@ -85,7 +112,9 @@ class ExpenseReportController extends Controller
                     'balance' => $running,
                     'remarks' => null,
                 ];
-            });
+            }
+
+            return $rows;
         });
     }
 
@@ -111,7 +140,7 @@ class ExpenseReportController extends Controller
             ))
             ->when($request->filled('particular_id'), fn ($q) => $q->whereHas(
                 'details',
-                fn ($d) => $d->where('particular_id', $request->integer('particular_id'))
+                fn ($d) => $d->whereIn('particular_id', (array) $request->input('particular_id'))
             ))
             ->when($request->filled('employee_id'), fn ($q) => $q->where('employee_id', $request->integer('employee_id')))
             ->when($request->filled('from_date'), fn ($q) => $q->whereDate('expense_date', '>=', $request->date('from_date')))
@@ -130,13 +159,16 @@ class ExpenseReportController extends Controller
             );
     }
 
-    private function totals(Request $request): array
+    /**
+     * Summed from the exploded per-line rows (not a plain AcExpense total_amount sum) so the
+     * badge matches what's actually displayed once a particular filter narrows rows down to
+     * specific line items within otherwise-multi-line expenses.
+     */
+    private function totals(Collection $rows): array
     {
-        $query = $this->filteredQuery($request);
-
         return [
-            'count' => (clone $query)->count(),
-            'amount' => (float) (clone $query)->sum('total_amount'),
+            'count' => $rows->count(),
+            'amount' => (float) $rows->sum('expense'),
         ];
     }
 

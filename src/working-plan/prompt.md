@@ -220,3 +220,8 @@ Particular * UOM | Qty | Rate | Amount | [checkbox] | -
 Description
 
 
+
+> balance receive edit (amount, date, etc) er option thakbe and approve er option thakbe, approve na korle receive add hobe na
+
+> expesene iou delete and force delete er option thakbe
+> expense approve er age delete korte parbe and approve er por force delete

@@ -14,5 +14,5 @@
     <div class="report-title"><span>Balance Receive Report</span></div>
 </div>
 
-@include('acc-sfl::admin.reports.partials.balance-receive-report-table', ['receives' => $receives, 'totals' => $totals])
+@include('acc-sfl::admin.reports.partials.balance-receive-report-table', ['grouped' => $grouped, 'totals' => $totals])
 @endsection

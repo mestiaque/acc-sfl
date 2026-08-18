@@ -64,14 +64,16 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2 mb-2">
+                <div class="col-md-3 mb-2">
                     <label class="form-label mb-1">Particular</label>
-                    <select name="particular_id" class="form-control form-control-sm">
-                        <option value="">All Particulars</option>
+                    @php
+                        $selectedParticularIds = array_map('strval', (array) request('particular_id', []));
+                    @endphp
+                    <select name="particular_id[]" class="form-control form-control-sm" multiple>
                         @foreach($masterParticulars as $master)
                         <optgroup label="{{ $master->name }}">
                             @foreach($master->particulars as $particular)
-                            <option value="{{ $particular->id }}" @selected((string) request('particular_id') === (string) $particular->id)>{{ $particular->code }} - {{ $particular->name }}</option>
+                            <option value="{{ $particular->id }}" @selected(in_array((string) $particular->id, $selectedParticularIds, true))>{{ $particular->code }} - {{ $particular->name }}</option>
                             @endforeach
                         </optgroup>
                         @endforeach
@@ -96,7 +98,9 @@
                 </div>
                 <div class="col-md-2 mb-2">
                     <label class="form-label mb-1">Status</label>
-                    @php($currentStatus = request('status', 'approved'))
+                    @php
+                        $currentStatus = request('status', 'approved');
+                    @endphp
                     <select name="status" class="form-control form-control-sm">
                         <option value="approved" @selected($currentStatus === 'approved')>Approved</option>
                         <option value="pending" @selected($currentStatus === 'pending')>Pending</option>
@@ -143,7 +147,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($rows as $row)
+                        @forelse($grouped as $code => $group)
+                        <tr class="table-warning font-weight-bold">
+                            <td colspan="13">{{ $code }} - {{ $group->first()['particular'] ?? 'N/A' }}</td>
+                        </tr>
+                        @foreach($group as $row)
                         <tr>
                             <td>{{ $row['date'] ? strtoupper($row['date']->format('F')) : '-' }}</td>
                             <td>{{ $row['date']?->format('d-m-y') ?? '-' }}</td>
@@ -158,6 +166,12 @@
                             <td class="text-right">{{ number_format($row['expense'], 2) }}</td>
                             <td class="text-right">{{ $row['balance'] !== null ? number_format($row['balance'], 2) : '-' }}</td>
                             <td>{{ $row['remarks'] ?: '-' }}</td>
+                        </tr>
+                        @endforeach
+                        <tr class="table-secondary font-weight-bold">
+                            <td colspan="10" class="text-right">TOTAL {{ $code }}</td>
+                            <td class="text-right">{{ number_format($group->sum('expense'), 2) }}</td>
+                            <td colspan="2"></td>
                         </tr>
                         @empty
                         <tr><td colspan="13" class="text-center">No data available.</td></tr>

@@ -13,7 +13,11 @@
         </tr>
     </thead>
     <tbody>
-        @forelse($receives as $receive)
+        @forelse($grouped as $code => $group)
+        <tr class="subtotal-row">
+            <td colspan="9"><strong>{{ $code }} - {{ $group->first()->particular->name ?? 'N/A' }}</strong></td>
+        </tr>
+        @foreach($group as $receive)
         @php
             $transaction = $receive->transactions->first();
             $balance = $transaction->balance ?? null;
@@ -28,6 +32,12 @@
             <td style="text-align:right">{{ number_format($receive->amount, 2) }}</td>
             <td style="text-align:right">{{ $balance !== null ? number_format($balance, 2) : '-' }}</td>
             <td>-</td>
+        </tr>
+        @endforeach
+        <tr class="subtotal-row">
+            <td colspan="6" style="text-align:right">TOTAL {{ $code }}</td>
+            <td style="text-align:right">{{ number_format($group->sum('amount'), 2) }}</td>
+            <td colspan="2"></td>
         </tr>
         @empty
         <tr><td colspan="9" style="text-align:center">No data available.</td></tr>

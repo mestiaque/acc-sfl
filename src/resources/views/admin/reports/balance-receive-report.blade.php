@@ -55,14 +55,16 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-2 mb-2">
+                <div class="col-md-3 mb-2">
                     <label class="form-label mb-1">Particular</label>
-                    <select name="particular_id" class="form-control form-control-sm">
-                        <option value="">All Particulars</option>
+                    @php
+                        $selectedParticularIds = array_map('strval', (array) request('particular_id', []));
+                    @endphp
+                    <select name="particular_id[]" class="form-control form-control-sm" multiple>
                         @foreach($masterParticulars as $master)
                         <optgroup label="{{ $master->name }}">
                             @foreach($master->particulars as $particular)
-                            <option value="{{ $particular->id }}" @selected((string) request('particular_id') === (string) $particular->id)>{{ $particular->code }} - {{ $particular->name }}</option>
+                            <option value="{{ $particular->id }}" @selected(in_array((string) $particular->id, $selectedParticularIds, true))>{{ $particular->code }} - {{ $particular->name }}</option>
                             @endforeach
                         </optgroup>
                         @endforeach
@@ -111,7 +113,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($receives as $receive)
+                        @forelse($grouped as $code => $group)
+                        <tr class="table-warning font-weight-bold">
+                            <td colspan="9">{{ $code }} - {{ $group->first()->particular->name ?? 'N/A' }}</td>
+                        </tr>
+                        @foreach($group as $receive)
                         @php
                             $transaction = $receive->transactions->first();
                             $balance = $transaction->balance ?? null;
@@ -126,6 +132,12 @@
                             <td class="text-right">{{ number_format($receive->amount, 2) }}</td>
                             <td class="text-right">{{ $balance !== null ? number_format($balance, 2) : '-' }}</td>
                             <td>-</td>
+                        </tr>
+                        @endforeach
+                        <tr class="table-secondary font-weight-bold">
+                            <td colspan="6" class="text-right">TOTAL {{ $code }}</td>
+                            <td class="text-right">{{ number_format($group->sum('amount'), 2) }}</td>
+                            <td colspan="2"></td>
                         </tr>
                         @empty
                         <tr><td colspan="9" class="text-center">No data available.</td></tr>

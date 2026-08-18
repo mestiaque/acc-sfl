@@ -194,7 +194,9 @@
             @if($s['recentExpenses']->isNotEmpty())
                 <div class="d-flex flex-column gap-2">
                     @foreach($s['recentExpenses'] as $expense)
-                    @php($detail = $expense->details->first())
+                    @php
+                        $detail = $expense->details->first();
+                    @endphp
                     <div class="d-flex align-items-center justify-content-between" style="font-size:13px;">
                         <span>{{ $detail->particular->name ?? $expense->expense_no }} <span class="text-muted">({{ $expense->branch->name ?? '-' }})</span></span>
                         <span class="ac-badge" style="background:#fff1f2;color:#f43f5e;">{{ number_format($expense->total_amount, 0) }}</span>
