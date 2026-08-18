@@ -5,15 +5,15 @@
                 @csrf
                 @method('DELETE')
                 <div class="modal-header">
-                    <h5 class="modal-title">Confirm Delete</h5>
+                    <h5 class="modal-title">{{ $title ?? 'Confirm Delete' }}</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <p class="mb-0">Are you sure you want to delete this {{ $label ?? 'record' }}? This action cannot be undone.</p>
+                    <p class="mb-0">{{ $warning ?? "Are you sure you want to delete this ".($label ?? 'record')."? This action cannot be undone." }}</p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash mr-1"></i> Delete</button>
+                    <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash mr-1"></i> {{ $buttonLabel ?? 'Delete' }}</button>
                 </div>
             </form>
         </div>

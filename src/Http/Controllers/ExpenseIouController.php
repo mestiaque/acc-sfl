@@ -158,17 +158,59 @@ class ExpenseIouController extends Controller
         return back()->with('success', 'Expense IOU adjusted successfully.');
     }
 
-    public function destroy(AcExpenseIou $expenseIou): RedirectResponse
+    public function destroy(AcExpenseIou $expenseIou, \ME\AccSfl\Services\TransactionService $transactions): RedirectResponse
     {
         $this->authorize('ac_expense_iou.delete');
 
-        if ($expenseIou->isReferenced()) {
-            return back()->with('error', 'This IOU cannot be deleted because it already has a posted transaction.');
+        if ($expenseIou->status === AcExpenseIou::STATUS_ADJUSTED) {
+            return back()->with('error', 'Adjusted IOUs cannot be deleted normally — use Force Delete.');
         }
 
-        $expenseIou->delete();
+        DB::transaction(function () use ($expenseIou, $transactions) {
+            $existing = $expenseIou->transactions()->get();
+
+            if ($existing->isNotEmpty()) {
+                $transactions->reverseTransactions($expenseIou->account, $existing);
+            }
+
+            $expenseIou->delete();
+        });
 
         return back()->with('success', 'Expense IOU deleted successfully.');
+    }
+
+    /**
+     * Reverses all posted ledger transactions for this IOU (Issue, any amount
+     * Corrections, and its zero-value Adjustment audit entry) and permanently removes
+     * it - the only way to remove an already-Adjusted IOU, since normal delete() is
+     * blocked once it's settled.
+     */
+    public function forceDestroy(AcExpenseIou $expenseIou, \ME\AccSfl\Services\TransactionService $transactions): RedirectResponse
+    {
+        $this->authorize('ac_expense_iou.force_delete');
+
+        if ($expenseIou->status !== AcExpenseIou::STATUS_ADJUSTED) {
+            return back()->with('error', 'Only adjusted IOUs need Force Delete — use the normal Delete action instead.');
+        }
+
+        DB::transaction(function () use ($expenseIou, $transactions) {
+            $existing = $expenseIou->transactions()->get();
+
+            if ($existing->isNotEmpty()) {
+                $transactions->reverseTransactions($expenseIou->account, $existing);
+            }
+
+            foreach ($expenseIou->attachments as $file) {
+                if ($file->file_path) {
+                    \Illuminate\Support\Facades\Storage::disk($file->disk ?: 'public')->delete($file->file_path);
+                }
+                $file->delete();
+            }
+
+            $expenseIou->forceDelete();
+        });
+
+        return back()->with('success', 'Expense IOU permanently deleted and its ledger entries reversed.');
     }
 
     /**

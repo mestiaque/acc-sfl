@@ -330,6 +330,10 @@ class ExpenseController extends Controller
     {
         $this->authorize('ac_expense.delete');
 
+        if ($expense->status === AcExpense::STATUS_APPROVED) {
+            return back()->with('error', 'Approved expenses cannot be deleted normally — use Force Delete.');
+        }
+
         if ($expense->isReferenced()) {
             return back()->with('error', 'This expense cannot be deleted because it already has a posted transaction.');
         }
@@ -337,5 +341,43 @@ class ExpenseController extends Controller
         $expense->delete();
 
         return back()->with('success', 'Expense deleted successfully.');
+    }
+
+    /**
+     * Reverses the posted ledger transaction (restoring the account balance) and
+     * permanently removes the expense - the only way to remove an already-approved
+     * expense, since normal delete() is blocked once it has a posted transaction.
+     */
+    public function forceDestroy(AcExpense $expense): RedirectResponse
+    {
+        $this->authorize('ac_expense.force_delete');
+
+        if ($expense->status !== AcExpense::STATUS_APPROVED) {
+            return back()->with('error', 'Only approved expenses need Force Delete — use the normal Delete action instead.');
+        }
+
+        DB::transaction(function () use ($expense) {
+            $transactions = $expense->transactions()->get();
+
+            if ($transactions->isNotEmpty()) {
+                app(\ME\AccSfl\Services\TransactionService::class)->reverseTransactions($expense->account, $transactions);
+            }
+
+            foreach ($expense->attachments as $file) {
+                if ($file->file_path) {
+                    Storage::disk($file->disk ?: 'public')->delete($file->file_path);
+                }
+                $file->delete();
+            }
+
+            if ($expense->attachment) {
+                Storage::disk('public')->delete($expense->attachment);
+            }
+
+            $expense->details()->delete();
+            $expense->forceDelete();
+        });
+
+        return back()->with('success', 'Expense permanently deleted and its ledger entry reversed.');
     }
 }

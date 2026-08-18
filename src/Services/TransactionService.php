@@ -128,6 +128,38 @@ class TransactionService
         ));
     }
 
+    /**
+     * Reverses the net balance effect of every given transaction for a single reference
+     * (e.g. an IOU's Issue + any Corrections + its zero-value Adjustment, or an expense's
+     * single Expense row) in one shot, then deletes those transaction rows outright -
+     * AcTransaction has no SoftDeletes, and a reversed entry shouldn't linger as a ledger
+     * row. Used by force-delete, and by normal delete when a not-yet-finalized record
+     * (e.g. a still-Pending IOU, which posts its Issue transaction immediately on creation)
+     * already has a posted transaction that needs undoing before the record itself is removed.
+     */
+    public function reverseTransactions(AcAccount $account, iterable $transactions): void
+    {
+        DB::transaction(function () use ($account, $transactions) {
+            $netDebit = 0.0;
+            $netCredit = 0.0;
+
+            foreach ($transactions as $transaction) {
+                $netDebit += (float) $transaction->debit;
+                $netCredit += (float) $transaction->credit;
+            }
+
+            $lockedAccount = AcAccount::whereKey($account->id)->lockForUpdate()->first();
+
+            $lockedAccount->update([
+                'current_balance' => (float) $lockedAccount->current_balance - $netDebit + $netCredit,
+            ]);
+
+            foreach ($transactions as $transaction) {
+                $transaction->delete();
+            }
+        });
+    }
+
     private function post(
         AcAccount $account,
         string|\DateTimeInterface $date,

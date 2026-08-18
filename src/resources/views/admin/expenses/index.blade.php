@@ -190,10 +190,20 @@
                                 @endif
                                 @endcan
                                 @can('ac_expense.delete')
+                                @if($expense->status !== 'approved')
                                 <button type="button" class="btn-custom danger" title="Delete" data-toggle="modal" data-target="#deleteExpenseModal"
                                     data-action="{{ route('acc-sfl.expenses.destroy', $expense) }}">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
+                                @endif
+                                @endcan
+                                @can('ac_expense.force_delete')
+                                @if($expense->status === 'approved')
+                                <button type="button" class="btn-custom danger" title="Force Delete (reverses posted transaction)" data-toggle="modal" data-target="#forceDeleteExpenseModal"
+                                    data-action="{{ route('acc-sfl.expenses.force-delete', $expense) }}">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                                @endif
                                 @endcan
                             </td>
                         </tr>
@@ -281,6 +291,12 @@
 </div>
 
 @include('acc-sfl::admin.partials.delete-confirm-modal', ['modalId' => 'deleteExpenseModal', 'label' => 'expense'])
+@include('acc-sfl::admin.partials.delete-confirm-modal', [
+    'modalId' => 'forceDeleteExpenseModal',
+    'title' => 'Confirm Force Delete',
+    'warning' => 'This expense has already been approved and posted to the ledger. Force deleting it will reverse the posted transaction (restoring the account balance) and PERMANENTLY delete the expense — this cannot be undone.',
+    'buttonLabel' => 'Force Delete',
+])
 
 {{-- Approve Modal --}}
 <div class="modal fade" id="approveExpenseModal" tabindex="-1" role="dialog" aria-hidden="true">

@@ -139,10 +139,20 @@
                                 </button>
                                 @endcan
                                 @can('ac_expense_iou.delete')
+                                @if($iou->status !== 'Adjusted')
                                 <button type="button" class="btn-custom danger" title="Delete" data-toggle="modal" data-target="#deleteIouModal"
                                     data-action="{{ route('acc-sfl.expense-ious.destroy', $iou) }}">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
+                                @endif
+                                @endcan
+                                @can('ac_expense_iou.force_delete')
+                                @if($iou->status === 'Adjusted')
+                                <button type="button" class="btn-custom danger" title="Force Delete (reverses posted transactions)" data-toggle="modal" data-target="#forceDeleteIouModal"
+                                    data-action="{{ route('acc-sfl.expense-ious.force-delete', $iou) }}">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                                @endif
                                 @endcan
                             </td>
                         </tr>
@@ -339,6 +349,12 @@
 </div>
 
 @include('acc-sfl::admin.partials.delete-confirm-modal', ['modalId' => 'deleteIouModal', 'label' => 'expense IOU'])
+@include('acc-sfl::admin.partials.delete-confirm-modal', [
+    'modalId' => 'forceDeleteIouModal',
+    'title' => 'Confirm Force Delete',
+    'warning' => 'This IOU has already been adjusted and posted to the ledger. Force deleting it will reverse its posted transactions (restoring the account balance) and PERMANENTLY delete the IOU — this cannot be undone.',
+    'buttonLabel' => 'Force Delete',
+])
 @endsection
 
 @push('js')
