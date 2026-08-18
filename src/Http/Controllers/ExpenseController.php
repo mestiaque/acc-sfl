@@ -28,6 +28,7 @@ class ExpenseController extends Controller
         $this->authorize('ac_expense.list');
 
         $expenses = $this->filteredQuery($request)->latest('id')->paginate(20)->withQueryString();
+       
 
         return view('acc-sfl::admin.expenses.index', array_merge(compact('expenses'), $this->formOptions()));
     }
@@ -45,7 +46,7 @@ class ExpenseController extends Controller
 
         abort_if($expense->status !== AcExpense::STATUS_PENDING, 403, 'Only pending expenses can be fully edited.');
 
-        $expense->load('details');
+        $expense->load('details', 'attachments');
 
         return view('acc-sfl::admin.expenses.edit', array_merge(['expense' => $expense], $this->formOptions()));
     }
@@ -117,7 +118,7 @@ class ExpenseController extends Controller
     {
         return AcExpense::query()
             ->with(['branch', 'account', 'paymentMethod', 'creator', 'employee', 'details.particular.masterParticular'])
-            ->when(AcAccount::currentUserTiedAccount(), fn ($q, $tied) => $q->where('account_id', $tied->id))
+            ->when(AcAccount::currentUserTiedAccountIds(), fn ($q, $tiedIds) => $q->whereIn('account_id', $tiedIds))
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->string('search');
                 $query->where(function ($q) use ($search) {
@@ -147,7 +148,7 @@ class ExpenseController extends Controller
     {
         $this->authorize('ac_expense.view');
 
-        $expense->load(['branch', 'account', 'paymentMethod', 'creator', 'employee', 'details.particular.masterParticular']);
+        $expense->load(['branch', 'account', 'paymentMethod', 'creator', 'employee', 'details.particular.masterParticular', 'attachments']);
 
         return view('acc-sfl::admin.expenses.show', compact('expense'));
     }
@@ -163,12 +164,13 @@ class ExpenseController extends Controller
             $data['total_amount'] = collect($items)->sum(fn ($item) => $this->resolveItemAmount($item));
 
             if ($request->hasFile('attachment')) {
-                $data['attachment'] = $request->file('attachment')->store('acc-sfl/expenses', 'public');
+                $data['attachment'] = $request->file('attachment')->store('accounts/expense', 'public');
             }
 
             $expense = AcExpense::create($data);
 
             $this->syncDetails($expense, $items);
+            $this->storeAttachments($expense, $request);
 
             return $expense;
         });
@@ -195,8 +197,10 @@ class ExpenseController extends Controller
                 if ($expense->attachment) {
                     Storage::disk('public')->delete($expense->attachment);
                 }
-                $data['attachment'] = $request->file('attachment')->store('acc-sfl/expenses', 'public');
+                $data['attachment'] = $request->file('attachment')->store('accounts/expense', 'public');
             }
+
+            $this->storeAttachments($expense, $request);
 
             if ($expense->status === AcExpense::STATUS_PENDING && isset($data['items'])) {
                 $items = $data['items'];
@@ -214,6 +218,45 @@ class ExpenseController extends Controller
         });
 
         return redirect()->route('acc-sfl.expenses.index')->with('success', 'Expense updated successfully.');
+    }
+
+    private function storeAttachments(AcExpense $expense, Request $request): void
+    {
+        foreach ($request->file('attachments', []) as $uploadedFile) {
+            if (!$uploadedFile) {
+                continue;
+            }
+
+            $path = $uploadedFile->store('accounts/expense', 'public');
+
+            $expense->attachments()->create([
+                'fileable_type' => AcExpense::class,
+                'use_case' => 'attachment',
+                'file_name' => (string) \Illuminate\Support\Str::uuid(),
+                'original_name' => $uploadedFile->getClientOriginalName(),
+                'file_path' => $path,
+                'file_full_path' => asset('storage/'.$path),
+                'disk' => 'public',
+                'extension' => $uploadedFile->getClientOriginalExtension(),
+                'size' => $uploadedFile->getSize(),
+                'file_type' => $uploadedFile->getMimeType(),
+                'addedby_id' => $request->user()?->id,
+            ]);
+        }
+    }
+
+    public function destroyAttachment(AcExpense $expense, \App\Models\File $file): RedirectResponse
+    {
+        $this->authorize('ac_expense.edit');
+
+        abort_unless($expense->attachments()->whereKey($file->id)->exists(), 404);
+
+        if ($file->file_path) {
+            Storage::disk($file->disk ?: 'public')->delete($file->file_path);
+        }
+        $file->delete();
+
+        return redirect()->back()->with('success', 'Attachment removed successfully.');
     }
 
     private function syncDetails(AcExpense $expense, array $items): void

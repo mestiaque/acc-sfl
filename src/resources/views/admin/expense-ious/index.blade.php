@@ -123,12 +123,17 @@
                                     data-branch="{{ $iou->branch->name }}" data-account="{{ $iou->account->name }}"
                                     data-employee="{{ $iou->employee->name ?? '-' }}" data-payment-method="{{ $iou->paymentMethod->name }}"
                                     data-amount="{{ number_format($iou->amount, 2) }}" data-status="{{ $iou->status }}"
-                                    data-description="{{ $iou->description }}">
+                                    data-description="{{ $iou->description }}"
+                                    data-attachments="{{ $iou->attachments->map(fn ($file) => ['url' => $file->file_url, 'name' => $file->original_name ?: $file->file_name])->toJson() }}">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
                                 @can('ac_expense_iou.edit')
                                 <button type="button" class="btn-custom yellow" title="Edit" data-toggle="modal" data-target="#editIouModal"
                                     data-action="{{ route('acc-sfl.expense-ious.update', $iou) }}"
+                                    data-status="{{ $iou->status }}"
+                                    data-issue-date="{{ $iou->issue_date->format('Y-m-d') }}"
+                                    data-amount="{{ $iou->amount }}"
+                                    data-employee-id="{{ $iou->employee_id }}"
                                     data-description="{{ $iou->description }}">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -154,7 +159,7 @@
 <div class="modal fade" id="createIouModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <form method="POST" action="{{ route('acc-sfl.expense-ious.store') }}">
+            <form method="POST" action="{{ route('acc-sfl.expense-ious.store') }}" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">Issue Expense IOU</h5>
@@ -212,6 +217,11 @@
                         <label>Description</label>
                         <textarea name="description" class="form-control" rows="2"></textarea>
                     </div>
+                    <div class="form-group">
+                        <label>Attachments</label>
+                        <input type="file" name="attachments[]" class="form-control-file" multiple>
+                        <small class="form-text text-muted">You can select multiple files.</small>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
@@ -226,7 +236,7 @@
 <div class="modal fade" id="editIouModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <form method="POST" id="editIouForm">
+            <form method="POST" id="editIouForm" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 <div class="modal-header">
@@ -234,10 +244,33 @@
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-muted small">Employee, account, amount and dates are locked after issue. Only the description can be updated.</p>
+                    <p class="text-muted small" id="edit_iou_locked_note">Branch, account and payment method are locked after issue.</p>
+                    <p class="text-muted small" id="edit_iou_adjusted_note" style="display:none;">This IOU has been adjusted — only the description can be updated.</p>
+                    <div class="form-group">
+                        <label>Issue Date <span class="text-danger" id="edit_iou_issue_date_req">*</span></label>
+                        <input type="date" name="issue_date" id="edit_iou_issue_date" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Amount <span class="text-danger" id="edit_iou_amount_req">*</span></label>
+                        <input type="number" step="0.01" min="0.01" name="amount" id="edit_iou_amount" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Employee <span class="text-danger" id="edit_iou_employee_req">*</span></label>
+                        <select name="employee_id" id="edit_iou_employee_id" class="form-control">
+                            <option value="">-- Select --</option>
+                            @foreach($employees as $employee)
+                            <option value="{{ $employee->id }}">{{ $employee->employee_id }} - {{ $employee->name }}{{ $employee->department ? ' ('.$employee->department->name.(($employee->designation) ? ' / '.$employee->designation->name : '').')' : '' }}</option>
+                            @endforeach
+                        </select>
+                    </div>
                     <div class="form-group">
                         <label>Description</label>
                         <textarea name="description" id="edit_iou_description" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Attachments</label>
+                        <input type="file" name="attachments[]" class="form-control-file" multiple>
+                        <small class="form-text text-muted">You can select multiple files.</small>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -295,6 +328,7 @@
                     <tr><th>Amount</th><td id="view_iou_amount"></td></tr>
                     <tr><th>Status</th><td id="view_iou_status"></td></tr>
                     <tr><th>Description</th><td id="view_iou_description"></td></tr>
+                    <tr><th>Attachments</th><td id="view_iou_attachments"></td></tr>
                 </table>
             </div>
             <div class="modal-footer">
@@ -315,6 +349,16 @@
             var btn = $(event.relatedTarget);
             $(this).find('form').attr('action', btn.data('action'));
             $('#edit_iou_description').val(btn.data('description'));
+
+            var isPending = btn.data('status') === 'Pending';
+            $('#edit_iou_issue_date').val(btn.data('issue-date'));
+            $('#edit_iou_amount').val(btn.data('amount'));
+            $('#edit_iou_employee_id').val(btn.data('employee-id')).trigger('change');
+
+            $('#edit_iou_issue_date, #edit_iou_amount, #edit_iou_employee_id').prop('disabled', !isPending);
+            $('#edit_iou_issue_date_req, #edit_iou_amount_req, #edit_iou_employee_req').toggle(isPending);
+            $('#edit_iou_locked_note').toggle(isPending);
+            $('#edit_iou_adjusted_note').toggle(!isPending);
         });
 
         $('#adjustIouModal').on('show.bs.modal', function (event) {
@@ -335,6 +379,17 @@
             $('#view_iou_amount').text(btn.data('amount'));
             $('#view_iou_status').text(btn.data('status'));
             $('#view_iou_description').text(btn.data('description') || '-');
+
+            var attachments = btn.data('attachments') || [];
+            var $attachmentsCell = $('#view_iou_attachments').empty();
+            if (attachments.length === 0) {
+                $attachmentsCell.text('-');
+            } else {
+                attachments.forEach(function (file) {
+                    $('<a>', { href: file.url, target: '_blank', text: file.name }).appendTo($attachmentsCell);
+                    $attachmentsCell.append('<br>');
+                });
+            }
         });
     });
 </script>

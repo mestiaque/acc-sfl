@@ -79,6 +79,7 @@ Route::middleware($route['middleware'] ?? ['web', 'auth'])
         Route::get('expenses/{expense}/slip', [ExpenseController::class, 'slip'])->name('expenses.slip');
         Route::post('expenses/{expense}/approve', [ExpenseController::class, 'approve'])->name('expenses.approve');
         Route::post('expenses/{expense}/reject', [ExpenseController::class, 'reject'])->name('expenses.reject');
+        Route::delete('expenses/{expense}/attachments/{file}', [ExpenseController::class, 'destroyAttachment'])->name('expenses.attachments.destroy');
         Route::get('expenses/export', [ExpenseController::class, 'export'])->name('expenses.export');
         Route::post('expenses/import/preview', [ExpenseImportController::class, 'preview'])->name('expenses.import.preview');
         Route::post('expenses/import/save', [ExpenseImportController::class, 'save'])->name('expenses.import.save');
@@ -88,6 +89,7 @@ Route::middleware($route['middleware'] ?? ['web', 'auth'])
         Route::get('expense-ious/print', [ExpenseIouController::class, 'print'])->name('expense-ious.print');
         Route::get('expense-ious/export', [ExpenseIouController::class, 'export'])->name('expense-ious.export');
         Route::post('expense-ious/{expense_iou}/adjust', [ExpenseIouController::class, 'adjust'])->name('expense-ious.adjust');
+        Route::delete('expense-ious/{expense_iou}/attachments/{file}', [ExpenseIouController::class, 'destroyAttachment'])->name('expense-ious.attachments.destroy');
 
         Route::get('transactions', [TransactionController::class, 'index'])->name('transactions.index');
         Route::get('transactions/print', [TransactionController::class, 'print'])->name('transactions.print');

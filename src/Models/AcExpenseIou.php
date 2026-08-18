@@ -73,6 +73,21 @@ class AcExpenseIou extends Model
         return $this->morphMany(AcTransaction::class, 'reference');
     }
 
+    /**
+     * Multiple supporting documents for this IOU, stored in the central files table.
+     *
+     * Deliberately not a morphMany — see AcExpense::attachments() for why: acc-sfl's
+     * Relation::morphMap() would make it store the short alias ('ac_expense_iou') here,
+     * inconsistent with every other fileable_type in the files table.
+     */
+    public function attachments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Models\File::class, 'fileable_id')
+            ->where('fileable_type', self::class)
+            ->where('use_case', 'attachment')
+            ->orderBy('created_at');
+    }
+
     public function scopePending(Builder $query): Builder
     {
         return $query->where('status', self::STATUS_PENDING);

@@ -52,7 +52,7 @@ class BalanceReceiveReportController extends Controller
     {
         return AcBalanceReceive::query()
             ->with(['branch', 'account', 'particular.masterParticular', 'creator', 'transactions'])
-            ->when(AcAccount::currentUserTiedAccount(), fn ($q, $tied) => $q->where('account_id', $tied->id))
+            ->when(AcAccount::currentUserTiedAccountIds(), fn ($q, $tiedIds) => $q->whereIn('account_id', $tiedIds))
             ->when($request->filled('search'), function ($q) use ($request) {
                 $search = $request->string('search');
                 $q->where(function ($query) use ($search) {

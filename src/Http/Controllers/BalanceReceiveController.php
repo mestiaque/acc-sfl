@@ -58,7 +58,7 @@ class BalanceReceiveController extends Controller
     {
         return AcBalanceReceive::query()
             ->with(['branch', 'account', 'particular.masterParticular', 'creator'])
-            ->when(AcAccount::currentUserTiedAccount(), fn ($q, $tied) => $q->where('account_id', $tied->id))
+            ->when(AcAccount::currentUserTiedAccountIds(), fn ($q, $tiedIds) => $q->whereIn('account_id', $tiedIds))
             ->when($request->filled('search'), fn ($q) => $q->where('receive_no', 'like', '%'.$request->string('search').'%'))
             ->when($request->filled('branch_id'), fn ($q) => $q->where('branch_id', $request->integer('branch_id')))
             ->when($request->filled('account_id'), fn ($q) => $q->where('account_id', $request->integer('account_id')))

@@ -81,6 +81,33 @@ class TransactionService
     }
 
     /**
+     * The IOU's amount was edited after issue (only allowed while still Pending). Rather
+     * than mutating the original issue transaction — which would corrupt the audit trail —
+     * this posts a delta-only correcting entry, the same principle postIouAdjustment()
+     * already follows for the adjustment step.
+     */
+    public function correctIouAmount(AcExpenseIou $iou, float $oldAmount, float $newAmount): ?AcTransaction
+    {
+        $delta = round($newAmount - $oldAmount, 2);
+
+        if ($delta === 0.0) {
+            return null;
+        }
+
+        return DB::transaction(fn () => $this->post(
+            account: $iou->account,
+            date: $iou->issue_date,
+            type: AcTransaction::TYPE_IOU_CORRECTION,
+            reference: $iou,
+            debit: $delta < 0 ? abs($delta) : 0,
+            credit: $delta > 0 ? $delta : 0,
+            description: "IOU {$iou->iou_no} amount corrected from ".number_format($oldAmount, 2).' to '.number_format($newAmount, 2),
+            paymentMethodId: $iou->payment_method_id,
+            branchId: $iou->branch_id,
+        ));
+    }
+
+    /**
      * The schema carries a single `amount` on the IOU (the advance given at issue time),
      * with no separate "amount returned" field. Adjustment therefore only closes the IOU's
      * status and logs an audit-trail entry — it does not move cash a second time, since the

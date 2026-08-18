@@ -85,6 +85,10 @@ class AcAccount extends Model
      * The account the logged-in user is personally tied to (e.g. a branch cashier with
      * their own cash account), or null for users not tied to any single account (e.g.
      * accounting admins, who work across every account).
+     *
+     * @deprecated A user can be tied to more than one account (e.g. a cashier who also
+     * covers a second cash box) — this only ever returns the first, silently hiding any
+     * other tied account's data. Use currentUserTiedAccountIds() instead.
      */
     public static function currentUserTiedAccount(): ?self
     {
@@ -98,20 +102,42 @@ class AcAccount extends Model
     }
 
     /**
+     * All account IDs the logged-in user is personally tied to (e.g. a branch cashier who
+     * covers more than one cash account), or null for users not tied to any account (e.g.
+     * accounting admins, who work across every account).
+     *
+     * @return array<int>|null
+     */
+    public static function currentUserTiedAccountIds(): ?array
+    {
+        $userId = Auth::id();
+
+        if (! $userId) {
+            return null;
+        }
+
+        $ids = static::query()->where('user_id', $userId)->active()->pluck('id')->all();
+
+        return empty($ids) ? null : $ids;
+    }
+
+    /**
      * Particular IDs the logged-in user is restricted to, or null if unrestricted (not
-     * tied to an account, or tied to an account with no particular allow-list set).
+     * tied to any account, or tied to an account with no particular allow-list set).
      *
      * @return array<int>|null
      */
     public static function currentUserAllowedParticularIds(): ?array
     {
-        $account = static::currentUserTiedAccount();
+        $accountIds = static::currentUserTiedAccountIds();
 
-        if (! $account) {
+        if (! $accountIds) {
             return null;
         }
 
-        $ids = $account->particulars()->pluck('ac_particulars.id')->all();
+        $ids = static::query()->whereIn('id', $accountIds)->get()
+            ->flatMap(fn ($account) => $account->particulars()->pluck('ac_particulars.id'))
+            ->unique()->values()->all();
 
         return empty($ids) ? null : $ids;
     }

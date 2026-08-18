@@ -33,6 +33,8 @@ class ExpenseRequest extends FormRequest
                 'invoice' => ['nullable', 'string', 'max:100'],
                 'description' => ['nullable', 'string'],
                 'attachment' => ['nullable', 'file', 'max:5120'],
+                'attachments' => ['nullable', 'array'],
+                'attachments.*' => ['file', 'max:5120'],
             ];
         }
 
@@ -48,6 +50,8 @@ class ExpenseRequest extends FormRequest
             'invoice' => ['nullable', 'string', 'max:100'],
             'description' => ['nullable', 'string'],
             'attachment' => ['nullable', 'file', 'max:5120'],
+            'attachments' => ['nullable', 'array'],
+            'attachments.*' => ['file', 'max:5120'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.particular_id' => [
                 'required', 'integer', 'exists:ac_particulars,id',

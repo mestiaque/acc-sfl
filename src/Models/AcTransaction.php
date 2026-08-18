@@ -20,6 +20,7 @@ class AcTransaction extends Model
     public const TYPE_EXPENSE = 'Expense';
     public const TYPE_IOU_ISSUE = 'IOU Issue';
     public const TYPE_IOU_ADJUSTMENT = 'IOU Adjustment';
+    public const TYPE_IOU_CORRECTION = 'IOU Correction';
 
     protected $fillable = [
         'transaction_date',

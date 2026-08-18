@@ -109,6 +109,25 @@ class AcExpense extends Model
         return $this->morphMany(AcTransaction::class, 'reference');
     }
 
+    /**
+     * Multiple supporting documents for this expense (receipts, invoices, ...),
+     * stored in the central files table. Independent of the legacy single
+     * `attachment` column, which stays as-is for older records.
+     *
+     * Deliberately not a morphMany: this app's other fileable_type columns
+     * (User, HrEmployee, General, ...) all store the raw model class name, but
+     * acc-sfl registers a Relation::morphMap() for its own `ac_transactions`
+     * ledger, which would make a real morphMany store the short alias ('ac_expense')
+     * here instead — inconsistent with every other row in the files table.
+     */
+    public function attachments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Models\File::class, 'fileable_id')
+            ->where('fileable_type', self::class)
+            ->where('use_case', 'attachment')
+            ->orderBy('created_at');
+    }
+
     public function isReferenced(): bool
     {
         return $this->transactions()->exists();

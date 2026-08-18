@@ -93,10 +93,28 @@
                     <textarea name="description" class="form-control" rows="3" data-tinymce="1">{{ $expense->description }}</textarea>
                 </div>
                 <div class="form-group">
-                    <label>Attachment (upload to replace)</label>
-                    <input type="file" name="attachment" class="form-control-file">
-                    @if($expense->attachment)
-                    <small class="form-text text-muted">Current: <a href="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($expense->attachment) }}" target="_blank">view attachment</a></small>
+                    <label>Attachments</label>
+                    <input type="file" name="attachments[]" class="form-control-file" multiple>
+                    <small class="form-text text-muted">You can select multiple files.</small>
+
+                    @if($expense->attachment || $expense->attachments->count())
+                    <ul class="list-unstyled mt-2 mb-0">
+                        @if($expense->attachment)
+                        <li class="d-flex align-items-center justify-content-between border rounded px-2 py-1 mb-1">
+                            <a href="{{ asset('storage/'.$expense->attachment) }}" target="_blank">{{ basename($expense->attachment) }}</a>
+                        </li>
+                        @endif
+                        @foreach($expense->attachments as $file)
+                        <li class="d-flex align-items-center justify-content-between border rounded px-2 py-1 mb-1">
+                            <a href="{{ $file->file_url }}" target="_blank">{{ $file->original_name ?: $file->file_name }}</a>
+                            <form action="{{ route('acc-sfl.expenses.attachments.destroy', [$expense, $file]) }}" method="POST" onsubmit="return confirm('Remove this attachment?')" class="ml-2">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-link btn-sm text-danger p-0">Remove</button>
+                            </form>
+                        </li>
+                        @endforeach
+                    </ul>
                     @endif
                 </div>
 

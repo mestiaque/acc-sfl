@@ -91,8 +91,9 @@
                     <textarea name="description" class="form-control" rows="3" data-tinymce="1"></textarea>
                 </div>
                 <div class="form-group">
-                    <label>Attachment</label>
-                    <input type="file" name="attachment" class="form-control-file">
+                    <label>Attachments</label>
+                    <input type="file" name="attachments[]" class="form-control-file" multiple>
+                    <small class="form-text text-muted">You can select multiple files.</small>
                 </div>
 
                 <div class="text-right">

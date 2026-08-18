@@ -10,13 +10,18 @@
     <tr><th>Invoice</th><td>{{ $expense->invoice ?: '-' }}</td></tr>
     <tr><th>Description</th><td>{{ $expense->description ?: '-' }}</td></tr>
     <tr>
-        <th>Attachment</th>
+        <th>Attachments</th>
         <td>
             @if($expense->attachment)
-                <a href="{{ \Illuminate\Support\Facades\Storage::url($expense->attachment) }}" target="_blank">View file</a>
-            @else
-                -
+                <a href="{{ asset('storage/'.$expense->attachment) }}" target="_blank">View file</a><br>
             @endif
+            @forelse($expense->attachments as $file)
+                <a href="{{ $file->file_url }}" target="_blank">{{ $file->original_name ?: $file->file_name }}</a><br>
+            @empty
+                @if(!$expense->attachment)
+                    -
+                @endif
+            @endforelse
         </td>
     </tr>
     <tr><th>Recorded By</th><td>{{ $expense->creator->name ?? '-' }}</td></tr>
