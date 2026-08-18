@@ -3,6 +3,7 @@
 namespace ME\AccSfl\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use ME\AccSfl\Models\AcBalanceReceive;
 use ME\AccSfl\Models\AcMasterParticular;
 use ME\AccSfl\Models\AcParticular;
 
@@ -17,11 +18,14 @@ class BalanceReceiveRequest extends FormRequest
 
     public function rules(): array
     {
-        // Once a receive has posted its ac_transactions entry, the fields that drive the
-        // ledger (date/branch/account/particular/amount) are locked on edit — changing them
-        // here would desync the already-posted transaction and every running balance after
-        // it. Only descriptive metadata stays editable; corrections go through a new entry.
-        if ($this->route('balance_receive')) {
+        $balanceReceive = $this->route('balance_receive');
+
+        // Same rationale as ExpenseRequest: once a receive has posted its ac_transactions
+        // entry (i.e. it's no longer pending), the fields that drive the ledger
+        // (date/branch/account/particular/amount) are locked — changing them would desync
+        // the already-posted transaction and every running balance after it. A still-pending
+        // receive has posted nothing yet, so it gets the full rule set below, same as create.
+        if ($balanceReceive && $balanceReceive->status !== AcBalanceReceive::STATUS_PENDING) {
             return [
                 'description' => ['nullable', 'string'],
                 'attachment' => ['nullable', 'file', 'max:5120'],

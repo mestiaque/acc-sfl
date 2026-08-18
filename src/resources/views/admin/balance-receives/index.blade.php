@@ -153,11 +153,22 @@
                                 @endif
                                 @endcan
                                 @can('ac_balance_receive.edit')
+                                @if($receive->status === 'pending')
+                                <button type="button" class="btn-custom yellow" title="Edit" data-toggle="modal" data-target="#editReceiveFullModal"
+                                    data-action="{{ route('acc-sfl.balance-receives.update', $receive) }}"
+                                    data-receive-date="{{ $receive->receive_date->toDateString() }}"
+                                    data-branch-id="{{ $receive->branch_id }}" data-account-id="{{ $receive->account_id }}"
+                                    data-particular-id="{{ $receive->particular_id }}" data-amount="{{ $receive->amount }}"
+                                    data-description="{{ $receive->description }}">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                                @else
                                 <button type="button" class="btn-custom yellow" title="Edit" data-toggle="modal" data-target="#editReceiveModal"
                                     data-action="{{ route('acc-sfl.balance-receives.update', $receive) }}"
                                     data-description="{{ $receive->description }}">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
+                                @endif
                                 @endcan
                                 @can('ac_balance_receive.delete')
                                 @if($receive->status !== 'approved')
@@ -251,6 +262,75 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Full Edit Modal — only used while still Pending (nothing posted yet, so everything's editable) --}}
+<div class="modal fade" id="editReceiveFullModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="POST" id="editReceiveFullForm" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Balance Receive</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Receive Date <span class="text-danger">*</span></label>
+                        <input type="date" name="receive_date" id="edit_full_receive_date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Branch <span class="text-danger">*</span></label>
+                        <select name="branch_id" id="edit_full_branch_id" class="form-control" required>
+                            <option value="">-- Select Branch --</option>
+                            @foreach($branches as $branch)
+                            <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Account <span class="text-danger">*</span></label>
+                        <select name="account_id" id="edit_full_account_id" class="form-control" required>
+                            <option value="">-- Select Account --</option>
+                            @foreach($accounts as $account)
+                            <option value="{{ $account->id }}">{{ $account->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Particular <span class="text-danger">*</span></label>
+                        <select name="particular_id" id="edit_full_particular_id" class="form-control" required>
+                            <option value="">-- Select Particular --</option>
+                            @foreach($particulars as $master)
+                            <optgroup label="{{ $master->name }}">
+                                @foreach($master->particulars as $particular)
+                                <option value="{{ $particular->id }}">{{ $particular->code ? "{$particular->code} - " : '' }}{{ $particular->name }}</option>
+                                @endforeach
+                            </optgroup>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount <span class="text-danger">*</span></label>
+                        <input type="number" step="0.01" min="0.01" name="amount" id="edit_full_amount" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea name="description" id="edit_full_description" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Attachment (upload to replace)</label>
+                        <input type="file" name="attachment" class="form-control-file">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Update</button>
                 </div>
             </form>
         </div>
@@ -392,6 +472,17 @@
             var btn = $(event.relatedTarget);
             $(this).find('form').attr('action', btn.data('action'));
             $('#edit_receive_description').val(btn.data('description'));
+        });
+
+        $('#editReceiveFullModal').on('show.bs.modal', function (event) {
+            var btn = $(event.relatedTarget);
+            $(this).find('form').attr('action', btn.data('action'));
+            $('#edit_full_receive_date').val(btn.data('receive-date'));
+            $('#edit_full_branch_id').val(btn.data('branch-id')).trigger('change');
+            $('#edit_full_account_id').val(btn.data('account-id')).trigger('change');
+            $('#edit_full_particular_id').val(btn.data('particular-id')).trigger('change');
+            $('#edit_full_amount').val(btn.data('amount'));
+            $('#edit_full_description').val(btn.data('description'));
         });
 
         $('#viewReceiveModal').on('show.bs.modal', function (event) {
