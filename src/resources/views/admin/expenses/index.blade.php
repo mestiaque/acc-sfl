@@ -199,7 +199,7 @@
                                 @endcan
                                 @can('ac_expense.force_delete')
                                 @if($expense->status === 'approved')
-                                <button type="button" class="btn-custom danger" title="Force Delete (reverses posted transaction)" data-toggle="modal" data-target="#forceDeleteExpenseModal"
+                                <button type="button" class="btn-custom danger d-none" title="Force Delete (reverses posted transaction)" data-toggle="modal" data-target="#forceDeleteExpenseModal"
                                     data-action="{{ route('acc-sfl.expenses.force-delete', $expense) }}">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>

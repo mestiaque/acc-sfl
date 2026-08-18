@@ -148,7 +148,7 @@
                                 @endcan
                                 @can('ac_expense_iou.force_delete')
                                 @if($iou->status === 'Adjusted')
-                                <button type="button" class="btn-custom danger" title="Force Delete (reverses posted transactions)" data-toggle="modal" data-target="#forceDeleteIouModal"
+                                <button type="button" class="btn-custom danger d-none" title="Force Delete (reverses posted transactions)" data-toggle="modal" data-target="#forceDeleteIouModal"
                                     data-action="{{ route('acc-sfl.expense-ious.force-delete', $iou) }}">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>
