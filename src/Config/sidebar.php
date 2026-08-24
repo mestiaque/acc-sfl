@@ -8,7 +8,7 @@ return [
             'icon' => 'fa-solid fa-cash-register',
             'icon_color' => 'text-primary',
             'permission' => '',
-            'order' => 8,
+            'order' => 11,
             'children' => [
                 ['title' => 'Dashboard', 'icon' => 'fa-solid fa-gauge', 'route' => '/admin/acc-sfl', 'icon_color' => 'text-primary', 'permission' => 'ac_dashboard'],
                 [
