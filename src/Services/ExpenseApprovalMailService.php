@@ -11,15 +11,14 @@ class ExpenseApprovalMailService
 {
     public function send(AcExpense $expense): void
     {
-        // $recipients = User::all()
-        //     ->filter(fn (User $user) => $user->hasPermission('ac_expense.approve'))
-        //     ->pluck('email')
-        //     ->filter(fn ($email) => filter_var($email, FILTER_VALIDATE_EMAIL) !== false)
-        //     ->unique()
-        //     ->values()
-        //     ->all();
+        $recipients = User::all()
+            ->filter(fn (User $user) => $user->hasPermission('ac_expense.approve'))
+            ->pluck('email')
+            ->filter(fn ($email) => filter_var($email, FILTER_VALIDATE_EMAIL) !== false)
+            ->unique()
+            ->values()
+            ->all();
 
-        $recipients = ['mrm.khan.1298@gmail.com'];
 
         if ($recipients === []) {
             Log::warning('Expense approval email was skipped because no user with ac_expense.approve permission has a valid email.', [
