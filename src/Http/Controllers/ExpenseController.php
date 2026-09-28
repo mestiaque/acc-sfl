@@ -18,6 +18,7 @@ use ME\AccSfl\Models\AcBranch;
 use ME\AccSfl\Models\AcExpense;
 use ME\AccSfl\Models\AcMasterParticular;
 use ME\AccSfl\Models\AcPaymentMethod;
+use ME\AccSfl\Services\ExpenseApprovalMailService;
 use ME\AccSfl\Services\NumberToWordsService;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -28,7 +29,7 @@ class ExpenseController extends Controller
         $this->authorize('ac_expense.list');
 
         $expenses = $this->filteredQuery($request)->latest('id')->paginate(20)->withQueryString();
-       
+
 
         return view('acc-sfl::admin.expenses.index', array_merge(compact('expenses'), $this->formOptions()));
     }
@@ -184,6 +185,7 @@ class ExpenseController extends Controller
             'route_name' => 'acc-sfl.expenses.index',
             'requested_by' => $request->user()?->id,
         ]);
+        app(ExpenseApprovalMailService::class)->send($expense);
 
         return redirect()->route('acc-sfl.expenses.index')->with('success', 'Expense recorded successfully and sent for approval.');
     }

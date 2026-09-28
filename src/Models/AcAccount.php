@@ -11,9 +11,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Auth;
+use App\Traits\HasAudit;
 
 class AcAccount extends Model
 {
+    use HasAudit;
     use ActivityLoggable;
     use HasFactory;
     use SoftDeletes;

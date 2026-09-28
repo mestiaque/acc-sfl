@@ -6,9 +6,11 @@ use App\Traits\ActivityLoggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Traits\HasAudit;
 
 class AcExpenseDetail extends Model
 {
+    use HasAudit;
     use ActivityLoggable;
     use HasFactory;
 
