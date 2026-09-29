@@ -140,6 +140,7 @@
                                     data-creator="{{ $receive->creator->name ?? '-' }}">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
+                                @if(view()->exists('components.approval-remind'))<x-approval-remind :model="$receive" />@endif
                                 @can('ac_balance_receive.approve')
                                 @if($receive->status === 'pending')
                                 <button type="button" class="btn-custom success" title="Approve" data-toggle="modal" data-target="#approveReceiveModal"

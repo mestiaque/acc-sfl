@@ -162,6 +162,7 @@
                                 <a class="btn-custom" title="Print Slip" target="_blank" href="{{ route('acc-sfl.expenses.slip', $expense) }}">
                                     <i class="fa-solid fa-print"></i>
                                 </a>
+                                @if(view()->exists('components.approval-remind'))<x-approval-remind :model="$expense" />@endif
                                 @can('ac_expense.approve')
                                 @if($expense->status === 'pending')
                                 <button type="button" class="btn-custom success" title="Approve" data-toggle="modal" data-target="#approveExpenseModal"

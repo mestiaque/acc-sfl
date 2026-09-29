@@ -65,4 +65,50 @@ class ExpenseApprovalHandler extends BaseApprovalHandler
             'approval_remarks' => $approval->remarks,
         ]);
     }
+
+    /** Expense memo shown in the shared approval email (erp-suhana emails/approval-request). */
+    public function mailContent(?Model $approvable, Approval $approval): array
+    {
+        if (!$approvable instanceof AcExpense) {
+            return [];
+        }
+
+        $approvable->loadMissing(['branch', 'account', 'paymentMethod', 'creator', 'employee', 'details.particular.masterParticular', 'attachments']);
+
+        $rows = $approvable->details->map(fn ($detail) => [
+            ['text' => $detail->particular->name ?? '-', 'sub' => collect([
+                $detail->particular?->masterParticular?->name,
+                $detail->description,
+                $detail->invoice ? "Invoice: {$detail->invoice}" : null,
+            ])->filter()->implode(' · ')],
+            number_format((float) $detail->qty, 2),
+            $detail->uom ?: '-',
+            number_format((float) $detail->rate, 2),
+            number_format((float) $detail->amount, 2),
+        ])->all();
+
+        if ($rows === []) {
+            $rows = [[strip_tags((string) $approvable->description) ?: '-', '-', '-', '-', number_format((float) $approvable->total_amount, 2)]];
+        }
+
+        return [
+            'badge' => 'EXPENSE MEMO',
+            'number' => $approvable->expense_no,
+            'date' => $approvable->expense_date?->format('d.m.Y'),
+            'meta' => [
+                'Paid to (Company)' => $approvable->company_name,
+                'Receiver' => trim(($approvable->receiver_name ?? '').($approvable->receiver_mobile ? " ({$approvable->receiver_mobile})" : '')),
+                'Employee' => $approvable->employee?->name,
+                'Branch' => $approvable->branch?->name,
+                'Account' => $approvable->account?->name,
+                'Payment Method' => $approvable->paymentMethod?->name,
+                'Invoice' => $approvable->invoice,
+                'Attachments' => ($count = $approvable->attachments->count() + ($approvable->attachment ? 1 : 0)) ? "{$count} (view in system)" : null,
+            ],
+            'columns' => [['label' => 'Particular'], ['label' => 'Qty', 'align' => 'right'], ['label' => 'UOM'], ['label' => 'Rate', 'align' => 'right'], ['label' => 'Amount (Tk)', 'align' => 'right']],
+            'rows' => $rows,
+            'total' => ['label' => 'Total', 'value' => (float) $approvable->total_amount, 'money' => true],
+            'notes' => ['Description' => $approvable->details->isNotEmpty() ? strip_tags((string) $approvable->description) : null],
+        ];
+    }
 }

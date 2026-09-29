@@ -259,7 +259,6 @@ class ExpenseImportService
                     'route_name' => 'acc-sfl.expenses.index',
                     'requested_by' => Auth::id(),
                 ]);
-                app(ExpenseApprovalMailService::class)->send($expense);
 
                 $result['saved'] = true;
             } catch (\Throwable $e) {

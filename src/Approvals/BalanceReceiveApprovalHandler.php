@@ -66,4 +66,29 @@ class BalanceReceiveApprovalHandler extends BaseApprovalHandler
             'approval_remarks' => $approval->remarks,
         ]);
     }
+
+    /** Balance receive shown in the shared approval email (erp-suhana emails/approval-request). */
+    public function mailContent(?Model $approvable, Approval $approval): array
+    {
+        if (!$approvable instanceof AcBalanceReceive) {
+            return [];
+        }
+
+        $approvable->loadMissing(['branch', 'account', 'particular.masterParticular', 'creator']);
+
+        return [
+            'badge' => 'BALANCE RECEIVE',
+            'number' => $approvable->receive_no,
+            'date' => $approvable->receive_date?->format('d.m.Y'),
+            'meta' => [
+                'Branch' => $approvable->branch?->name,
+                'Account' => $approvable->account?->name,
+                'Particular' => collect([$approvable->particular?->masterParticular?->name, $approvable->particular?->name])->filter()->implode(' › '),
+                'Recorded by' => $approvable->creator?->name,
+                'Attachment' => $approvable->attachment ? 'Yes (view in system)' : null,
+            ],
+            'total' => ['label' => 'Amount Received', 'value' => (float) $approvable->amount, 'money' => true],
+            'notes' => ['Description' => strip_tags((string) $approvable->description)],
+        ];
+    }
 }
