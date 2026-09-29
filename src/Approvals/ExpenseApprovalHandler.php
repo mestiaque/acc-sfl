@@ -7,6 +7,7 @@ use App\Models\Approval;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use ME\AccSfl\Models\AcExpense;
+use ME\AccSfl\Services\SalaryAdvanceService;
 use ME\AccSfl\Services\TransactionService;
 
 /**
@@ -18,8 +19,10 @@ use ME\AccSfl\Services\TransactionService;
  */
 class ExpenseApprovalHandler extends BaseApprovalHandler
 {
-    public function __construct(private readonly TransactionService $transactions)
-    {
+    public function __construct(
+        private readonly TransactionService $transactions,
+        private readonly SalaryAdvanceService $salaryAdvances,
+    ) {
     }
 
     public function recipients(?Model $approvable, Approval $approval): array
@@ -48,6 +51,8 @@ class ExpenseApprovalHandler extends BaseApprovalHandler
             'approved_at' => $approval->approved_at,
             'approval_remarks' => $approval->remarks,
         ]);
+
+        $this->salaryAdvances->post($expense);
     }
 
     public function onRejected(Approval $approval): void

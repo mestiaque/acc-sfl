@@ -11,12 +11,12 @@
 @endphp
 <tr class="expense-item-row" data-index="{{ $index }}">
     <td style="min-width: 220px;">
-        <select name="items[{{ $index }}][particular_id]" class="form-control form-control-sm" required>
+        <select name="items[{{ $index }}][particular_id]" class="form-control form-control-sm item-particular" required>
             <option value="">-- Select --</option>
             @foreach($particulars as $master)
             <optgroup label="{{ $master->name }}">
                 @foreach($master->particulars as $particular)
-                <option value="{{ $particular->id }}" @selected(isset($item) && (int) $item->particular_id === $particular->id)>{{ $particular->code ? "{$particular->code} - " : '' }}{{ $particular->name }}</option>
+                <option value="{{ $particular->id }}" data-salary-advance="{{ $particular->is_salary_advance ? 1 : 0 }}" @selected(isset($item) && (int) $item->particular_id === $particular->id)>{{ $particular->code ? "{$particular->code} - " : '' }}{{ $particular->name }}</option>
                 @endforeach
             </optgroup>
             @endforeach

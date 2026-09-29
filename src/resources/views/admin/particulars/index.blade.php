@@ -70,7 +70,12 @@
                     <tbody>
                         @foreach($particulars as $particular)
                         <tr>
-                            <td>{{ $particular->name }}</td>
+                            <td>
+                                {{ $particular->name }}
+                                @if($particular->is_salary_advance)
+                                <span class="badge badge-info ml-1">Salary Advance</span>
+                                @endif
+                            </td>
                             <td>{{ $particular->code ?: '-' }}</td>
                             <td>{{ $particular->masterParticular->name }}</td>
                             <td>
@@ -82,6 +87,7 @@
                                     data-code="{{ $particular->code }}"
                                     data-description="{{ $particular->description }}"
                                     data-master-particular="{{ $particular->masterParticular->name }}"
+                                    data-salary-advance="{{ $particular->is_salary_advance ? 'Yes' : 'No' }}"
                                     data-status="{{ $particular->is_active ? 'Active' : 'Inactive' }}">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
@@ -92,6 +98,7 @@
                                     data-code="{{ $particular->code }}"
                                     data-description="{{ $particular->description }}"
                                     data-master-particular-id="{{ $particular->master_particular_id }}"
+                                    data-salary-advance="{{ $particular->is_salary_advance ? '1' : '0' }}"
                                     data-active="{{ $particular->is_active ? '1' : '0' }}">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -146,6 +153,14 @@
                         <textarea name="description" class="form-control" rows="3"></textarea>
                     </div>
                     <div class="form-group">
+                        <input type="hidden" name="is_salary_advance" value="0">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="create_particular_is_salary_advance" name="is_salary_advance" value="1">
+                            <label class="custom-control-label" for="create_particular_is_salary_advance">Salary Advance</label>
+                        </div>
+                        <small class="text-muted">Expense lines with this particular need an employee and are added to the employee's HR Earnings &amp; Deductions (Advance/IOU) on approval.</small>
+                    </div>
+                    <div class="form-group">
                         <input type="hidden" name="is_active" value="0">
                         <div class="custom-control custom-switch">
                             <input type="checkbox" class="custom-control-input" id="create_particular_is_active" name="is_active" value="1" checked>
@@ -196,6 +211,14 @@
                         <textarea name="description" id="edit_particular_description" class="form-control" rows="3"></textarea>
                     </div>
                     <div class="form-group">
+                        <input type="hidden" name="is_salary_advance" value="0">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="edit_particular_is_salary_advance" name="is_salary_advance" value="1">
+                            <label class="custom-control-label" for="edit_particular_is_salary_advance">Salary Advance</label>
+                        </div>
+                        <small class="text-muted">Expense lines with this particular need an employee and are added to the employee's HR Earnings &amp; Deductions (Advance/IOU) on approval.</small>
+                    </div>
+                    <div class="form-group">
                         <input type="hidden" name="is_active" value="0">
                         <div class="custom-control custom-switch">
                             <input type="checkbox" class="custom-control-input" id="edit_particular_is_active" name="is_active" value="1">
@@ -226,6 +249,7 @@
                     <tr><th>Code</th><td id="view_particular_code"></td></tr>
                     <tr><th>Description</th><td id="view_particular_description"></td></tr>
                     <tr><th>Master Particular</th><td id="view_particular_master_particular"></td></tr>
+                    <tr><th>Salary Advance</th><td id="view_particular_salary_advance"></td></tr>
                     <tr><th>Status</th><td id="view_particular_status"></td></tr>
                 </table>
             </div>
@@ -250,6 +274,7 @@
             $('#edit_particular_name').val(btn.data('name'));
             $('#edit_particular_code').val(btn.data('code'));
             $('#edit_particular_description').val(btn.data('description'));
+            $('#edit_particular_is_salary_advance').prop('checked', btn.data('salary-advance') == 1);
             $('#edit_particular_is_active').prop('checked', btn.data('active') == 1);
         });
 
@@ -259,6 +284,7 @@
             $('#view_particular_code').text(btn.data('code') || '-');
             $('#view_particular_description').text(btn.data('description') || '-');
             $('#view_particular_master_particular').text(btn.data('master-particular'));
+            $('#view_particular_salary_advance').text(btn.data('salary-advance'));
             $('#view_particular_status').text(btn.data('status'));
         });
     });

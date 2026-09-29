@@ -68,8 +68,8 @@
                 </div>
                 <div class="row">
                     <div class="col-md-6 form-group">
-                        <label>Employee</label>
-                        <select name="employee_id" class="form-control">
+                        <label>Employee <span class="text-danger d-none" id="expenseEmployeeRequired">* (required for Salary Advance)</span></label>
+                        <select name="employee_id" id="expenseEmployee" class="form-control">
                             <option value="">-- None --</option>
                             @foreach($employees as $employee)
                             <option value="{{ $employee->id }}" @selected($expense->employee_id === $employee->id)>{{ $employee->employee_id }} - {{ $employee->name }}{{ $employee->department ? ' ('.$employee->department->name.(($employee->designation) ? ' / '.$employee->designation->name : '').')' : '' }}</option>

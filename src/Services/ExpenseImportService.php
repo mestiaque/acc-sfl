@@ -168,6 +168,8 @@ class ExpenseImportService
             $errors[] = 'Particular Code is required.';
         } elseif (! $particular) {
             $errors[] = "Particular code '{$particularCode}' not found.";
+        } elseif ($particular->is_salary_advance) {
+            $errors[] = "Particular '{$particularCode}' is a Salary Advance and needs an employee - add it from the Add Expense form instead of importing.";
         }
 
         $hasAmount = $amountRaw !== '';

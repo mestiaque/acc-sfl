@@ -23,6 +23,7 @@ class ParticularRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'code' => ['nullable', 'string', 'max:50', Rule::unique('ac_particulars', 'code')->ignore($id)],
             'description' => ['nullable', 'string'],
+            'is_salary_advance' => ['sometimes', 'boolean'],
             'is_active' => ['sometimes', 'boolean'],
         ];
     }

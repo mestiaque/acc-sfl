@@ -363,6 +363,8 @@ class ExpenseController extends Controller
                 app(\ME\AccSfl\Services\TransactionService::class)->reverseTransactions($expense->account, $transactions);
             }
 
+            app(\ME\AccSfl\Services\SalaryAdvanceService::class)->reverse($expense);
+
             foreach ($expense->attachments as $file) {
                 if ($file->file_path) {
                     Storage::disk($file->disk ?: 'public')->delete($file->file_path);

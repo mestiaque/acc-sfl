@@ -26,10 +26,12 @@ class AcParticular extends Model
         'name',
         'code',
         'description',
+        'is_salary_advance',
         'is_active',
     ];
 
     protected $casts = [
+        'is_salary_advance' => 'boolean',
         'is_active' => 'boolean',
     ];
 

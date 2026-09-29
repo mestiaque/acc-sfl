@@ -34,6 +34,7 @@ class AcExpense extends Model
         'receiver_name',
         'receiver_mobile',
         'employee_id',
+        'hr_other_transaction_id',
         'invoice',
         'total_amount',
         'description',
@@ -128,6 +129,16 @@ class AcExpense extends Model
             ->where('fileable_type', self::class)
             ->where('use_case', 'attachment')
             ->orderBy('created_at');
+    }
+
+    /** Sum of the line items whose particular is flagged as Salary Advance. */
+    public function salaryAdvanceAmount(): float
+    {
+        $this->loadMissing('details.particular');
+
+        return (float) $this->details
+            ->filter(fn (AcExpenseDetail $detail) => (bool) $detail->particular?->is_salary_advance)
+            ->sum('amount');
     }
 
     public function isReferenced(): bool

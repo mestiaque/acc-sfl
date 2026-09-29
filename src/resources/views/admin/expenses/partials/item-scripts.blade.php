@@ -30,6 +30,16 @@
         $row.find('.item-qty, .item-rate, .item-uom').prop('disabled', manual);
     }
 
+    // A Salary Advance line is posted to the employee's HR Earnings & Deductions on approval,
+    // so the Employee field becomes required while any such line is selected.
+    function acSyncSalaryAdvanceEmployee() {
+        var needsEmployee = $('#expenseItemsBody .item-particular').filter(function () {
+            return $(this).find('option:selected').data('salary-advance') == 1;
+        }).length > 0;
+        $('#expenseEmployee').prop('required', needsEmployee);
+        $('#expenseEmployeeRequired').toggleClass('d-none', !needsEmployee);
+    }
+
     function acAddExpenseItemRow(containerSelector, templateSelector) {
         var html = $(templateSelector).html().replace(/__INDEX__/g, acExpenseItemIndex++);
         $(containerSelector).append(html);
@@ -48,6 +58,8 @@
             acRecalculateExpenseTotal(row.closest(itemScope));
         });
 
+        $(document).on('change', itemScope + ' .item-particular', acSyncSalaryAdvanceEmployee);
+
         $('.add-expense-item-row').on('click', function () {
             acAddExpenseItemRow($(this).data('container'), '#expenseItemRowTemplate');
         });
@@ -57,6 +69,7 @@
             if ($container.find('.expense-item-row').length > 1) {
                 $(this).closest('.expense-item-row').remove();
                 acRecalculateExpenseTotal($container);
+                acSyncSalaryAdvanceEmployee();
             }
         });
 
@@ -66,5 +79,6 @@
             });
             acRecalculateExpenseTotal(this);
         });
+        acSyncSalaryAdvanceEmployee();
     });
 </script>

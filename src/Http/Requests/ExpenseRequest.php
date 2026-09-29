@@ -68,4 +68,27 @@ class ExpenseRequest extends FormRequest
             'items.*.amount' => ['nullable', 'numeric', 'min:0'],
         ];
     }
+
+    /**
+     * A Salary Advance line is posted to the employee's HR Earnings & Deductions on approval,
+     * so it can't be saved without an employee. For an already-approved expense the line items
+     * are locked, so the check runs against its stored details instead of the submitted items.
+     */
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            if ($this->filled('employee_id')) {
+                return;
+            }
+
+            $expense = $this->route('expense');
+            $particularIds = $expense && $expense->status !== AcExpense::STATUS_PENDING
+                ? $expense->details()->pluck('particular_id')->all()
+                : collect($this->input('items', []))->pluck('particular_id')->filter()->all();
+
+            if ($particularIds !== [] && AcParticular::whereIn('id', $particularIds)->where('is_salary_advance', true)->exists()) {
+                $validator->errors()->add('employee_id', 'Employee is required for a Salary Advance expense.');
+            }
+        });
+    }
 }
