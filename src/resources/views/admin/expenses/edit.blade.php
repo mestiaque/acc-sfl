@@ -18,11 +18,16 @@
                 @csrf
                 @method('PUT')
                 <div class="row">
-                    <div class="col-md-6 form-group">
+                    <div class="col-md-4 form-group">
                         <label>Expense Date <span class="text-danger">*</span></label>
                         <input type="date" name="expense_date" class="form-control" value="{{ $expense->expense_date->toDateString() }}" required>
                     </div>
-                    <div class="col-md-6 form-group">
+                    <div class="col-md-4 form-group">
+                        <label>Billing Date</label>
+                        <input type="date" name="billing_date" class="form-control" value="{{ $expense->billing_date?->toDateString() }}">
+                        <small class="text-muted">Date on the bill, if different.</small>
+                    </div>
+                    <div class="col-md-4 form-group">
                         <label>Branch <span class="text-danger">*</span></label>
                         <select name="branch_id" class="form-control" required>
                             <option value="">-- Select --</option>
@@ -35,7 +40,7 @@
                 <div class="row">
                     <div class="col-md-6 form-group">
                         <label>Account <span class="text-danger">*</span></label>
-                        <select name="account_id" class="form-control" required>
+                        <select name="account_id" id="expenseAccount" class="form-control" required>
                             <option value="">-- Select --</option>
                             @foreach($accounts as $account)
                             <option value="{{ $account->id }}" @selected($expense->account_id === $account->id)>{{ $account->name }}</option>
@@ -66,6 +71,7 @@
                         <input type="text" name="receiver_mobile" class="form-control" value="{{ $expense->receiver_mobile }}">
                     </div>
                 </div>
+                @include('acc-sfl::admin.expenses.partials.iou-select', ['selectedIouId' => $expense->iou_id])
                 <div class="row">
                     <div class="col-md-6 form-group">
                         <label>Employee <span class="text-danger d-none" id="expenseEmployeeRequired">* (required for Salary Advance)</span></label>

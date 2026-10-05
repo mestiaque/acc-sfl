@@ -25,6 +25,9 @@
         </div>
         <div class="slip-date">
             <div>Date: <strong>{{ $expense->expense_date->format('d.m.Y') }}</strong></div>
+            @if($expense->billing_date)
+            <div>Bill Date: <strong>{{ $expense->billing_date->format('d.m.Y') }}</strong></div>
+            @endif
         </div>
     </div>
 

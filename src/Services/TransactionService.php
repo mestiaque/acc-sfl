@@ -108,22 +108,31 @@ class TransactionService
     }
 
     /**
-     * The schema carries a single `amount` on the IOU (the advance given at issue time),
-     * with no separate "amount returned" field. Adjustment therefore only closes the IOU's
-     * status and logs an audit-trail entry — it does not move cash a second time, since the
-     * cash already left the account at issue and settlement is tracked via linked Expense records.
+     * Settles the IOU against the expenses bought with it (which posted no cash of their own,
+     * since the cash already left at issue). settlement_amount is IOU amount minus approved
+     * expenses: positive = the employee returned the unspent cash (debit, balance goes up),
+     * negative = the purchase cost more and the extra was paid out (credit, balance goes down),
+     * zero = an audit-only entry.
      */
     public function postIouAdjustment(AcExpenseIou $iou): AcTransaction
     {
+        $settlement = round((float) $iou->settlement_amount, 2);
+
+        $description = match (true) {
+            $settlement > 0 => "{$iou->iou_no} adjusted - ".number_format($settlement, 2).' returned',
+            $settlement < 0 => "{$iou->iou_no} adjusted - ".number_format(abs($settlement), 2).' extra paid',
+            default => "{$iou->iou_no} adjusted",
+        };
+
         return DB::transaction(fn () => $this->post(
             account: $iou->account,
             date: $iou->adjust_date ?? now()->toDateString(),
             type: AcTransaction::TYPE_IOU_ADJUSTMENT,
             reference: $iou,
-            debit: 0,
-            credit: 0,
-            description: "IOU {$iou->iou_no} adjusted",
-            paymentMethodId: $iou->payment_method_id,
+            debit: $settlement > 0 ? $settlement : 0,
+            credit: $settlement < 0 ? abs($settlement) : 0,
+            description: $description,
+            paymentMethodId: $iou->settlement_payment_method_id ?? $iou->payment_method_id,
             branchId: $iou->branch_id,
         ));
     }

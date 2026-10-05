@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\HasAudit;
@@ -32,6 +33,8 @@ class AcExpenseIou extends Model
         'issue_date',
         'adjust_date',
         'amount',
+        'settlement_amount',
+        'settlement_payment_method_id',
         'description',
         'receiver_name',
         'receiver_mobile',
@@ -42,6 +45,7 @@ class AcExpenseIou extends Model
         'issue_date' => 'date',
         'adjust_date' => 'date',
         'amount' => 'decimal:2',
+        'settlement_amount' => 'decimal:2',
     ];
 
     public function branch(): BelongsTo
@@ -68,6 +72,22 @@ class AcExpenseIou extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(\ME\Hr\Models\HrEmployee::class, 'employee_id');
+    }
+
+    /** Expenses recorded for what was bought with this IOU. */
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(AcExpense::class, 'iou_id');
+    }
+
+    public function approvedExpenseTotal(): float
+    {
+        return (float) $this->expenses()->where('status', AcExpense::STATUS_APPROVED)->sum('total_amount');
+    }
+
+    public function hasPendingExpenses(): bool
+    {
+        return $this->expenses()->where('status', AcExpense::STATUS_PENDING)->exists();
     }
 
     public function transactions(): MorphMany

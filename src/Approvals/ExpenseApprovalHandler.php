@@ -43,7 +43,11 @@ class ExpenseApprovalHandler extends BaseApprovalHandler
             return;
         }
 
-        $this->transactions->postExpense($expense);
+        // Bought with an IOU: the cash already left the account at IOU issue, and the
+        // difference is settled when the IOU is adjusted - so nothing is posted here.
+        if (! $expense->iou_id) {
+            $this->transactions->postExpense($expense);
+        }
 
         $expense->update([
             'status' => AcExpense::STATUS_APPROVED,
@@ -101,6 +105,7 @@ class ExpenseApprovalHandler extends BaseApprovalHandler
             'number' => $approvable->expense_no,
             'date' => $approvable->expense_date?->format('d.m.Y'),
             'meta' => [
+                'Billing Date' => $approvable->billing_date?->format('d.m.Y'),
                 'Paid to (Company)' => $approvable->company_name,
                 'Receiver' => trim(($approvable->receiver_name ?? '').($approvable->receiver_mobile ? " ({$approvable->receiver_mobile})" : '')),
                 'Employee' => $approvable->employee?->name,

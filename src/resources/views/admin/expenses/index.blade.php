@@ -145,7 +145,12 @@
                         @endphp
                         <tr>
                             <td>{{ $expense->expense_no }}</td>
-                            <td>{{ $expense->expense_date->format('d M Y') }}</td>
+                            <td>
+                                {{ $expense->expense_date->format('d M Y') }}
+                                @if($expense->billing_date && ! $expense->billing_date->isSameDay($expense->expense_date))
+                                <br><small class="text-muted">Bill: {{ $expense->billing_date->format('d M Y') }}</small>
+                                @endif
+                            </td>
                             <td>{{ $expense->branch->name }}</td>
                             <td>{{ $expense->account->name }}</td>
                             <td>{{ $detail && $detail->particular ? $detail->particular->code.' - '.$detail->particular->name : '-' }}</td>
@@ -185,6 +190,7 @@
                                     data-action="{{ route('acc-sfl.expenses.update', $expense) }}"
                                     data-company="{{ $expense->company_name }}" data-receiver-name="{{ $expense->receiver_name }}"
                                     data-receiver-mobile="{{ $expense->receiver_mobile }}" data-invoice="{{ $expense->invoice }}"
+                                    data-billing-date="{{ $expense->billing_date?->toDateString() }}"
                                     data-employee-id="{{ $expense->employee_id }}" data-description="{{ $expense->description }}">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
@@ -229,7 +235,11 @@
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-muted small">Date, branch, account, payment method and line items are locked after the entry posts to the ledger. Only company/receiver/description/attachment can be updated.</p>
+                    <p class="text-muted small">Date, branch, account, payment method and line items are locked after the entry posts to the ledger. Only billing date/company/receiver/description/attachment can be updated.</p>
+                    <div class="form-group">
+                        <label>Billing Date</label>
+                        <input type="date" name="billing_date" id="edit_expense_billing_date" class="form-control">
+                    </div>
                     <div class="form-group">
                         <label>Company Name</label>
                         <input type="text" name="company_name" id="edit_expense_company" class="form-control">
@@ -399,6 +409,7 @@
         $('#editExpenseModal').on('show.bs.modal', function (event) {
             var btn = $(event.relatedTarget);
             $(this).find('form').attr('action', btn.data('action'));
+            $('#edit_expense_billing_date').val(btn.data('billing-date') || '');
             $('#edit_expense_company').val(btn.data('company'));
             $('#edit_expense_receiver_name').val(btn.data('receiver-name'));
             $('#edit_expense_receiver_mobile').val(btn.data('receiver-mobile'));

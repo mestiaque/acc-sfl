@@ -1,12 +1,16 @@
 <table class="table table-sm">
     <tr><th>Expense No.</th><td>{{ $expense->expense_no }}</td></tr>
     <tr><th>Date</th><td>{{ $expense->expense_date->format('d M Y') }}</td></tr>
+    <tr><th>Billing Date</th><td>{{ $expense->billing_date?->format('d M Y') ?? '-' }}</td></tr>
     <tr><th>Branch</th><td>{{ $expense->branch->name }}</td></tr>
     <tr><th>Account</th><td>{{ $expense->account->name }}</td></tr>
     <tr><th>Payment Method</th><td>{{ $expense->paymentMethod->name }}</td></tr>
     <tr><th>Company Name</th><td>{{ $expense->company_name ?: '-' }}</td></tr>
     <tr><th>Receiver</th><td>{{ $expense->receiver_name ?: '-' }} {{ $expense->receiver_mobile ? '('.$expense->receiver_mobile.')' : '' }}</td></tr>
     <tr><th>Employee</th><td>{{ $expense->employee->name ?? '-' }}</td></tr>
+    @if($expense->iou)
+    <tr><th>Against IOU</th><td>{{ $expense->iou->iou_no }} <small class="text-muted">(paid from IOU — no separate cash entry)</small></td></tr>
+    @endif
     <tr><th>Invoice</th><td>{{ $expense->invoice ?: '-' }}</td></tr>
     <tr><th>Description</th><td>{{ $expense->description ?: '-' }}</td></tr>
     <tr>

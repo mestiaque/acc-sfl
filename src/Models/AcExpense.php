@@ -27,6 +27,7 @@ class AcExpense extends Model
     protected $fillable = [
         'expense_no',
         'expense_date',
+        'billing_date',
         'payment_method_id',
         'branch_id',
         'account_id',
@@ -35,6 +36,7 @@ class AcExpense extends Model
         'receiver_mobile',
         'employee_id',
         'hr_other_transaction_id',
+        'iou_id',
         'invoice',
         'total_amount',
         'description',
@@ -48,6 +50,7 @@ class AcExpense extends Model
 
     protected $casts = [
         'expense_date' => 'date',
+        'billing_date' => 'date',
         'total_amount' => 'decimal:2',
         'approved_at' => 'datetime',
     ];
@@ -80,6 +83,12 @@ class AcExpense extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(\ME\Hr\Models\HrEmployee::class, 'employee_id');
+    }
+
+    /** The IOU this expense was bought with - its cash already left the account at IOU issue. */
+    public function iou(): BelongsTo
+    {
+        return $this->belongsTo(AcExpenseIou::class, 'iou_id');
     }
 
     public function approver(): BelongsTo

@@ -37,6 +37,9 @@
                                     <div style="display:inline-block;background:#17233c;color:#ffffff;font-size:12px;font-weight:700;letter-spacing:1px;padding:5px 12px;">EXPENSE MEMO</div>
                                     <div style="font-size:12px;color:#555;margin-top:8px;">No: <strong style="color:#17233c;">{{ $expense->expense_no }}</strong></div>
                                     <div style="font-size:12px;color:#555;">Date: <strong style="color:#17233c;">{{ $expense->expense_date?->format('d.m.Y') }}</strong></div>
+                                    @if($expense->billing_date)
+                                        <div style="font-size:12px;color:#555;">Bill Date: <strong style="color:#17233c;">{{ $expense->billing_date->format('d.m.Y') }}</strong></div>
+                                    @endif
                                     <div style="font-size:12px;color:#b7791f;font-weight:700;margin-top:4px;">PENDING APPROVAL</div>
                                 </td>
                             </tr>

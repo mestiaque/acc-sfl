@@ -12,6 +12,7 @@ use ME\AccSfl\Exports\ExpenseIouExport;
 use ME\AccSfl\Http\Requests\ExpenseIouRequest;
 use ME\AccSfl\Models\AcAccount;
 use ME\AccSfl\Models\AcBranch;
+use ME\AccSfl\Models\AcExpense;
 use ME\AccSfl\Models\AcExpenseIou;
 use ME\AccSfl\Models\AcPaymentMethod;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -54,6 +55,8 @@ class ExpenseIouController extends Controller
     {
         return AcExpenseIou::query()
             ->with(['branch', 'account', 'employee', 'paymentMethod', 'attachments'])
+            ->withSum(['expenses as approved_expense_total' => fn ($q) => $q->where('status', AcExpense::STATUS_APPROVED)], 'total_amount')
+            ->withCount(['expenses as pending_expense_count' => fn ($q) => $q->where('status', AcExpense::STATUS_PENDING)])
             ->when(AcAccount::currentUserTiedAccountIds(), fn ($q, $tiedIds) => $q->whereIn('account_id', $tiedIds))
             ->when($request->filled('search'), fn ($q) => $q->where('iou_no', 'like', '%'.$request->string('search').'%'))
             ->when($request->filled('branch_id'), fn ($q) => $q->where('branch_id', $request->integer('branch_id')))
@@ -81,6 +84,11 @@ class ExpenseIouController extends Controller
 
     public function update(ExpenseIouRequest $request, AcExpenseIou $expenseIou, \ME\AccSfl\Services\TransactionService $transactions): RedirectResponse
     {
+        if ($request->filled('employee_id') && (int) $request->input('employee_id') !== (int) $expenseIou->employee_id
+            && $expenseIou->expenses()->exists()) {
+            return back()->with('error', 'The employee cannot be changed — expenses are already recorded against this IOU.');
+        }
+
         DB::transaction(function () use ($request, $expenseIou, $transactions) {
             $data = $request->validated();
             unset($data['attachments']);
@@ -138,6 +146,11 @@ class ExpenseIouController extends Controller
         return redirect()->back()->with('success', 'Attachment removed successfully.');
     }
 
+    /**
+     * Settles the IOU against the approved expenses bought with it: the unspent part is
+     * returned to the account, or the extra the purchase cost is paid out (see
+     * TransactionService::postIouAdjustment(), triggered by AcExpenseIouObserver).
+     */
     public function adjust(Request $request, AcExpenseIou $expenseIou): RedirectResponse
     {
         $this->authorize('ac_expense_iou.edit');
@@ -146,16 +159,31 @@ class ExpenseIouController extends Controller
             return back()->with('error', 'This IOU has already been adjusted.');
         }
 
+        if ($expenseIou->hasPendingExpenses()) {
+            return back()->with('error', 'This IOU still has expenses waiting for approval — approve or reject them before adjusting.');
+        }
+
         $validated = $request->validate([
             'adjust_date' => ['required', 'date', 'after_or_equal:'.$expenseIou->issue_date->toDateString()],
+            'settlement_payment_method_id' => ['nullable', 'integer', 'exists:ac_payment_methods,id'],
         ]);
+
+        $settlement = round((float) $expenseIou->amount - $expenseIou->approvedExpenseTotal(), 2);
 
         DB::transaction(fn () => $expenseIou->update([
             'adjust_date' => $validated['adjust_date'],
+            'settlement_amount' => $settlement,
+            'settlement_payment_method_id' => $validated['settlement_payment_method_id'] ?? $expenseIou->payment_method_id,
             'status' => AcExpenseIou::STATUS_ADJUSTED,
         ]));
 
-        return back()->with('success', 'Expense IOU adjusted successfully.');
+        $message = match (true) {
+            $settlement > 0 => 'Expense IOU adjusted — '.number_format($settlement, 2).' returned to the account.',
+            $settlement < 0 => 'Expense IOU adjusted — '.number_format(abs($settlement), 2).' extra paid from the account.',
+            default => 'Expense IOU adjusted — fully spent, no cash movement.',
+        };
+
+        return back()->with('success', $message);
     }
 
     public function destroy(AcExpenseIou $expenseIou, \ME\AccSfl\Services\TransactionService $transactions): RedirectResponse
@@ -164,6 +192,10 @@ class ExpenseIouController extends Controller
 
         if ($expenseIou->status === AcExpenseIou::STATUS_ADJUSTED) {
             return back()->with('error', 'Adjusted IOUs cannot be deleted normally — use Force Delete.');
+        }
+
+        if ($expenseIou->expenses()->where('status', '!=', AcExpense::STATUS_REJECTED)->exists()) {
+            return back()->with('error', 'This IOU has expenses recorded against it — delete them or remove the IOU from them first.');
         }
 
         DB::transaction(function () use ($expenseIou, $transactions) {
@@ -184,6 +216,10 @@ class ExpenseIouController extends Controller
      * Corrections, and its zero-value Adjustment audit entry) and permanently removes
      * it - the only way to remove an already-Adjusted IOU, since normal delete() is
      * blocked once it's settled.
+     *
+     * Its approved expenses were real purchases that posted no cash because the IOU covered
+     * them; once the IOU's cash entries are reversed they are unlinked and posted on their own,
+     * as if paid straight from the account.
      */
     public function forceDestroy(AcExpenseIou $expenseIou, \ME\AccSfl\Services\TransactionService $transactions): RedirectResponse
     {
@@ -200,6 +236,14 @@ class ExpenseIouController extends Controller
                 $transactions->reverseTransactions($expenseIou->account, $existing);
             }
 
+            foreach ($expenseIou->expenses()->get() as $expense) {
+                $expense->update(['iou_id' => null]);
+
+                if ($expense->status === AcExpense::STATUS_APPROVED) {
+                    $transactions->postExpense($expense);
+                }
+            }
+
             foreach ($expenseIou->attachments as $file) {
                 if ($file->file_path) {
                     \Illuminate\Support\Facades\Storage::disk($file->disk ?: 'public')->delete($file->file_path);
@@ -210,7 +254,7 @@ class ExpenseIouController extends Controller
             $expenseIou->forceDelete();
         });
 
-        return back()->with('success', 'Expense IOU permanently deleted and its ledger entries reversed.');
+        return back()->with('success', 'Expense IOU permanently deleted and its ledger entries reversed. Any expenses recorded against it are now posted on their own.');
     }
 
     /**

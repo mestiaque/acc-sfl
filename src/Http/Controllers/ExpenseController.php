@@ -16,6 +16,7 @@ use ME\AccSfl\Http\Requests\ExpenseRequest;
 use ME\AccSfl\Models\AcAccount;
 use ME\AccSfl\Models\AcBranch;
 use ME\AccSfl\Models\AcExpense;
+use ME\AccSfl\Models\AcExpenseIou;
 use ME\AccSfl\Models\AcMasterParticular;
 use ME\AccSfl\Models\AcPaymentMethod;
 use ME\AccSfl\Services\NumberToWordsService;
@@ -62,8 +63,14 @@ class ExpenseController extends Controller
                 ->when($allowedParticularIds !== null, fn ($q2) => $q2->whereIn('id', $allowedParticularIds))])
             ->get();
         $employees = $this->activeEmployees();
+        $ious = AcExpenseIou::query()->pending()
+            ->when(AcAccount::currentUserTiedAccountIds(), fn ($q, $tiedIds) => $q->whereIn('account_id', $tiedIds))
+            ->with(['employee:id,employee_id,name', 'account:id,name'])
+            ->withSum(['expenses as approved_expense_total' => fn ($q) => $q->where('status', AcExpense::STATUS_APPROVED)], 'total_amount')
+            ->latest('id')
+            ->get();
 
-        return compact('branches', 'accounts', 'paymentMethods', 'particulars', 'employees');
+        return compact('branches', 'accounts', 'paymentMethods', 'particulars', 'employees', 'ious');
     }
 
     /**
@@ -148,7 +155,7 @@ class ExpenseController extends Controller
     {
         $this->authorize('ac_expense.view');
 
-        $expense->load(['branch', 'account', 'paymentMethod', 'creator', 'employee', 'details.particular.masterParticular', 'attachments']);
+        $expense->load(['branch', 'account', 'paymentMethod', 'creator', 'employee', 'iou', 'details.particular.masterParticular', 'attachments']);
 
         return view('acc-sfl::admin.expenses.show', compact('expense'));
     }
@@ -354,6 +361,10 @@ class ExpenseController extends Controller
 
         if ($expense->status !== AcExpense::STATUS_APPROVED) {
             return back()->with('error', 'Only approved expenses need Force Delete — use the normal Delete action instead.');
+        }
+
+        if ($expense->iou && $expense->iou->status === AcExpenseIou::STATUS_ADJUSTED) {
+            return back()->with('error', "This expense was settled with IOU {$expense->iou->iou_no}, which is already adjusted. Force Delete the IOU first - its expenses are then posted on their own and can be removed.");
         }
 
         DB::transaction(function () use ($expense) {

@@ -92,6 +92,8 @@
                             <th>Account</th>
                             <th>Employee</th>
                             <th>Amount</th>
+                            <th>Spent</th>
+                            <th>Return / Extra</th>
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -104,15 +106,37 @@
                             <td>{{ $iou->branch->name }}</td>
                             <td>{{ $iou->account->name }}</td>
                             <td>{{ $iou->employee->name ?? '-' }}</td>
+                            @php
+                                $spent = (float) ($iou->approved_expense_total ?? 0);
+                                $difference = $iou->status === 'Adjusted' ? (float) $iou->settlement_amount : (float) $iou->amount - $spent;
+                            @endphp
                             <td>{{ number_format($iou->amount, 2) }}</td>
+                            <td>
+                                {{ number_format($spent, 2) }}
+                                @if($iou->pending_expense_count)
+                                <br><small class="text-warning">{{ $iou->pending_expense_count }} pending approval</small>
+                                @endif
+                            </td>
+                            <td>
+                                @if($difference > 0)
+                                <span class="text-success">{{ number_format($difference, 2) }} {{ $iou->status === 'Adjusted' ? 'returned' : 'to return' }}</span>
+                                @elseif($difference < 0)
+                                <span class="text-danger">{{ number_format(abs($difference), 2) }} {{ $iou->status === 'Adjusted' ? 'extra paid' : 'extra to pay' }}</span>
+                                @else
+                                -
+                                @endif
+                            </td>
                             <td>
                                 <span class="badge {{ $iou->status === 'Adjusted' ? 'badge-success' : 'badge-warning' }} p-1">{{ $iou->status }}</span>
                             </td>
                             <td class="text-right" width="150">
                                 @can('ac_expense_iou.edit')
                                     @if($iou->status === 'Pending')
-                                    <button type="button" class="btn-custom success" title="Adjust" data-toggle="modal" data-target="#adjustIouModal"
-                                        data-action="{{ route('acc-sfl.expense-ious.adjust', $iou) }}" data-no="{{ $iou->iou_no }}">
+                                    <button type="button" class="btn-custom success" data-toggle="modal" data-target="#adjustIouModal"
+                                        title="{{ $iou->pending_expense_count ? 'Approve or reject its pending expenses first' : 'Adjust' }}" @disabled($iou->pending_expense_count)
+                                        data-action="{{ route('acc-sfl.expense-ious.adjust', $iou) }}" data-no="{{ $iou->iou_no }}"
+                                        data-amount="{{ (float) $iou->amount }}" data-spent="{{ $spent }}"
+                                        data-payment-method-id="{{ $iou->payment_method_id }}">
                                         <i class="fa-solid fa-check"></i>
                                     </button>
                                     @endif
@@ -307,7 +331,20 @@
                         <label>Adjust Date <span class="text-danger">*</span></label>
                         <input type="date" name="adjust_date" class="form-control" value="{{ now()->toDateString() }}" required>
                     </div>
-                    <p class="text-muted small mb-0">This marks the IOU as Adjusted/closed and logs an audit entry in Transactions.</p>
+                    <table class="table table-sm mb-2">
+                        <tr><th>IOU Amount</th><td class="text-right" id="adjust_iou_amount"></td></tr>
+                        <tr><th>Spent (approved expenses)</th><td class="text-right" id="adjust_iou_spent"></td></tr>
+                        <tr><th id="adjust_iou_result_label"></th><td class="text-right font-weight-bold" id="adjust_iou_result"></td></tr>
+                    </table>
+                    <div class="form-group" id="adjust_iou_payment_method_group">
+                        <label id="adjust_iou_payment_method_label">Payment Method</label>
+                        <select name="settlement_payment_method_id" id="adjust_iou_payment_method_id" class="form-control">
+                            @foreach($paymentMethods as $method)
+                            <option value="{{ $method->id }}">{{ $method->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <p class="text-muted small mb-0" id="adjust_iou_note"></p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
@@ -381,6 +418,30 @@
             var btn = $(event.relatedTarget);
             $('#adjustIouForm').attr('action', btn.data('action'));
             $('#adjust_iou_no').text(btn.data('no'));
+
+            var amount = parseFloat(btn.data('amount')) || 0;
+            var spent = parseFloat(btn.data('spent')) || 0;
+            var difference = Math.round((amount - spent) * 100) / 100;
+            $('#adjust_iou_amount').text(amount.toFixed(2));
+            $('#adjust_iou_spent').text(spent.toFixed(2));
+            $('#adjust_iou_payment_method_id').val(String(btn.data('payment-method-id')));
+            $('#adjust_iou_payment_method_group').toggle(difference !== 0);
+
+            if (difference > 0) {
+                $('#adjust_iou_result_label').text('Employee returns');
+                $('#adjust_iou_result').text(difference.toFixed(2)).removeClass('text-danger').addClass('text-success');
+                $('#adjust_iou_payment_method_label').text('Returned via');
+                $('#adjust_iou_note').text('The unspent ' + difference.toFixed(2) + ' is added back to the account balance.');
+            } else if (difference < 0) {
+                $('#adjust_iou_result_label').text('Extra to pay employee');
+                $('#adjust_iou_result').text(Math.abs(difference).toFixed(2)).removeClass('text-success').addClass('text-danger');
+                $('#adjust_iou_payment_method_label').text('Paid via');
+                $('#adjust_iou_note').text('The purchase cost more than the IOU — the extra ' + Math.abs(difference).toFixed(2) + ' is paid out of the account balance.');
+            } else {
+                $('#adjust_iou_result_label').text('Difference');
+                $('#adjust_iou_result').text('0.00').removeClass('text-success text-danger');
+                $('#adjust_iou_note').text('Fully spent — no cash movement, the IOU is just closed.');
+            }
         });
 
         $('#viewIouModal').on('show.bs.modal', function (event) {
