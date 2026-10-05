@@ -118,7 +118,7 @@
 
 {{-- Create Modal --}}
 <div class="modal fade" id="createMasterParticularModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <form method="POST" action="{{ route('acc-sfl.master-particulars.store') }}">
                 @csrf
@@ -127,26 +127,28 @@
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label>Name <span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Description</label>
-                        <textarea name="description" class="form-control" rows="3"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Type <span class="text-danger">*</span></label>
-                        <select name="type" class="form-control" required>
-                            <option value="debit">Debit (increases cash — e.g. receipts)</option>
-                            <option value="credit">Credit (decreases cash — e.g. expenses)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <input type="hidden" name="is_active" value="0">
-                        <div class="custom-control custom-switch">
-                            <input type="checkbox" class="custom-control-input" id="create_master_particular_is_active" name="is_active" value="1" checked>
-                            <label class="custom-control-label" for="create_master_particular_is_active">Active</label>
+                    <div class="row">
+                        <div class="col-md-3 form-group">
+                            <label>Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="col-12 form-group">
+                            <label>Description</label>
+                            <textarea name="description" class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Type <span class="text-danger">*</span></label>
+                            <select name="type" class="form-control" required>
+                                <option value="debit">Debit (increases cash — e.g. receipts)</option>
+                                <option value="credit">Credit (decreases cash — e.g. expenses)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <input type="hidden" name="is_active" value="0">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="create_master_particular_is_active" name="is_active" value="1" checked>
+                                <label class="custom-control-label" for="create_master_particular_is_active">Active</label>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -161,7 +163,7 @@
 
 {{-- Edit Modal (single reusable instance, populated via JS) --}}
 <div class="modal fade" id="editMasterParticularModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <form method="POST" id="editMasterParticularForm">
                 @csrf
@@ -171,26 +173,28 @@
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label>Name <span class="text-danger">*</span></label>
-                        <input type="text" name="name" id="edit_master_particular_name" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Description</label>
-                        <textarea name="description" id="edit_master_particular_description" class="form-control" rows="3"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Type <span class="text-danger">*</span></label>
-                        <select name="type" id="edit_master_particular_type" class="form-control" required>
-                            <option value="debit">Debit (increases cash — e.g. receipts)</option>
-                            <option value="credit">Credit (decreases cash — e.g. expenses)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <input type="hidden" name="is_active" value="0">
-                        <div class="custom-control custom-switch">
-                            <input type="checkbox" class="custom-control-input" id="edit_master_particular_is_active" name="is_active" value="1">
-                            <label class="custom-control-label" for="edit_master_particular_is_active">Active</label>
+                    <div class="row">
+                        <div class="col-md-3 form-group">
+                            <label>Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" id="edit_master_particular_name" class="form-control" required>
+                        </div>
+                        <div class="col-12 form-group">
+                            <label>Description</label>
+                            <textarea name="description" id="edit_master_particular_description" class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Type <span class="text-danger">*</span></label>
+                            <select name="type" id="edit_master_particular_type" class="form-control" required>
+                                <option value="debit">Debit (increases cash — e.g. receipts)</option>
+                                <option value="credit">Credit (decreases cash — e.g. expenses)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <input type="hidden" name="is_active" value="0">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="edit_master_particular_is_active" name="is_active" value="1">
+                                <label class="custom-control-label" for="edit_master_particular_is_active">Active</label>
+                            </div>
                         </div>
                     </div>
                 </div>

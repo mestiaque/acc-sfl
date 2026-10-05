@@ -104,7 +104,7 @@
 
 {{-- Create Modal --}}
 <div class="modal fade" id="createBranchModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <form method="POST" action="{{ route('acc-sfl.branches.store') }}">
                 @csrf
@@ -113,27 +113,29 @@
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label>Name <span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Code <span class="text-danger">*</span></label>
-                        <input type="text" name="code" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Location</label>
-                        <input type="text" name="location" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>Branch Head</label>
-                        <input type="text" name="branch_head" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <input type="hidden" name="is_active" value="0">
-                        <div class="custom-control custom-switch">
-                            <input type="checkbox" class="custom-control-input" id="create_branch_is_active" name="is_active" value="1" checked>
-                            <label class="custom-control-label" for="create_branch_is_active">Active</label>
+                    <div class="row">
+                        <div class="col-md-3 form-group">
+                            <label>Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Code <span class="text-danger">*</span></label>
+                            <input type="text" name="code" class="form-control" required>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Location</label>
+                            <input type="text" name="location" class="form-control">
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Branch Head</label>
+                            <input type="text" name="branch_head" class="form-control">
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <input type="hidden" name="is_active" value="0">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="create_branch_is_active" name="is_active" value="1" checked>
+                                <label class="custom-control-label" for="create_branch_is_active">Active</label>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -148,7 +150,7 @@
 
 {{-- Edit Modal (single reusable instance, populated via JS) --}}
 <div class="modal fade" id="editBranchModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <form method="POST" id="editBranchForm">
                 @csrf
@@ -158,27 +160,29 @@
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label>Name <span class="text-danger">*</span></label>
-                        <input type="text" name="name" id="edit_branch_name" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Code <span class="text-danger">*</span></label>
-                        <input type="text" name="code" id="edit_branch_code" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Location</label>
-                        <input type="text" name="location" id="edit_branch_location" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>Branch Head</label>
-                        <input type="text" name="branch_head" id="edit_branch_head" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <input type="hidden" name="is_active" value="0">
-                        <div class="custom-control custom-switch">
-                            <input type="checkbox" class="custom-control-input" id="edit_branch_is_active" name="is_active" value="1">
-                            <label class="custom-control-label" for="edit_branch_is_active">Active</label>
+                    <div class="row">
+                        <div class="col-md-3 form-group">
+                            <label>Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" id="edit_branch_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Code <span class="text-danger">*</span></label>
+                            <input type="text" name="code" id="edit_branch_code" class="form-control" required>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Location</label>
+                            <input type="text" name="location" id="edit_branch_location" class="form-control">
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Branch Head</label>
+                            <input type="text" name="branch_head" id="edit_branch_head" class="form-control">
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <input type="hidden" name="is_active" value="0">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="edit_branch_is_active" name="is_active" value="1">
+                                <label class="custom-control-label" for="edit_branch_is_active">Active</label>
+                            </div>
                         </div>
                     </div>
                 </div>

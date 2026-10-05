@@ -200,7 +200,7 @@
 
 {{-- Create Modal --}}
 <div class="modal fade" id="createReceiveModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <form method="POST" action="{{ route('acc-sfl.balance-receives.store') }}" enctype="multipart/form-data">
                 @csrf
@@ -209,55 +209,57 @@
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label>Receive Date <span class="text-danger">*</span></label>
-                        <input type="date" name="receive_date" class="form-control" value="{{ now()->toDateString() }}" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Branch <span class="text-danger">*</span></label>
-                        <select name="branch_id" class="form-control" required>
-                            <option value="">-- Select Branch --</option>
-                            @foreach($branches as $branch)
-                            <option value="{{ $branch->id }}" @selected($branches->count() === 1)>{{ $branch->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Account <span class="text-danger">*</span></label>
-                        <select name="account_id" class="form-control" required @disabled($accounts->count() === 1)>
-                            <option value="">-- Select Account --</option>
-                            @foreach($accounts as $account)
-                            <option value="{{ $account->id }}" @selected($accounts->count() === 1)>{{ $account->name }}</option>
-                            @endforeach
-                        </select>
-                        @if($accounts->count() === 1)
-                        <input type="hidden" name="account_id" value="{{ $accounts->first()->id }}">
-                        @endif
-                    </div>
-                    <div class="form-group">
-                        <label>Particular <span class="text-danger">*</span></label>
-                        <select name="particular_id" class="form-control" required>
-                            <option value="">-- Select Particular --</option>
-                            @foreach($particulars as $master)
-                            <optgroup label="{{ $master->name }}">
-                                @foreach($master->particulars as $particular)
-                                <option value="{{ $particular->id }}">{{ $particular->code ? "{$particular->code} - " : '' }}{{ $particular->name }}</option>
+                    <div class="row">
+                        <div class="col-md-3 form-group">
+                            <label>Receive Date <span class="text-danger">*</span></label>
+                            <input type="date" name="receive_date" class="form-control" value="{{ now()->toDateString() }}" required>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Branch <span class="text-danger">*</span></label>
+                            <select name="branch_id" class="form-control" required>
+                                <option value="">-- Select Branch --</option>
+                                @foreach($branches as $branch)
+                                <option value="{{ $branch->id }}" @selected($branches->count() === 1)>{{ $branch->name }}</option>
                                 @endforeach
-                            </optgroup>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Amount <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" min="0.01" name="amount" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Description</label>
-                        <textarea name="description" class="form-control" rows="2"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Attachment</label>
-                        <input type="file" name="attachment" class="form-control-file">
+                            </select>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Account <span class="text-danger">*</span></label>
+                            <select name="account_id" class="form-control" required @disabled($accounts->count() === 1)>
+                                <option value="">-- Select Account --</option>
+                                @foreach($accounts as $account)
+                                <option value="{{ $account->id }}" @selected($accounts->count() === 1)>{{ $account->name }}</option>
+                                @endforeach
+                            </select>
+                            @if($accounts->count() === 1)
+                            <input type="hidden" name="account_id" value="{{ $accounts->first()->id }}">
+                            @endif
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Particular <span class="text-danger">*</span></label>
+                            <select name="particular_id" class="form-control" required>
+                                <option value="">-- Select Particular --</option>
+                                @foreach($particulars as $master)
+                                <optgroup label="{{ $master->name }}">
+                                    @foreach($master->particulars as $particular)
+                                    <option value="{{ $particular->id }}">{{ $particular->code ? "{$particular->code} - " : '' }}{{ $particular->name }}</option>
+                                    @endforeach
+                                </optgroup>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Amount <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" min="0.01" name="amount" class="form-control" required>
+                        </div>
+                        <div class="col-12 form-group">
+                            <label>Description</label>
+                            <textarea name="description" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="col-12 form-group">
+                            <label>Attachment</label>
+                            <input type="file" name="attachment" class="form-control-file">
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -271,7 +273,7 @@
 
 {{-- Full Edit Modal — only used while still Pending (nothing posted yet, so everything's editable) --}}
 <div class="modal fade" id="editReceiveFullModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <form method="POST" id="editReceiveFullForm" enctype="multipart/form-data">
                 @csrf
@@ -281,52 +283,54 @@
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label>Receive Date <span class="text-danger">*</span></label>
-                        <input type="date" name="receive_date" id="edit_full_receive_date" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Branch <span class="text-danger">*</span></label>
-                        <select name="branch_id" id="edit_full_branch_id" class="form-control" required>
-                            <option value="">-- Select Branch --</option>
-                            @foreach($branches as $branch)
-                            <option value="{{ $branch->id }}">{{ $branch->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Account <span class="text-danger">*</span></label>
-                        <select name="account_id" id="edit_full_account_id" class="form-control" required>
-                            <option value="">-- Select Account --</option>
-                            @foreach($accounts as $account)
-                            <option value="{{ $account->id }}">{{ $account->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Particular <span class="text-danger">*</span></label>
-                        <select name="particular_id" id="edit_full_particular_id" class="form-control" required>
-                            <option value="">-- Select Particular --</option>
-                            @foreach($particulars as $master)
-                            <optgroup label="{{ $master->name }}">
-                                @foreach($master->particulars as $particular)
-                                <option value="{{ $particular->id }}">{{ $particular->code ? "{$particular->code} - " : '' }}{{ $particular->name }}</option>
+                    <div class="row">
+                        <div class="col-md-3 form-group">
+                            <label>Receive Date <span class="text-danger">*</span></label>
+                            <input type="date" name="receive_date" id="edit_full_receive_date" class="form-control" required>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Branch <span class="text-danger">*</span></label>
+                            <select name="branch_id" id="edit_full_branch_id" class="form-control" required>
+                                <option value="">-- Select Branch --</option>
+                                @foreach($branches as $branch)
+                                <option value="{{ $branch->id }}">{{ $branch->name }}</option>
                                 @endforeach
-                            </optgroup>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Amount <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" min="0.01" name="amount" id="edit_full_amount" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Description</label>
-                        <textarea name="description" id="edit_full_description" class="form-control" rows="2"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Attachment (upload to replace)</label>
-                        <input type="file" name="attachment" class="form-control-file">
+                            </select>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Account <span class="text-danger">*</span></label>
+                            <select name="account_id" id="edit_full_account_id" class="form-control" required>
+                                <option value="">-- Select Account --</option>
+                                @foreach($accounts as $account)
+                                <option value="{{ $account->id }}">{{ $account->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Particular <span class="text-danger">*</span></label>
+                            <select name="particular_id" id="edit_full_particular_id" class="form-control" required>
+                                <option value="">-- Select Particular --</option>
+                                @foreach($particulars as $master)
+                                <optgroup label="{{ $master->name }}">
+                                    @foreach($master->particulars as $particular)
+                                    <option value="{{ $particular->id }}">{{ $particular->code ? "{$particular->code} - " : '' }}{{ $particular->name }}</option>
+                                    @endforeach
+                                </optgroup>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Amount <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" min="0.01" name="amount" id="edit_full_amount" class="form-control" required>
+                        </div>
+                        <div class="col-12 form-group">
+                            <label>Description</label>
+                            <textarea name="description" id="edit_full_description" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="col-12 form-group">
+                            <label>Attachment (upload to replace)</label>
+                            <input type="file" name="attachment" class="form-control-file">
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">

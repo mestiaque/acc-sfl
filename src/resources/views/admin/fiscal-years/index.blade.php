@@ -105,7 +105,7 @@
 
 {{-- Create Modal --}}
 <div class="modal fade" id="createFiscalYearModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <form method="POST" action="{{ route('acc-sfl.fiscal-years.store') }}">
                 @csrf
@@ -116,7 +116,7 @@
                 <div class="modal-body">
                     <p class="text-muted small">The period from Start to End must span exactly 12 months.</p>
                     <div class="row">
-                        <div class="col-md-6 form-group">
+                        <div class="col-md-3 form-group">
                             <label>Start Month <span class="text-danger">*</span></label>
                             <select name="start_month" class="form-control" required>
                                 <option value="">-- Select --</option>
@@ -125,13 +125,11 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-6 form-group">
+                        <div class="col-md-3 form-group">
                             <label>Start Year <span class="text-danger">*</span></label>
                             <input type="number" name="start_year" class="form-control" min="1900" max="9999" value="{{ now()->year }}" required>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 form-group">
+                        <div class="col-md-3 form-group">
                             <label>End Month <span class="text-danger">*</span></label>
                             <select name="end_month" class="form-control" required>
                                 <option value="">-- Select --</option>
@@ -140,7 +138,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-6 form-group">
+                        <div class="col-md-3 form-group">
                             <label>End Year <span class="text-danger">*</span></label>
                             <input type="number" name="end_year" class="form-control" min="1900" max="9999" value="{{ now()->year + 1 }}" required>
                         </div>
@@ -164,7 +162,7 @@
 
 {{-- Edit Modal (single reusable instance, populated via JS) --}}
 <div class="modal fade" id="editFiscalYearModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <form method="POST" id="editFiscalYearForm">
                 @csrf
@@ -176,7 +174,7 @@
                 <div class="modal-body">
                     <p class="text-muted small">The period from Start to End must span exactly 12 months.</p>
                     <div class="row">
-                        <div class="col-md-6 form-group">
+                        <div class="col-md-3 form-group">
                             <label>Start Month <span class="text-danger">*</span></label>
                             <select name="start_month" id="edit_fiscal_year_start_month" class="form-control" required>
                                 <option value="">-- Select --</option>
@@ -185,13 +183,11 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-6 form-group">
+                        <div class="col-md-3 form-group">
                             <label>Start Year <span class="text-danger">*</span></label>
                             <input type="number" name="start_year" id="edit_fiscal_year_start_year" class="form-control" min="1900" max="9999" required>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 form-group">
+                        <div class="col-md-3 form-group">
                             <label>End Month <span class="text-danger">*</span></label>
                             <select name="end_month" id="edit_fiscal_year_end_month" class="form-control" required>
                                 <option value="">-- Select --</option>
@@ -200,7 +196,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-6 form-group">
+                        <div class="col-md-3 form-group">
                             <label>End Year <span class="text-danger">*</span></label>
                             <input type="number" name="end_year" id="edit_fiscal_year_end_year" class="form-control" min="1900" max="9999" required>
                         </div>

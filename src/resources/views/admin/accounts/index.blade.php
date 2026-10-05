@@ -125,7 +125,7 @@
 
 {{-- Create Modal --}}
 <div class="modal fade" id="createAccountModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <form method="POST" action="{{ route('acc-sfl.accounts.store') }}">
                 @csrf
@@ -134,61 +134,63 @@
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label>Name <span class="text-danger">*</span></label>
-                        <input type="text" name="name" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Employee ID</label>
-                        <input type="text" name="employee_id" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>Designation</label>
-                        <input type="text" name="designation" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>Branch <span class="text-danger">*</span></label>
-                        <select name="branch_id" class="form-control" required>
-                            <option value="">-- Select Branch --</option>
-                            @foreach($branches as $branch)
-                            <option value="{{ $branch->id }}" @selected($branches->count() === 1)>{{ $branch->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Linked User (optional)</label>
-                        <select name="user_id" class="form-control">
-                            <option value="">-- None --</option>
-                            @foreach($users as $user)
-                            <option value="{{ $user->id }}">{{ $user->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Opening Balance <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" name="opening_balance" class="form-control" required>
-                        <small class="form-text text-muted">Posts an automatic Opening Balance transaction when the account is created.</small>
-                    </div>
-                    <div class="form-group">
-                        <label>Particular Access (optional)</label>
-                        <small class="form-text text-muted mb-1">Leave all unchecked for unrestricted access. If any are checked, this account's linked user only sees these particulars everywhere.</small>
-                        <div class="border rounded p-2" style="max-height:220px;overflow-y:auto;">
-                            @foreach($masterParticulars as $master)
-                            <div class="font-weight-bold small text-muted mt-1">{{ $master->name }}</div>
-                            @foreach($master->particulars as $particular)
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input" id="create_account_particular_{{ $particular->id }}" name="particular_ids[]" value="{{ $particular->id }}">
-                                <label class="custom-control-label" for="create_account_particular_{{ $particular->id }}">{{ $particular->code }} - {{ $particular->name }}</label>
-                            </div>
-                            @endforeach
-                            @endforeach
+                    <div class="row">
+                        <div class="col-md-3 form-group">
+                            <label>Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" required>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <input type="hidden" name="is_active" value="0">
-                        <div class="custom-control custom-switch">
-                            <input type="checkbox" class="custom-control-input" id="create_account_is_active" name="is_active" value="1" checked>
-                            <label class="custom-control-label" for="create_account_is_active">Active</label>
+                        <div class="col-md-3 form-group">
+                            <label>Employee ID</label>
+                            <input type="text" name="employee_id" class="form-control">
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Designation</label>
+                            <input type="text" name="designation" class="form-control">
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Branch <span class="text-danger">*</span></label>
+                            <select name="branch_id" class="form-control" required>
+                                <option value="">-- Select Branch --</option>
+                                @foreach($branches as $branch)
+                                <option value="{{ $branch->id }}" @selected($branches->count() === 1)>{{ $branch->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Linked User (optional)</label>
+                            <select name="user_id" class="form-control">
+                                <option value="">-- None --</option>
+                                @foreach($users as $user)
+                                <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Opening Balance <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" name="opening_balance" class="form-control" required>
+                            <small class="form-text text-muted">Posts an automatic Opening Balance transaction when the account is created.</small>
+                        </div>
+                        <div class="col-12 form-group">
+                            <label>Particular Access (optional)</label>
+                            <small class="form-text text-muted mb-1">Leave all unchecked for unrestricted access. If any are checked, this account's linked user only sees these particulars everywhere.</small>
+                            <div class="border rounded p-2" style="max-height:220px;overflow-y:auto;">
+                                @foreach($masterParticulars as $master)
+                                <div class="font-weight-bold small text-muted mt-1">{{ $master->name }}</div>
+                                @foreach($master->particulars as $particular)
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input" id="create_account_particular_{{ $particular->id }}" name="particular_ids[]" value="{{ $particular->id }}">
+                                    <label class="custom-control-label" for="create_account_particular_{{ $particular->id }}">{{ $particular->code }} - {{ $particular->name }}</label>
+                                </div>
+                                @endforeach
+                                @endforeach
+                            </div>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <input type="hidden" name="is_active" value="0">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="create_account_is_active" name="is_active" value="1" checked>
+                                <label class="custom-control-label" for="create_account_is_active">Active</label>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -203,7 +205,7 @@
 
 {{-- Edit Modal (single reusable instance, populated via JS) --}}
 <div class="modal fade" id="editAccountModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <form method="POST" id="editAccountForm">
                 @csrf
@@ -213,60 +215,62 @@
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label>Name <span class="text-danger">*</span></label>
-                        <input type="text" name="name" id="edit_account_name" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Employee ID</label>
-                        <input type="text" name="employee_id" id="edit_account_employee_id" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>Designation</label>
-                        <input type="text" name="designation" id="edit_account_designation" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>Branch <span class="text-danger">*</span></label>
-                        <select name="branch_id" id="edit_account_branch_id" class="form-control" required>
-                            <option value="">-- Select Branch --</option>
-                            @foreach($branches as $branch)
-                            <option value="{{ $branch->id }}">{{ $branch->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Linked User (optional)</label>
-                        <select name="user_id" id="edit_account_user_id" class="form-control">
-                            <option value="">-- None --</option>
-                            @foreach($users as $user)
-                            <option value="{{ $user->id }}">{{ $user->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Current Balance (system-managed)</label>
-                        <input type="text" id="edit_account_current_balance" class="form-control" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>Particular Access (optional)</label>
-                        <small class="form-text text-muted mb-1">Leave all unchecked for unrestricted access. If any are checked, this account's linked user only sees these particulars everywhere.</small>
-                        <div class="border rounded p-2" style="max-height:220px;overflow-y:auto;">
-                            @foreach($masterParticulars as $master)
-                            <div class="font-weight-bold small text-muted mt-1">{{ $master->name }}</div>
-                            @foreach($master->particulars as $particular)
-                            <div class="custom-control custom-checkbox">
-                                <input type="checkbox" class="custom-control-input edit-account-particular" id="edit_account_particular_{{ $particular->id }}" name="particular_ids[]" value="{{ $particular->id }}">
-                                <label class="custom-control-label" for="edit_account_particular_{{ $particular->id }}">{{ $particular->code }} - {{ $particular->name }}</label>
-                            </div>
-                            @endforeach
-                            @endforeach
+                    <div class="row">
+                        <div class="col-md-3 form-group">
+                            <label>Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" id="edit_account_name" class="form-control" required>
                         </div>
-                    </div>
-                    <div class="form-group">
-                        <input type="hidden" name="is_active" value="0">
-                        <div class="custom-control custom-switch">
-                            <input type="checkbox" class="custom-control-input" id="edit_account_is_active" name="is_active" value="1">
-                            <label class="custom-control-label" for="edit_account_is_active">Active</label>
+                        <div class="col-md-3 form-group">
+                            <label>Employee ID</label>
+                            <input type="text" name="employee_id" id="edit_account_employee_id" class="form-control">
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Designation</label>
+                            <input type="text" name="designation" id="edit_account_designation" class="form-control">
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Branch <span class="text-danger">*</span></label>
+                            <select name="branch_id" id="edit_account_branch_id" class="form-control" required>
+                                <option value="">-- Select Branch --</option>
+                                @foreach($branches as $branch)
+                                <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Linked User (optional)</label>
+                            <select name="user_id" id="edit_account_user_id" class="form-control">
+                                <option value="">-- None --</option>
+                                @foreach($users as $user)
+                                <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Current Balance (system-managed)</label>
+                            <input type="text" id="edit_account_current_balance" class="form-control" readonly>
+                        </div>
+                        <div class="col-12 form-group">
+                            <label>Particular Access (optional)</label>
+                            <small class="form-text text-muted mb-1">Leave all unchecked for unrestricted access. If any are checked, this account's linked user only sees these particulars everywhere.</small>
+                            <div class="border rounded p-2" style="max-height:220px;overflow-y:auto;">
+                                @foreach($masterParticulars as $master)
+                                <div class="font-weight-bold small text-muted mt-1">{{ $master->name }}</div>
+                                @foreach($master->particulars as $particular)
+                                <div class="custom-control custom-checkbox">
+                                    <input type="checkbox" class="custom-control-input edit-account-particular" id="edit_account_particular_{{ $particular->id }}" name="particular_ids[]" value="{{ $particular->id }}">
+                                    <label class="custom-control-label" for="edit_account_particular_{{ $particular->id }}">{{ $particular->code }} - {{ $particular->name }}</label>
+                                </div>
+                                @endforeach
+                                @endforeach
+                            </div>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <input type="hidden" name="is_active" value="0">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="edit_account_is_active" name="is_active" value="1">
+                                <label class="custom-control-label" for="edit_account_is_active">Active</label>
+                            </div>
                         </div>
                     </div>
                 </div>

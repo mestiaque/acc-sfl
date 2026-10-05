@@ -225,7 +225,7 @@
 
 {{-- Edit Modal — financial fields are locked once a transaction has posted; only metadata is editable --}}
 <div class="modal fade" id="editExpenseModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <form method="POST" id="editExpenseForm" enctype="multipart/form-data">
                 @csrf
@@ -235,43 +235,47 @@
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-muted small">Date, branch, account, payment method and line items are locked after the entry posts to the ledger. Only billing date/company/receiver/description/attachment can be updated.</p>
-                    <div class="form-group">
-                        <label>Billing Date</label>
-                        <input type="date" name="billing_date" id="edit_expense_billing_date" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>Company Name</label>
-                        <input type="text" name="company_name" id="edit_expense_company" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>Receiver Name</label>
-                        <input type="text" name="receiver_name" id="edit_expense_receiver_name" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>Receiver Mobile</label>
-                        <input type="text" name="receiver_mobile" id="edit_expense_receiver_mobile" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>Invoice</label>
-                        <input type="text" name="invoice" id="edit_expense_invoice" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>Employee</label>
-                        <select name="employee_id" id="edit_expense_employee" class="form-control">
-                            <option value="">-- None --</option>
-                            @foreach($employees as $employee)
-                            <option value="{{ $employee->id }}">{{ $employee->employee_id }} - {{ $employee->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Description</label>
-                        <textarea name="description" id="edit_expense_description" class="form-control" rows="3" data-tinymce="1"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Attachment (upload to replace)</label>
-                        <input type="file" name="attachment" class="form-control-file">
+                    <div class="row">
+                        <div class="col-12">
+                            <p class="text-muted small">Date, branch, account, payment method and line items are locked after the entry posts to the ledger. Only billing date/company/receiver/description/attachment can be updated.</p>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Billing Date</label>
+                            <input type="date" name="billing_date" id="edit_expense_billing_date" class="form-control">
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Company Name</label>
+                            <input type="text" name="company_name" id="edit_expense_company" class="form-control">
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Receiver Name</label>
+                            <input type="text" name="receiver_name" id="edit_expense_receiver_name" class="form-control">
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Receiver Mobile</label>
+                            <input type="text" name="receiver_mobile" id="edit_expense_receiver_mobile" class="form-control">
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Invoice</label>
+                            <input type="text" name="invoice" id="edit_expense_invoice" class="form-control">
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Employee</label>
+                            <select name="employee_id" id="edit_expense_employee" class="form-control">
+                                <option value="">-- None --</option>
+                                @foreach($employees as $employee)
+                                <option value="{{ $employee->id }}">{{ $employee->employee_id }} - {{ $employee->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12 form-group">
+                            <label>Description</label>
+                            <textarea name="description" id="edit_expense_description" class="form-control" rows="3" data-tinymce="1"></textarea>
+                        </div>
+                        <div class="col-12 form-group">
+                            <label>Attachment (upload to replace)</label>
+                            <input type="file" name="attachment" class="form-control-file">
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">

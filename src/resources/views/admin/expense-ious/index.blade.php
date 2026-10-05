@@ -191,7 +191,7 @@
 
 {{-- Create (Issue) Modal --}}
 <div class="modal fade" id="createIouModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <form method="POST" action="{{ route('acc-sfl.expense-ious.store') }}" enctype="multipart/form-data">
                 @csrf
@@ -200,61 +200,63 @@
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label>Issue Date <span class="text-danger">*</span></label>
-                        <input type="date" name="issue_date" class="form-control" value="{{ now()->toDateString() }}" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Branch <span class="text-danger">*</span></label>
-                        <select name="branch_id" class="form-control" required>
-                            <option value="">-- Select --</option>
-                            @foreach($branches as $branch)
-                            <option value="{{ $branch->id }}" @selected($branches->count() === 1)>{{ $branch->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Account <span class="text-danger">*</span></label>
-                        <select name="account_id" class="form-control" required @disabled($accounts->count() === 1)>
-                            <option value="">-- Select --</option>
-                            @foreach($accounts as $account)
-                            <option value="{{ $account->id }}" @selected($accounts->count() === 1)>{{ $account->name }}</option>
-                            @endforeach
-                        </select>
-                        @if($accounts->count() === 1)
-                        <input type="hidden" name="account_id" value="{{ $accounts->first()->id }}">
-                        @endif
-                    </div>
-                    <div class="form-group">
-                        <label>Payment Method <span class="text-danger">*</span></label>
-                        <select name="payment_method_id" class="form-control" required>
-                            <option value="">-- Select --</option>
-                            @foreach($paymentMethods as $method)
-                            <option value="{{ $method->id }}">{{ $method->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Employee <span class="text-danger">*</span></label>
-                        <select name="employee_id" class="form-control" required>
-                            <option value="">-- Select --</option>
-                            @foreach($employees as $employee)
-                            <option value="{{ $employee->id }}">{{ $employee->employee_id }} - {{ $employee->name }}{{ $employee->department ? ' ('.$employee->department->name.(($employee->designation) ? ' / '.$employee->designation->name : '').')' : '' }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Amount <span class="text-danger">*</span></label>
-                        <input type="number" step="0.01" min="0.01" name="amount" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Description</label>
-                        <textarea name="description" class="form-control" rows="2"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Attachments</label>
-                        <input type="file" name="attachments[]" class="form-control-file" multiple>
-                        <small class="form-text text-muted">You can select multiple files.</small>
+                    <div class="row">
+                        <div class="col-md-3 form-group">
+                            <label>Issue Date <span class="text-danger">*</span></label>
+                            <input type="date" name="issue_date" class="form-control" value="{{ now()->toDateString() }}" required>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Branch <span class="text-danger">*</span></label>
+                            <select name="branch_id" class="form-control" required>
+                                <option value="">-- Select --</option>
+                                @foreach($branches as $branch)
+                                <option value="{{ $branch->id }}" @selected($branches->count() === 1)>{{ $branch->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Account <span class="text-danger">*</span></label>
+                            <select name="account_id" class="form-control" required @disabled($accounts->count() === 1)>
+                                <option value="">-- Select --</option>
+                                @foreach($accounts as $account)
+                                <option value="{{ $account->id }}" @selected($accounts->count() === 1)>{{ $account->name }}</option>
+                                @endforeach
+                            </select>
+                            @if($accounts->count() === 1)
+                            <input type="hidden" name="account_id" value="{{ $accounts->first()->id }}">
+                            @endif
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Payment Method <span class="text-danger">*</span></label>
+                            <select name="payment_method_id" class="form-control" required>
+                                <option value="">-- Select --</option>
+                                @foreach($paymentMethods as $method)
+                                <option value="{{ $method->id }}">{{ $method->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Employee <span class="text-danger">*</span></label>
+                            <select name="employee_id" class="form-control" required>
+                                <option value="">-- Select --</option>
+                                @foreach($employees as $employee)
+                                <option value="{{ $employee->id }}">{{ $employee->employee_id }} - {{ $employee->name }}{{ $employee->department ? ' ('.$employee->department->name.(($employee->designation) ? ' / '.$employee->designation->name : '').')' : '' }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Amount <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" min="0.01" name="amount" class="form-control" required>
+                        </div>
+                        <div class="col-12 form-group">
+                            <label>Description</label>
+                            <textarea name="description" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="col-12 form-group">
+                            <label>Attachments</label>
+                            <input type="file" name="attachments[]" class="form-control-file" multiple>
+                            <small class="form-text text-muted">You can select multiple files.</small>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -268,7 +270,7 @@
 
 {{-- Edit Modal — financial fields locked once issued; only metadata editable --}}
 <div class="modal fade" id="editIouModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-xl" role="document">
         <div class="modal-content">
             <form method="POST" id="editIouForm" enctype="multipart/form-data">
                 @csrf
@@ -278,33 +280,39 @@
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-muted small" id="edit_iou_locked_note">Branch, account and payment method are locked after issue.</p>
-                    <p class="text-muted small" id="edit_iou_adjusted_note" style="display:none;">This IOU has been adjusted — only the description can be updated.</p>
-                    <div class="form-group">
-                        <label>Issue Date <span class="text-danger" id="edit_iou_issue_date_req">*</span></label>
-                        <input type="date" name="issue_date" id="edit_iou_issue_date" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>Amount <span class="text-danger" id="edit_iou_amount_req">*</span></label>
-                        <input type="number" step="0.01" min="0.01" name="amount" id="edit_iou_amount" class="form-control">
-                    </div>
-                    <div class="form-group">
-                        <label>Employee <span class="text-danger" id="edit_iou_employee_req">*</span></label>
-                        <select name="employee_id" id="edit_iou_employee_id" class="form-control">
-                            <option value="">-- Select --</option>
-                            @foreach($employees as $employee)
-                            <option value="{{ $employee->id }}">{{ $employee->employee_id }} - {{ $employee->name }}{{ $employee->department ? ' ('.$employee->department->name.(($employee->designation) ? ' / '.$employee->designation->name : '').')' : '' }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Description</label>
-                        <textarea name="description" id="edit_iou_description" class="form-control" rows="2"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Attachments</label>
-                        <input type="file" name="attachments[]" class="form-control-file" multiple>
-                        <small class="form-text text-muted">You can select multiple files.</small>
+                    <div class="row">
+                        <div class="col-12">
+                            <p class="text-muted small" id="edit_iou_locked_note">Branch, account and payment method are locked after issue.</p>
+                        </div>
+                        <div class="col-12">
+                            <p class="text-muted small" id="edit_iou_adjusted_note" style="display:none;">This IOU has been adjusted — only the description can be updated.</p>
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Issue Date <span class="text-danger" id="edit_iou_issue_date_req">*</span></label>
+                            <input type="date" name="issue_date" id="edit_iou_issue_date" class="form-control">
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Amount <span class="text-danger" id="edit_iou_amount_req">*</span></label>
+                            <input type="number" step="0.01" min="0.01" name="amount" id="edit_iou_amount" class="form-control">
+                        </div>
+                        <div class="col-md-3 form-group">
+                            <label>Employee <span class="text-danger" id="edit_iou_employee_req">*</span></label>
+                            <select name="employee_id" id="edit_iou_employee_id" class="form-control">
+                                <option value="">-- Select --</option>
+                                @foreach($employees as $employee)
+                                <option value="{{ $employee->id }}">{{ $employee->employee_id }} - {{ $employee->name }}{{ $employee->department ? ' ('.$employee->department->name.(($employee->designation) ? ' / '.$employee->designation->name : '').')' : '' }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-12 form-group">
+                            <label>Description</label>
+                            <textarea name="description" id="edit_iou_description" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="col-12 form-group">
+                            <label>Attachments</label>
+                            <input type="file" name="attachments[]" class="form-control-file" multiple>
+                            <small class="form-text text-muted">You can select multiple files.</small>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
