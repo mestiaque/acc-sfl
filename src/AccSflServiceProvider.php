@@ -5,6 +5,7 @@ namespace ME\AccSfl;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\ServiceProvider;
+use ME\AccSfl\Console\Commands\SyncLegacyIousCommand;
 use ME\AccSfl\Models\AcAccount;
 use ME\AccSfl\Models\AcBalanceReceive;
 use ME\AccSfl\Models\AcExpense;
@@ -38,6 +39,10 @@ class AccSflServiceProvider extends ServiceProvider
         $this->mergeAccPermissions();
         $this->registerMorphMap();
         $this->registerObservers();
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([SyncLegacyIousCommand::class]);
+        }
     }
 
     public function register(): void

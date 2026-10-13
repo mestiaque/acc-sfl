@@ -9,7 +9,7 @@
     <tr><th>Receiver</th><td>{{ $expense->receiver_name ?: '-' }} {{ $expense->receiver_mobile ? '('.$expense->receiver_mobile.')' : '' }}</td></tr>
     <tr><th>Employee</th><td>{{ $expense->employee->name ?? '-' }}</td></tr>
     @if($expense->iou)
-    <tr><th>Against IOU</th><td>{{ $expense->iou->iou_no }} <small class="text-muted">(paid from IOU — no separate cash entry)</small></td></tr>
+    <tr><th>Against IOU</th><td>{{ $expense->iou->iou_no }} <small class="text-muted">(paid from IOU — posted to the ledger when the IOU is adjusted)</small></td></tr>
     @endif
     <tr><th>Invoice</th><td>{{ $expense->invoice ?: '-' }}</td></tr>
     <tr><th>Description</th><td>{{ $expense->description ?: '-' }}</td></tr>

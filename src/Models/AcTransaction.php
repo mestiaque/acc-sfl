@@ -3,6 +3,7 @@
 namespace ME\AccSfl\Models;
 
 use App\Traits\ActivityLoggable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -69,5 +70,30 @@ class AcTransaction extends Model
     public function reference(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    /**
+     * Adds `running_balance`: the account's balance right after this transaction in date order
+     * (same-day entries in entry order). The stored `balance` column is the balance at the
+     * moment of posting, so it stops being sequential once anything is entered back-dated.
+     */
+    public function scopeWithRunningBalance(Builder $query): Builder
+    {
+        return $query->select('ac_transactions.*')->selectSub(fn ($sub) => $sub
+            ->from('ac_transactions as rb')
+            ->selectRaw('COALESCE(SUM(rb.debit - rb.credit), 0)')
+            ->whereColumn('rb.account_id', 'ac_transactions.account_id')
+            ->where(fn ($w) => $w
+                ->whereColumn('rb.transaction_date', '<', 'ac_transactions.transaction_date')
+                ->orWhere(fn ($same) => $same
+                    ->whereColumn('rb.transaction_date', 'ac_transactions.transaction_date')
+                    ->whereColumn('rb.id', '<=', 'ac_transactions.id'))),
+            'running_balance');
+    }
+
+    /** Newest date first; same-day entries newest-entered first. */
+    public function scopeChronologicalDesc(Builder $query): Builder
+    {
+        return $query->orderByDesc('transaction_date')->orderByDesc('id');
     }
 }

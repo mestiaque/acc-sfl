@@ -43,8 +43,8 @@ class ExpenseApprovalHandler extends BaseApprovalHandler
             return;
         }
 
-        // Bought with an IOU: the cash already left the account at IOU issue, and the
-        // difference is settled when the IOU is adjusted - so nothing is posted here.
+        // Bought with an IOU: the cash already left the account at IOU issue, so nothing is
+        // posted now - the expense is posted (as the credit side) when the IOU is adjusted.
         if (! $expense->iou_id) {
             $this->transactions->postExpense($expense);
         }

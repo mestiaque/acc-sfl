@@ -28,7 +28,7 @@ class ExpenseController extends Controller
     {
         $this->authorize('ac_expense.list');
 
-        $expenses = $this->filteredQuery($request)->latest('id')->paginate(20)->withQueryString();
+        $expenses = $this->filteredQuery($request)->latest('expense_date')->latest('id')->paginate(20)->withQueryString();
 
 
         return view('acc-sfl::admin.expenses.index', array_merge(compact('expenses'), $this->formOptions()));
@@ -67,7 +67,7 @@ class ExpenseController extends Controller
             ->when(AcAccount::currentUserTiedAccountIds(), fn ($q, $tiedIds) => $q->whereIn('account_id', $tiedIds))
             ->with(['employee:id,employee_id,name', 'account:id,name'])
             ->withSum(['expenses as approved_expense_total' => fn ($q) => $q->where('status', AcExpense::STATUS_APPROVED)], 'total_amount')
-            ->latest('id')
+            ->latest('issue_date')->latest('id')
             ->get();
 
         return compact('branches', 'accounts', 'paymentMethods', 'particulars', 'employees', 'ious');
@@ -96,7 +96,7 @@ class ExpenseController extends Controller
     {
         $this->authorize('ac_expense.list');
 
-        $expenses = $this->filteredQuery($request)->latest('id')->get();
+        $expenses = $this->filteredQuery($request)->latest('expense_date')->latest('id')->get();
 
         return view('acc-sfl::admin.expenses.print', compact('expenses'));
     }
@@ -116,7 +116,7 @@ class ExpenseController extends Controller
     {
         $this->authorize('ac_expense.list');
 
-        $expenses = $this->filteredQuery($request)->latest('id')->get();
+        $expenses = $this->filteredQuery($request)->latest('expense_date')->latest('id')->get();
 
         return Excel::download(new ExpenseExport($expenses), 'expenses.xlsx');
     }

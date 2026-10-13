@@ -23,7 +23,7 @@ class ExpenseIouController extends Controller
     {
         $this->authorize('ac_expense_iou.list');
 
-        $expenseIous = $this->filteredQuery($request)->latest('id')->paginate(20)->withQueryString();
+        $expenseIous = $this->filteredQuery($request)->latest('issue_date')->latest('id')->paginate(20)->withQueryString();
 
         $branches = AcBranch::query()->active()->orderBy('name')->get();
         $accounts = AcAccount::query()->active()->visibleToCurrentUser()->orderBy('name')->get();
@@ -37,7 +37,7 @@ class ExpenseIouController extends Controller
     {
         $this->authorize('ac_expense_iou.list');
 
-        $expenseIous = $this->filteredQuery($request)->latest('id')->get();
+        $expenseIous = $this->filteredQuery($request)->latest('issue_date')->latest('id')->get();
 
         return view('acc-sfl::admin.expense-ious.print', compact('expenseIous'));
     }
@@ -46,7 +46,7 @@ class ExpenseIouController extends Controller
     {
         $this->authorize('ac_expense_iou.list');
 
-        $expenseIous = $this->filteredQuery($request)->latest('id')->get();
+        $expenseIous = $this->filteredQuery($request)->latest('issue_date')->latest('id')->get();
 
         return Excel::download(new ExpenseIouExport($expenseIous), 'expense-ious.xlsx');
     }
@@ -147,9 +147,9 @@ class ExpenseIouController extends Controller
     }
 
     /**
-     * Settles the IOU against the approved expenses bought with it: the unspent part is
-     * returned to the account, or the extra the purchase cost is paid out (see
-     * TransactionService::postIouAdjustment(), triggered by AcExpenseIouObserver).
+     * Settles the IOU against the approved expenses bought with it: a debit clearing the full
+     * IOU amount plus a credit for each expense (see TransactionService::postIouAdjustment(),
+     * triggered by AcExpenseIouObserver). The net is the unspent cash returned, or the extra paid.
      */
     public function adjust(Request $request, AcExpenseIou $expenseIou): RedirectResponse
     {
@@ -177,11 +177,14 @@ class ExpenseIouController extends Controller
             'status' => AcExpenseIou::STATUS_ADJUSTED,
         ]));
 
-        $message = match (true) {
-            $settlement > 0 => 'Expense IOU adjusted — '.number_format($settlement, 2).' returned to the account.',
-            $settlement < 0 => 'Expense IOU adjusted — '.number_format(abs($settlement), 2).' extra paid from the account.',
-            default => 'Expense IOU adjusted — fully spent, no cash movement.',
-        };
+        $spent = (float) $expenseIou->amount - $settlement;
+        $message = 'Expense IOU adjusted — debit '.number_format((float) $expenseIou->amount, 2).' (advance cleared)'
+            .($spent > 0 ? ', credit '.number_format($spent, 2).' (expenses)' : '')
+            .match (true) {
+                $settlement > 0 => ', net '.number_format($settlement, 2).' returned to the account.',
+                $settlement < 0 => ', net '.number_format(abs($settlement), 2).' extra paid from the account.',
+                default => ', fully spent.',
+            };
 
         return back()->with('success', $message);
     }
@@ -217,8 +220,8 @@ class ExpenseIouController extends Controller
      * it - the only way to remove an already-Adjusted IOU, since normal delete() is
      * blocked once it's settled.
      *
-     * Its approved expenses were real purchases that posted no cash because the IOU covered
-     * them; once the IOU's cash entries are reversed they are unlinked and posted on their own,
+     * Its approved expenses were posted as Expense entries when the IOU was adjusted; those
+     * stay (they're real purchases), and the expenses are unlinked so they stand on their own,
      * as if paid straight from the account.
      */
     public function forceDestroy(AcExpenseIou $expenseIou, \ME\AccSfl\Services\TransactionService $transactions): RedirectResponse
@@ -239,7 +242,8 @@ class ExpenseIouController extends Controller
             foreach ($expenseIou->expenses()->get() as $expense) {
                 $expense->update(['iou_id' => null]);
 
-                if ($expense->status === AcExpense::STATUS_APPROVED) {
+                // Already posted at adjust (dated the adjust date); only post the ones that weren't.
+                if ($expense->status === AcExpense::STATUS_APPROVED && ! $expense->transactions()->exists()) {
                     $transactions->postExpense($expense);
                 }
             }

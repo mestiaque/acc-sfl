@@ -50,11 +50,12 @@ class TransactionService
         ));
     }
 
-    public function postExpense(AcExpense $expense): AcTransaction
+    /** $date overrides the posting date - an IOU's expenses post on the IOU's adjust date. */
+    public function postExpense(AcExpense $expense, string|\DateTimeInterface|null $date = null): AcTransaction
     {
         return DB::transaction(fn () => $this->post(
             account: $expense->account,
-            date: $expense->expense_date,
+            date: $date ?? $expense->expense_date,
             type: AcTransaction::TYPE_EXPENSE,
             reference: $expense,
             debit: 0,
@@ -108,33 +109,35 @@ class TransactionService
     }
 
     /**
-     * Settles the IOU against the expenses bought with it (which posted no cash of their own,
-     * since the cash already left at issue). settlement_amount is IOU amount minus approved
-     * expenses: positive = the employee returned the unspent cash (debit, balance goes up),
-     * negative = the purchase cost more and the extra was paid out (credit, balance goes down),
-     * zero = an audit-only entry.
+     * Settles the IOU as a pair of entries on the adjust date: a debit of the full IOU amount
+     * (the advance is cleared back to the account) and a credit for each approved expense
+     * bought with it (posted as a normal Expense, so reports still break it down by
+     * particular). Those expenses posted nothing when approved, since the cash had already
+     * left at issue. The net is settlement_amount (IOU amount minus expenses): positive = the
+     * unspent cash came back, negative = the extra the purchase cost was paid out.
      */
     public function postIouAdjustment(AcExpenseIou $iou): AcTransaction
     {
-        $settlement = round((float) $iou->settlement_amount, 2);
+        return DB::transaction(function () use ($iou) {
+            $date = $iou->adjust_date ?? now()->toDateString();
 
-        $description = match (true) {
-            $settlement > 0 => "{$iou->iou_no} adjusted - ".number_format($settlement, 2).' returned',
-            $settlement < 0 => "{$iou->iou_no} adjusted - ".number_format(abs($settlement), 2).' extra paid',
-            default => "{$iou->iou_no} adjusted",
-        };
+            $cleared = $this->post(
+                account: $iou->account,
+                date: $date,
+                type: AcTransaction::TYPE_IOU_ADJUSTMENT,
+                reference: $iou,
+                debit: (float) $iou->amount,
+                credit: 0,
+                description: "{$iou->iou_no} adjusted - ".number_format((float) $iou->amount, 2).' advance cleared',
+                paymentMethodId: $iou->settlement_payment_method_id ?? $iou->payment_method_id,
+                branchId: $iou->branch_id,
+            );
 
-        return DB::transaction(fn () => $this->post(
-            account: $iou->account,
-            date: $iou->adjust_date ?? now()->toDateString(),
-            type: AcTransaction::TYPE_IOU_ADJUSTMENT,
-            reference: $iou,
-            debit: $settlement > 0 ? $settlement : 0,
-            credit: $settlement < 0 ? abs($settlement) : 0,
-            description: $description,
-            paymentMethodId: $iou->settlement_payment_method_id ?? $iou->payment_method_id,
-            branchId: $iou->branch_id,
-        ));
+            $iou->expenses()->where('status', AcExpense::STATUS_APPROVED)->orderBy('id')->get()
+                ->each(fn (AcExpense $expense) => $this->postExpense($expense, $date));
+
+            return $cleared;
+        });
     }
 
     /**

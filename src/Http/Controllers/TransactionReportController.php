@@ -19,7 +19,7 @@ class TransactionReportController extends Controller
     {
         $this->authorize('ac_report.view');
 
-        $transactions = $this->filteredQuery($request)->latest('transaction_date')->latest('id')->paginate(20)->withQueryString();
+        $transactions = $this->filteredQuery($request)->withRunningBalance()->chronologicalDesc()->paginate(20)->withQueryString();
         $totals = $this->totals($request);
 
         return view('acc-sfl::admin.reports.transaction-report', array_merge(
@@ -32,7 +32,7 @@ class TransactionReportController extends Controller
     {
         $this->authorize('ac_report.export');
 
-        $transactions = $this->filteredQuery($request)->latest('transaction_date')->latest('id')->get();
+        $transactions = $this->filteredQuery($request)->withRunningBalance()->chronologicalDesc()->get();
         $totals = $this->totals($request);
 
         return view('acc-sfl::admin.reports.transaction-report-print', compact('transactions', 'totals'));
@@ -42,7 +42,7 @@ class TransactionReportController extends Controller
     {
         $this->authorize('ac_report.export');
 
-        $transactions = $this->filteredQuery($request)->latest('transaction_date')->latest('id')->get();
+        $transactions = $this->filteredQuery($request)->withRunningBalance()->chronologicalDesc()->get();
         $totals = $this->totals($request);
 
         return Excel::download(new TransactionReportExport($transactions, $totals), 'transaction-report.xlsx');

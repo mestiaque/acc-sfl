@@ -23,7 +23,7 @@
             <td>{{ $transaction->paymentMethod->name ?? '-' }}</td>
             <td class="text-right">{{ $transaction->debit > 0 ? number_format($transaction->debit, 2) : '-' }}</td>
             <td class="text-right">{{ $transaction->credit > 0 ? number_format($transaction->credit, 2) : '-' }}</td>
-            <td class="text-right">{{ number_format($transaction->balance, 2) }}</td>
+            <td class="text-right">{{ number_format($transaction->running_balance ?? $transaction->balance, 2) }}</td>
             <td>{{ $transaction->description ?: '-' }}</td>
             <td>{{ $transaction->creator->name ?? '-' }}</td>
         </tr>

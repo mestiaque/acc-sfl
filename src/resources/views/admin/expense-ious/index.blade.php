@@ -136,7 +136,8 @@
                                         title="{{ $iou->pending_expense_count ? 'Approve or reject its pending expenses first' : 'Adjust' }}" @disabled($iou->pending_expense_count)
                                         data-action="{{ route('acc-sfl.expense-ious.adjust', $iou) }}" data-no="{{ $iou->iou_no }}"
                                         data-amount="{{ (float) $iou->amount }}" data-spent="{{ $spent }}"
-                                        data-payment-method-id="{{ $iou->payment_method_id }}">
+                                        data-payment-method-id="{{ $iou->payment_method_id }}"
+                                        data-adjust-date="{{ $iou->adjust_date?->toDateString() }}">
                                         <i class="fa-solid fa-check"></i>
                                     </button>
                                     @endif
@@ -422,10 +423,17 @@
             $('#edit_iou_adjusted_note').toggle(!isPending);
         });
 
+        function acIouEntries(amount, spent) {
+            return 'Posts Debit ' + amount.toFixed(2) + ' (advance cleared)'
+                + (spent > 0 ? ' and Credit ' + spent.toFixed(2) + ' (expenses)' : '') + '.';
+        }
+
         $('#adjustIouModal').on('show.bs.modal', function (event) {
             var btn = $(event.relatedTarget);
             $('#adjustIouForm').attr('action', btn.data('action'));
             $('#adjust_iou_no').text(btn.data('no'));
+            // A reopened legacy IOU keeps its old adjust date - pre-fill it, else today.
+            $('#adjustIouForm input[name="adjust_date"]').val(btn.data('adjust-date') || '{{ now()->toDateString() }}');
 
             var amount = parseFloat(btn.data('amount')) || 0;
             var spent = parseFloat(btn.data('spent')) || 0;
@@ -439,16 +447,16 @@
                 $('#adjust_iou_result_label').text('Employee returns');
                 $('#adjust_iou_result').text(difference.toFixed(2)).removeClass('text-danger').addClass('text-success');
                 $('#adjust_iou_payment_method_label').text('Returned via');
-                $('#adjust_iou_note').text('The unspent ' + difference.toFixed(2) + ' is added back to the account balance.');
+                $('#adjust_iou_note').text(acIouEntries(amount, spent) + ' Net: ' + difference.toFixed(2) + ' added back to the account.');
             } else if (difference < 0) {
                 $('#adjust_iou_result_label').text('Extra to pay employee');
                 $('#adjust_iou_result').text(Math.abs(difference).toFixed(2)).removeClass('text-success').addClass('text-danger');
                 $('#adjust_iou_payment_method_label').text('Paid via');
-                $('#adjust_iou_note').text('The purchase cost more than the IOU — the extra ' + Math.abs(difference).toFixed(2) + ' is paid out of the account balance.');
+                $('#adjust_iou_note').text(acIouEntries(amount, spent) + ' Net: the extra ' + Math.abs(difference).toFixed(2) + ' is paid out of the account.');
             } else {
                 $('#adjust_iou_result_label').text('Difference');
                 $('#adjust_iou_result').text('0.00').removeClass('text-success text-danger');
-                $('#adjust_iou_note').text('Fully spent — no cash movement, the IOU is just closed.');
+                $('#adjust_iou_note').text(acIouEntries(amount, spent) + ' Net: no change, fully spent.');
             }
         });
 

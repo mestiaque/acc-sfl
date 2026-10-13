@@ -282,7 +282,7 @@
                             <td class="ac-recent-table">{{ $transaction->account->name ?? '-' }}</td>
                             <td class="ac-recent-table text-success">{{ $transaction->debit > 0 ? number_format($transaction->debit, 0) : '-' }}</td>
                             <td class="ac-recent-table text-danger">{{ $transaction->credit > 0 ? number_format($transaction->credit, 0) : '-' }}</td>
-                            <td class="ac-recent-table">{{ number_format($transaction->balance, 0) }}</td>
+                            <td class="ac-recent-table">{{ number_format($transaction->running_balance ?? $transaction->balance, 0) }}</td>
                         </tr>
                         @empty
                         <tr><td colspan="6" class="text-center text-muted py-3">No transactions yet.</td></tr>

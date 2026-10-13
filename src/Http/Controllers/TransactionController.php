@@ -19,7 +19,7 @@ class TransactionController extends Controller
     {
         $this->authorize('ac_transaction.list');
 
-        $transactions = $this->filteredQuery($request)->latest('id')->paginate(20)->withQueryString();
+        $transactions = $this->filteredQuery($request)->withRunningBalance()->chronologicalDesc()->paginate(20)->withQueryString();
 
         return view('acc-sfl::admin.transactions.index', array_merge(
             compact('transactions'),
@@ -31,7 +31,7 @@ class TransactionController extends Controller
     {
         $this->authorize('ac_transaction.list');
 
-        $transactions = $this->filteredQuery($request)->latest('id')->get();
+        $transactions = $this->filteredQuery($request)->withRunningBalance()->chronologicalDesc()->get();
 
         return view('acc-sfl::admin.transactions.print', compact('transactions'));
     }
@@ -40,7 +40,7 @@ class TransactionController extends Controller
     {
         $this->authorize('ac_transaction.list');
 
-        $transactions = $this->filteredQuery($request)->latest('id')->get();
+        $transactions = $this->filteredQuery($request)->withRunningBalance()->chronologicalDesc()->get();
 
         return Excel::download(new TransactionExport($transactions), 'transactions.xlsx');
     }

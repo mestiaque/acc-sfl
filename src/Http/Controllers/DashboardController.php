@@ -102,6 +102,7 @@ class DashboardController extends Controller
 
             $recentTransactions = AcTransaction::query()
                 ->with(['branch', 'account'])
+                ->withRunningBalance()
                 ->latest('id')
                 ->limit(8)
                 ->get();
