@@ -1,14 +1,14 @@
 @extends(adminTheme().'layouts.app')
 
 @section('title')
-    <title>{{ websiteTitle('Balance Receive') }}</title>
+    <title>{{ websiteTitle('Cash Receive') }}</title>
 @endsection
 
 @section('contents')
 <div class="flex-grow-1 p-4">
     <div class="card">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="mb-0"><i class="fa-solid fa-hand-holding-dollar mr-2 text-success"></i>Balance Receive</h4>
+            <h4 class="mb-0"><i class="fa-solid fa-hand-holding-dollar mr-2 text-success"></i>Cash Receive</h4>
             <div>
                 <a href="{{ route('acc-sfl.balance-receives.print', request()->query()) }}" target="_blank" class="btn btn-light btn-sm">
                     <i class="fa-solid fa-print mr-1"></i> Print
@@ -26,7 +26,7 @@
                 @endcan
                 @can('ac_balance_receive.add')
                 <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" data-toggle="modal" data-target="#createReceiveModal">
-                    <i class="fa-solid fa-plus"></i> Add Balance Receive
+                    <i class="fa-solid fa-plus"></i> Add Cash Receive
                 </button>
                 @endcan
             </div>
@@ -205,7 +205,7 @@
             <form method="POST" action="{{ route('acc-sfl.balance-receives.store') }}" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title">Add Balance Receive</h5>
+                    <h5 class="modal-title">Add Cash Receive</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
@@ -279,7 +279,7 @@
                 @csrf
                 @method('PUT')
                 <div class="modal-header">
-                    <h5 class="modal-title">Edit Balance Receive</h5>
+                    <h5 class="modal-title">Edit Cash Receive</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
@@ -350,7 +350,7 @@
                 @csrf
                 @method('PUT')
                 <div class="modal-header">
-                    <h5 class="modal-title">Edit Balance Receive</h5>
+                    <h5 class="modal-title">Edit Cash Receive</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
@@ -378,7 +378,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Balance Receive Details</h5>
+                <h5 class="modal-title">Cash Receive Details</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
             </div>
             <div class="modal-body">
@@ -401,11 +401,11 @@
     </div>
 </div>
 
-@include('acc-sfl::admin.partials.delete-confirm-modal', ['modalId' => 'deleteReceiveModal', 'label' => 'balance receive'])
+@include('acc-sfl::admin.partials.delete-confirm-modal', ['modalId' => 'deleteReceiveModal', 'label' => 'cash receive'])
 @include('acc-sfl::admin.partials.delete-confirm-modal', [
     'modalId' => 'forceDeleteReceiveModal',
     'title' => 'Confirm Force Delete',
-    'warning' => 'This balance receive has already been approved and posted to the ledger. Force deleting it will reverse the posted transaction (restoring the account balance) and PERMANENTLY delete it — this cannot be undone.',
+    'warning' => 'This cash receive has already been approved and posted to the ledger. Force deleting it will reverse the posted transaction (restoring the account balance) and PERMANENTLY delete it — this cannot be undone.',
     'buttonLabel' => 'Force Delete',
 ])
 
@@ -416,11 +416,11 @@
             <form method="POST" id="approveReceiveForm">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title">Approve Balance Receive</h5>
+                    <h5 class="modal-title">Approve Cash Receive</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <p class="mb-2">Approving posts this balance receive to the ledger and adds it to the account balance. Continue?</p>
+                    <p class="mb-2">Approving posts this cash receive to the ledger and adds it to the account balance. Continue?</p>
                     <div class="form-group mb-0">
                         <label>Remarks (optional)</label>
                         <textarea name="remarks" class="form-control" rows="2"></textarea>
@@ -442,7 +442,7 @@
             <form method="POST" id="rejectReceiveForm">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title">Reject Balance Receive</h5>
+                    <h5 class="modal-title">Reject Cash Receive</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">

@@ -63,7 +63,7 @@ class ExpenseController extends Controller
                 ->when($allowedParticularIds !== null, fn ($q2) => $q2->whereIn('id', $allowedParticularIds))])
             ->get();
         $employees = $this->activeEmployees();
-        $ious = AcExpenseIou::query()->pending()
+        $ious = AcExpenseIou::query()->pending()->approved()
             ->when(AcAccount::currentUserTiedAccountIds(), fn ($q, $tiedIds) => $q->whereIn('account_id', $tiedIds))
             ->with(['employee:id,employee_id,name', 'account:id,name'])
             ->withSum(['expenses as approved_expense_total' => fn ($q) => $q->where('status', AcExpense::STATUS_APPROVED)], 'total_amount')

@@ -91,13 +91,13 @@ class BalanceReceiveController extends Controller
         app(ApprovalService::class)->request([
             'module' => 'accounts.balance_receive',
             'approvable' => $receive,
-            'title' => "Balance Receive Approval - {$receive->receive_no}",
-            'description' => "{$receive->creator?->name} recorded a balance receive of {$receive->amount}.",
+            'title' => "Cash Receive Approval - {$receive->receive_no}",
+            'description' => "{$receive->creator?->name} recorded a cash receive of {$receive->amount}.",
             'route_name' => 'acc-sfl.balance-receives.index',
             'requested_by' => $request->user()?->id,
         ]);
 
-        return back()->with('success', 'Balance receive recorded successfully and sent for approval.');
+        return back()->with('success', 'Cash receive recorded successfully and sent for approval.');
     }
 
     public function update(BalanceReceiveRequest $request, AcBalanceReceive $balanceReceive): RedirectResponse
@@ -115,7 +115,7 @@ class BalanceReceiveController extends Controller
             $balanceReceive->update($data);
         });
 
-        return back()->with('success', 'Balance receive updated successfully.');
+        return back()->with('success', 'Cash receive updated successfully.');
     }
 
     public function destroy(AcBalanceReceive $balanceReceive): RedirectResponse
@@ -123,16 +123,16 @@ class BalanceReceiveController extends Controller
         $this->authorize('ac_balance_receive.delete');
 
         if ($balanceReceive->status === AcBalanceReceive::STATUS_APPROVED) {
-            return back()->with('error', 'Approved balance receives cannot be deleted normally — use Force Delete.');
+            return back()->with('error', 'Approved cash receives cannot be deleted normally — use Force Delete.');
         }
 
         if ($balanceReceive->isReferenced()) {
-            return back()->with('error', 'This balance receive cannot be deleted because it already has a posted transaction.');
+            return back()->with('error', 'This cash receive cannot be deleted because it already has a posted transaction.');
         }
 
         $balanceReceive->delete();
 
-        return back()->with('success', 'Balance receive deleted successfully.');
+        return back()->with('success', 'Cash receive deleted successfully.');
     }
 
     /**
@@ -146,7 +146,7 @@ class BalanceReceiveController extends Controller
         $this->authorize('ac_balance_receive.force_delete');
 
         if ($balanceReceive->status !== AcBalanceReceive::STATUS_APPROVED) {
-            return back()->with('error', 'Only approved balance receives need Force Delete — use the normal Delete action instead.');
+            return back()->with('error', 'Only approved cash receives need Force Delete — use the normal Delete action instead.');
         }
 
         DB::transaction(function () use ($balanceReceive) {
@@ -163,43 +163,43 @@ class BalanceReceiveController extends Controller
             $balanceReceive->forceDelete();
         });
 
-        return back()->with('success', 'Balance receive permanently deleted and its ledger entry reversed.');
+        return back()->with('success', 'Cash receive permanently deleted and its ledger entry reversed.');
     }
 
     public function approve(AcBalanceReceive $balanceReceive, Request $request): RedirectResponse
     {
         $this->authorize('ac_balance_receive.approve');
 
-        abort_if($balanceReceive->status !== AcBalanceReceive::STATUS_PENDING, 403, 'Only pending balance receives can be approved.');
+        abort_if($balanceReceive->status !== AcBalanceReceive::STATUS_PENDING, 403, 'Only pending cash receives can be approved.');
 
         $approval = $this->findPendingApproval($balanceReceive);
 
         if (!$approval) {
-            return back()->with('error', 'No pending approval request found for this balance receive.');
+            return back()->with('error', 'No pending approval request found for this cash receive.');
         }
 
         app(ApprovalService::class)->approve($approval, $request->user(), $request->input('remarks'));
 
-        return back()->with('success', 'Balance receive approved successfully.');
+        return back()->with('success', 'Cash receive approved successfully.');
     }
 
     public function reject(AcBalanceReceive $balanceReceive, Request $request): RedirectResponse
     {
         $this->authorize('ac_balance_receive.approve');
 
-        abort_if($balanceReceive->status !== AcBalanceReceive::STATUS_PENDING, 403, 'Only pending balance receives can be rejected.');
+        abort_if($balanceReceive->status !== AcBalanceReceive::STATUS_PENDING, 403, 'Only pending cash receives can be rejected.');
 
         $request->validate(['remarks' => ['required', 'string', 'max:1000']]);
 
         $approval = $this->findPendingApproval($balanceReceive);
 
         if (!$approval) {
-            return back()->with('error', 'No pending approval request found for this balance receive.');
+            return back()->with('error', 'No pending approval request found for this cash receive.');
         }
 
         app(ApprovalService::class)->reject($approval, $request->user(), $request->input('remarks'));
 
-        return back()->with('success', 'Balance receive rejected.');
+        return back()->with('success', 'Cash receive rejected.');
     }
 
     private function findPendingApproval(AcBalanceReceive $balanceReceive): ?Approval

@@ -1,14 +1,14 @@
 @extends(adminTheme().'layouts.app')
 
 @section('title')
-    <title>{{ websiteTitle('Balance Receive Report') }}</title>
+    <title>{{ websiteTitle('Cash Receive Report') }}</title>
 @endsection
 
 @section('contents')
 <div class="flex-grow-1 p-4">
     <div class="card mb-3">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h4 class="mb-0"><i class="fa-solid fa-hand-holding-dollar mr-2 text-success"></i>Balance Receive Report</h4>
+            <h4 class="mb-0"><i class="fa-solid fa-hand-holding-dollar mr-2 text-success"></i>Cash Receive Report</h4>
             <div>
                 <a href="{{ route('acc-sfl.reports.balance-receive.print', request()->query()) }}" target="_blank" class="btn btn-light btn-sm">
                     <i class="fa-solid fa-print mr-1"></i> Print

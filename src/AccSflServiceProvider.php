@@ -39,10 +39,16 @@ class AccSflServiceProvider extends ServiceProvider
         $this->mergeAccPermissions();
         $this->registerMorphMap();
         $this->registerObservers();
+        $this->registerApprovalModules();
 
         if ($this->app->runningInConsole()) {
-            $this->commands([SyncLegacyIousCommand::class]);
+            $this->commands([SyncLegacyIousCommand::class, \ME\AccSfl\Console\Commands\DayEndReportCommand::class]);
         }
+
+        // Evening day end report mail (cash in hand + the day's expenses) to permission users.
+        $this->callAfterResolving(\Illuminate\Console\Scheduling\Schedule::class, function (\Illuminate\Console\Scheduling\Schedule $schedule) {
+            $schedule->command('acc-sfl:day-end-report')->dailyAt(config('acc-sfl.day_end_report_at', '21:00'))->withoutOverlapping();
+        });
     }
 
     public function register(): void
@@ -75,6 +81,28 @@ class AccSflServiceProvider extends ServiceProvider
         }
 
         Config::set('permission', $main);
+    }
+
+    /**
+     * Approval modules + Settings > Mail Notifications entries this package adds on top of the
+     * host's config/approval.php and config/mail_notifications.php (host entries win).
+     */
+    private function registerApprovalModules(): void
+    {
+        if (! interface_exists(\App\Contracts\ApprovalHandlerInterface::class)) {
+            return;
+        }
+
+        Config::set('approval.modules', array_merge([
+            'accounts.expense' => \ME\AccSfl\Approvals\ExpenseApprovalHandler::class,
+            'accounts.balance_receive' => \ME\AccSfl\Approvals\BalanceReceiveApprovalHandler::class,
+            AcExpenseIou::APPROVAL_MODULE => \ME\AccSfl\Approvals\ExpenseIouApprovalHandler::class,
+        ], config('approval.modules', [])));
+
+        Config::set('mail_notifications.actions', array_merge([
+            AcExpenseIou::APPROVAL_MODULE => ['title' => 'Approval: Expense IOU', 'group' => 'Approval', 'approval' => true],
+            \ME\AccSfl\Services\DayEndReport::MAIL_ACTION => ['title' => 'Accounts: Day End Report (cash in hand + expenses)', 'group' => 'Reports', 'approval' => false],
+        ], config('mail_notifications.actions', [])));
     }
 
     private function registerMorphMap(): void

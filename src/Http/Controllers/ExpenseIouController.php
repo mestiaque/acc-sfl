@@ -2,6 +2,8 @@
 
 namespace ME\AccSfl\Http\Controllers;
 
+use App\Models\Approval;
+use App\Services\ApprovalService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -62,24 +64,40 @@ class ExpenseIouController extends Controller
             ->when($request->filled('branch_id'), fn ($q) => $q->where('branch_id', $request->integer('branch_id')))
             ->when($request->filled('account_id'), fn ($q) => $q->where('account_id', $request->integer('account_id')))
             ->when($request->filled('employee_id'), fn ($q) => $q->where('employee_id', $request->integer('employee_id')))
-            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
+            ->when($request->filled('status'), fn ($q) => in_array($request->string('status')->value(), [AcExpenseIou::APPROVAL_PENDING, AcExpenseIou::APPROVAL_REJECTED], true)
+                ? $q->where('approval_status', $request->string('status'))
+                : $q->where('status', $request->string('status'))->approved())
             ->when($request->filled('from_date'), fn ($q) => $q->whereDate('issue_date', '>=', $request->date('from_date')))
             ->when($request->filled('to_date'), fn ($q) => $q->whereDate('issue_date', '<=', $request->date('to_date')));
     }
 
     public function store(ExpenseIouRequest $request): RedirectResponse
     {
-        DB::transaction(function () use ($request) {
+        $expenseIou = DB::transaction(function () use ($request) {
             $data = $request->validated();
             unset($data['attachments']);
             $data['status'] = AcExpenseIou::STATUS_PENDING;
+            $data['approval_status'] = AcExpenseIou::APPROVAL_PENDING;
 
             $expenseIou = AcExpenseIou::create($data);
 
             $this->storeAttachments($expenseIou, $request);
+
+            return $expenseIou;
         });
 
-        return back()->with('success', 'Expense IOU issued successfully.');
+        // Like expenses: nothing leaves the account until approved; approvers get the mail.
+        app(ApprovalService::class)->request([
+            'module' => AcExpenseIou::APPROVAL_MODULE,
+            'approvable' => $expenseIou,
+            'title' => "Expense IOU Approval - {$expenseIou->iou_no}",
+            'description' => ($request->user()?->name ?? 'Someone').' issued an IOU of '.number_format((float) $expenseIou->amount, 2)
+                .($expenseIou->employee?->name ? " to {$expenseIou->employee->name}" : '').'.',
+            'route_name' => 'acc-sfl.expense-ious.index',
+            'requested_by' => $request->user()?->id,
+        ]);
+
+        return back()->with('success', "Expense IOU {$expenseIou->iou_no} saved and sent for approval — the cash leaves the account once it is approved.");
     }
 
     public function update(ExpenseIouRequest $request, AcExpenseIou $expenseIou, \ME\AccSfl\Services\TransactionService $transactions): RedirectResponse
@@ -97,7 +115,8 @@ class ExpenseIouController extends Controller
 
             $expenseIou->update($data);
 
-            if (array_key_exists('amount', $data)) {
+            // Not approved yet: nothing was posted, so there is nothing to correct.
+            if (array_key_exists('amount', $data) && $expenseIou->isApproved()) {
                 $transactions->correctIouAmount($expenseIou, $oldAmount, (float) $expenseIou->amount);
             }
 
@@ -159,6 +178,10 @@ class ExpenseIouController extends Controller
             return back()->with('error', 'This IOU has already been adjusted.');
         }
 
+        if (! $expenseIou->isApproved()) {
+            return back()->with('error', 'This IOU is not approved yet — it can be adjusted only after approval.');
+        }
+
         if ($expenseIou->hasPendingExpenses()) {
             return back()->with('error', 'This IOU still has expenses waiting for approval — approve or reject them before adjusting.');
         }
@@ -187,6 +210,47 @@ class ExpenseIouController extends Controller
             };
 
         return back()->with('success', $message);
+    }
+
+    public function approve(AcExpenseIou $expenseIou, Request $request): RedirectResponse
+    {
+        $this->authorize('ac_expense_iou.approve');
+
+        abort_if($expenseIou->approval_status !== AcExpenseIou::APPROVAL_PENDING, 403, 'Only IOUs waiting for approval can be approved.');
+
+        if (! $approval = $this->findPendingApproval($expenseIou)) {
+            return back()->with('error', 'No pending approval request found for this IOU.');
+        }
+
+        app(ApprovalService::class)->approve($approval, $request->user(), $request->input('remarks'));
+
+        return back()->with('success', "Expense IOU {$expenseIou->iou_no} approved — the advance is posted to the account.");
+    }
+
+    public function reject(AcExpenseIou $expenseIou, Request $request): RedirectResponse
+    {
+        $this->authorize('ac_expense_iou.approve');
+
+        abort_if($expenseIou->approval_status !== AcExpenseIou::APPROVAL_PENDING, 403, 'Only IOUs waiting for approval can be rejected.');
+
+        $request->validate(['remarks' => ['required', 'string', 'max:1000']]);
+
+        if (! $approval = $this->findPendingApproval($expenseIou)) {
+            return back()->with('error', 'No pending approval request found for this IOU.');
+        }
+
+        app(ApprovalService::class)->reject($approval, $request->user(), $request->input('remarks'));
+
+        return back()->with('success', "Expense IOU {$expenseIou->iou_no} rejected.");
+    }
+
+    private function findPendingApproval(AcExpenseIou $expenseIou): ?Approval
+    {
+        return Approval::where('module', AcExpenseIou::APPROVAL_MODULE)
+            ->where('approvable_type', AcExpenseIou::class)
+            ->where('approvable_id', $expenseIou->id)
+            ->where('status', 'pending')
+            ->first();
     }
 
     public function destroy(AcExpenseIou $expenseIou, \ME\AccSfl\Services\TransactionService $transactions): RedirectResponse

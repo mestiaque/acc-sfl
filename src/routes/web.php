@@ -92,6 +92,8 @@ Route::middleware($route['middleware'] ?? ['web', 'auth'])
         Route::resource('expense-ious', ExpenseIouController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::get('expense-ious/print', [ExpenseIouController::class, 'print'])->name('expense-ious.print');
         Route::get('expense-ious/export', [ExpenseIouController::class, 'export'])->name('expense-ious.export');
+        Route::post('expense-ious/{expense_iou}/approve', [ExpenseIouController::class, 'approve'])->name('expense-ious.approve');
+        Route::post('expense-ious/{expense_iou}/reject', [ExpenseIouController::class, 'reject'])->name('expense-ious.reject');
         Route::post('expense-ious/{expense_iou}/adjust', [ExpenseIouController::class, 'adjust'])->name('expense-ious.adjust');
         Route::delete('expense-ious/{expense_iou}/attachments/{file}', [ExpenseIouController::class, 'destroyAttachment'])->name('expense-ious.attachments.destroy');
         Route::delete('expense-ious/{expense_iou}/force-delete', [ExpenseIouController::class, 'forceDestroy'])->name('expense-ious.force-delete');
@@ -119,6 +121,12 @@ Route::middleware($route['middleware'] ?? ['web', 'auth'])
             Route::get('/', [ExpenseReportController::class, 'index'])->name('index');
             Route::get('print', [ExpenseReportController::class, 'print'])->name('print');
             Route::get('export', [ExpenseReportController::class, 'export'])->name('export');
+        });
+
+        Route::prefix('reports/day-end')->name('reports.day-end.')->group(function () {
+            Route::get('/', [\ME\AccSfl\Http\Controllers\DayEndReportController::class, 'index'])->name('index');
+            Route::get('print', [\ME\AccSfl\Http\Controllers\DayEndReportController::class, 'print'])->name('print');
+            Route::post('send', [\ME\AccSfl\Http\Controllers\DayEndReportController::class, 'send'])->name('send');
         });
 
         Route::prefix('reports/expense-iou')->name('reports.expense-iou.')->group(function () {

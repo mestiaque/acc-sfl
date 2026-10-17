@@ -143,7 +143,7 @@
         <div class="ac-chart-card">
             <div class="ac-section-title">Quick Links</div>
             <div class="d-flex flex-column gap-2">
-                @can('ac_balance_receive.list')<a href="{{ route('acc-sfl.balance-receives.index') }}" class="ac-quick-btn"><i class="fa-solid fa-hand-holding-dollar"></i> Balance Receive</a>@endcan
+                @can('ac_balance_receive.list')<a href="{{ route('acc-sfl.balance-receives.index') }}" class="ac-quick-btn"><i class="fa-solid fa-hand-holding-dollar"></i> Cash Receive</a>@endcan
                 @can('ac_expense.list')<a href="{{ route('acc-sfl.expenses.index') }}" class="ac-quick-btn"><i class="fa-solid fa-money-bill-wave"></i> Expenses</a>@endcan
                 @can('ac_expense_iou.list')<a href="{{ route('acc-sfl.expense-ious.index') }}" class="ac-quick-btn"><i class="fa-solid fa-file-invoice-dollar"></i> Expense IOU</a>@endcan
                 @can('ac_report.view')<a href="{{ route('acc-sfl.reports.cash-flow.yearly') }}" class="ac-quick-btn"><i class="fa-solid fa-chart-line"></i> Reports</a>@endcan
@@ -173,7 +173,7 @@
     </div>
     <div class="col-lg-4">
         <div class="ac-chart-card h-100">
-            <div class="ac-section-title">Recent Balance Receives</div>
+            <div class="ac-section-title">Recent Cash Receives</div>
             @if($s['recentBalanceReceives']->isNotEmpty())
                 <div class="d-flex flex-column gap-2">
                     @foreach($s['recentBalanceReceives'] as $receive)
@@ -184,7 +184,7 @@
                     @endforeach
                 </div>
             @else
-                <div class="text-muted text-center py-4" style="font-size:13px;">No balance receives yet</div>
+                <div class="text-muted text-center py-4" style="font-size:13px;">No cash receives yet</div>
             @endif
         </div>
     </div>
@@ -278,7 +278,7 @@
                         @forelse($s['recentTransactions'] as $transaction)
                         <tr>
                             <td class="ac-recent-table">{{ $transaction->transaction_date->format('d M Y') }}</td>
-                            <td class="ac-recent-table">{{ $transaction->transaction_type }}</td>
+                            <td class="ac-recent-table">{{ \ME\AccSfl\Models\AcTransaction::typeLabel($transaction->transaction_type) }}</td>
                             <td class="ac-recent-table">{{ $transaction->account->name ?? '-' }}</td>
                             <td class="ac-recent-table text-success">{{ $transaction->debit > 0 ? number_format($transaction->debit, 0) : '-' }}</td>
                             <td class="ac-recent-table text-danger">{{ $transaction->credit > 0 ? number_format($transaction->credit, 0) : '-' }}</td>

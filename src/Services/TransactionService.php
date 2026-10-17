@@ -44,7 +44,7 @@ class TransactionService
             reference: $receive,
             debit: (float) $receive->amount,
             credit: 0,
-            description: $receive->description ?: "Balance receive {$receive->receive_no}",
+            description: $receive->description ?: "Cash receive {$receive->receive_no}",
             paymentMethodId: null,
             branchId: $receive->branch_id,
         ));

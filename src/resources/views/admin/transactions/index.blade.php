@@ -58,7 +58,7 @@
                     <select name="transaction_type" class="form-control form-control-sm">
                         <option value="">All Types</option>
                         @foreach($transactionTypes as $type)
-                        <option value="{{ $type }}" @selected(request('transaction_type') === $type)>{{ $type }}</option>
+                        <option value="{{ $type }}" @selected(request('transaction_type') === $type)>{{ \ME\AccSfl\Models\AcTransaction::typeLabel($type) }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -98,7 +98,7 @@
                         @foreach($transactions as $transaction)
                         <tr>
                             <td>{{ $transaction->transaction_date->format('d M Y') }}</td>
-                            <td>{{ $transaction->transaction_type }}</td>
+                            <td>{{ \ME\AccSfl\Models\AcTransaction::typeLabel($transaction->transaction_type) }}</td>
                             <td>{{ $transaction->branch->name }}</td>
                             <td>{{ $transaction->account->name }}</td>
                             <td>{{ $transaction->paymentMethod->name ?? '-' }}</td>

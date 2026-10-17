@@ -52,7 +52,7 @@ class ExpenseRequest extends FormRequest
             'receiver_mobile' => ['nullable', 'string', 'max:30'],
             'employee_id' => ['nullable', 'integer', 'exists:hr_employees,id'],
             'iou_id' => ['nullable', 'integer', Rule::exists('ac_expense_ious', 'id')
-                ->where('status', AcExpenseIou::STATUS_PENDING)->whereNull('deleted_at')],
+                ->where('status', AcExpenseIou::STATUS_PENDING)->where('approval_status', AcExpenseIou::APPROVAL_APPROVED)->whereNull('deleted_at')],
             'invoice' => ['nullable', 'string', 'max:100'],
             'description' => ['nullable', 'string'],
             'attachment' => ['nullable', 'file', 'max:5120'],

@@ -77,7 +77,7 @@ class BalanceReceiveApprovalHandler extends BaseApprovalHandler
         $approvable->loadMissing(['branch', 'account', 'particular.masterParticular', 'creator']);
 
         return [
-            'badge' => 'BALANCE RECEIVE',
+            'badge' => 'CASH RECEIVE',
             'number' => $approvable->receive_no,
             'date' => $approvable->receive_date?->format('d.m.Y'),
             'meta' => [

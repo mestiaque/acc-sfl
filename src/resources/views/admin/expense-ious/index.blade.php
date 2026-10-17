@@ -62,6 +62,8 @@
                     <label class="form-label mb-1">Status</label>
                     <select name="status" class="form-control form-control-sm">
                         <option value="">All Status</option>
+                        <option value="pending" @selected(request('status') === 'pending')>Waiting Approval</option>
+                        <option value="rejected" @selected(request('status') === 'rejected')>Rejected</option>
                         <option value="Pending" @selected(request('status') === 'Pending')>Pending</option>
                         <option value="Adjusted" @selected(request('status') === 'Adjusted')>Adjusted</option>
                     </select>
@@ -127,11 +129,30 @@
                                 @endif
                             </td>
                             <td>
-                                <span class="badge {{ $iou->status === 'Adjusted' ? 'badge-success' : 'badge-warning' }} p-1">{{ $iou->status }}</span>
+                                @if($iou->approval_status === 'pending')
+                                    <span class="badge badge-info p-1" title="Cash leaves the account once approved">Waiting Approval</span>
+                                @elseif($iou->approval_status === 'rejected')
+                                    <span class="badge badge-danger p-1" title="{{ $iou->approval_remarks }}">Rejected</span>
+                                @else
+                                    <span class="badge {{ $iou->status === 'Adjusted' ? 'badge-success' : 'badge-warning' }} p-1">{{ $iou->status }}</span>
+                                @endif
                             </td>
                             <td class="text-right" width="150">
+                                @if($iou->approval_status === 'pending')
+                                    @if(view()->exists('components.approval-remind'))<x-approval-remind :model="$iou" />@endif
+                                    @can('ac_expense_iou.approve')
+                                    <button type="button" class="btn-custom success" title="Approve" data-toggle="modal" data-target="#approveIouModal"
+                                        data-action="{{ route('acc-sfl.expense-ious.approve', $iou) }}" data-no="{{ $iou->iou_no }}" data-amount="{{ number_format($iou->amount, 2) }}">
+                                        <i class="fa-solid fa-check-double"></i>
+                                    </button>
+                                    <button type="button" class="btn-custom danger" title="Reject" data-toggle="modal" data-target="#rejectIouModal"
+                                        data-action="{{ route('acc-sfl.expense-ious.reject', $iou) }}" data-no="{{ $iou->iou_no }}">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                    @endcan
+                                @endif
                                 @can('ac_expense_iou.edit')
-                                    @if($iou->status === 'Pending')
+                                    @if($iou->status === 'Pending' && $iou->approval_status === 'approved')
                                     <button type="button" class="btn-custom success" data-toggle="modal" data-target="#adjustIouModal"
                                         title="{{ $iou->pending_expense_count ? 'Approve or reject its pending expenses first' : 'Adjust' }}" @disabled($iou->pending_expense_count)
                                         data-action="{{ route('acc-sfl.expense-ious.adjust', $iou) }}" data-no="{{ $iou->iou_no }}"
@@ -401,12 +422,66 @@
     'warning' => 'This IOU has already been adjusted and posted to the ledger. Force deleting it will reverse its posted transactions (restoring the account balance) and PERMANENTLY delete the IOU — this cannot be undone.',
     'buttonLabel' => 'Force Delete',
 ])
+{{-- Approve / Reject IOU --}}
+<div class="modal fade" id="approveIouModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title">Approve IOU <span data-iou-no></span></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2">Approving posts the advance of <strong data-iou-amount></strong> to the ledger — it leaves the account now. Continue?</p>
+                    <div class="form-group mb-0">
+                        <label>Remarks (optional)</label>
+                        <textarea name="remarks" class="form-control" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-success btn-sm"><i class="fa-solid fa-check mr-1"></i> Approve</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="rejectIouModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="POST">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title">Reject IOU <span data-iou-no></span></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-0">
+                        <label>Remarks <span class="text-danger">*</span></label>
+                        <textarea name="remarks" class="form-control" rows="2" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-xmark mr-1"></i> Reject</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('js')
 @include('acc-sfl::admin.partials.select2-init')
 <script>
     $(function () {
+        $('#approveIouModal, #rejectIouModal').on('show.bs.modal', function (event) {
+            var btn = $(event.relatedTarget);
+            $(this).find('form').attr('action', btn.data('action'));
+            $(this).find('[data-iou-no]').text(btn.data('no'));
+            $(this).find('[data-iou-amount]').text(btn.data('amount'));
+        });
         $('#editIouModal').on('show.bs.modal', function (event) {
             var btn = $(event.relatedTarget);
             $(this).find('form').attr('action', btn.data('action'));

@@ -17,7 +17,7 @@
         @forelse($transactions as $transaction)
         <tr>
             <td>{{ $transaction->transaction_date->format('d M Y') }}</td>
-            <td>{{ $transaction->transaction_type }}</td>
+            <td>{{ \ME\AccSfl\Models\AcTransaction::typeLabel($transaction->transaction_type) }}</td>
             <td>{{ $transaction->branch->name }}</td>
             <td>{{ $transaction->account->name }}</td>
             <td>{{ $transaction->paymentMethod->name ?? '-' }}</td>

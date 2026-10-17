@@ -25,6 +25,12 @@ class AcTransaction extends Model
     public const TYPE_IOU_ADJUSTMENT = 'IOU Adjustment';
     public const TYPE_IOU_CORRECTION = 'IOU Correction';
 
+    /** Stored type values stay as-is; this is only what the screens show. */
+    public static function typeLabel(?string $type): ?string
+    {
+        return $type === self::TYPE_BALANCE_RECEIVE ? 'Cash Receive' : $type;
+    }
+
     protected $fillable = [
         'transaction_date',
         'transaction_type',

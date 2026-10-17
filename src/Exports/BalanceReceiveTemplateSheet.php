@@ -26,7 +26,7 @@ class BalanceReceiveTemplateSheet implements FromArray, ShouldAutoSize, WithHead
 
     public function title(): string
     {
-        return 'Balance Receive';
+        return 'Cash Receive';
     }
 
     public function styles(Worksheet $sheet): array

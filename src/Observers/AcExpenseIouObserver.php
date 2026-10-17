@@ -25,13 +25,20 @@ class AcExpenseIouObserver
         }
     }
 
+    /** Nothing leaves the account until the IOU is approved (ExpenseIouApprovalHandler). */
     public function created(AcExpenseIou $iou): void
     {
-        $this->transactions->postIouIssue($iou);
+        if ($iou->isApproved()) {
+            $this->transactions->postIouIssue($iou);
+        }
     }
 
     public function updated(AcExpenseIou $iou): void
     {
+        if ($iou->wasChanged('approval_status') && $iou->isApproved() && ! $iou->transactions()->exists()) {
+            $this->transactions->postIouIssue($iou);
+        }
+
         if ($iou->wasChanged('status') && $iou->status === AcExpenseIou::STATUS_ADJUSTED) {
             $this->transactions->postIouAdjustment($iou);
         }

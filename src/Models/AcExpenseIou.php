@@ -24,6 +24,12 @@ class AcExpenseIou extends Model
     public const STATUS_PENDING = 'Pending';
     public const STATUS_ADJUSTED = 'Adjusted';
 
+    /** Approval (separate from the Pending / Adjusted settlement status above). */
+    public const APPROVAL_MODULE = 'accounts.expense_iou';
+    public const APPROVAL_PENDING = 'pending';
+    public const APPROVAL_APPROVED = 'approved';
+    public const APPROVAL_REJECTED = 'rejected';
+
     protected $fillable = [
         'iou_no',
         'account_id',
@@ -39,6 +45,10 @@ class AcExpenseIou extends Model
         'receiver_name',
         'receiver_mobile',
         'status',
+        'approval_status',
+        'approved_by',
+        'approved_at',
+        'approval_remarks',
     ];
 
     protected $casts = [
@@ -46,6 +56,7 @@ class AcExpenseIou extends Model
         'adjust_date' => 'date',
         'amount' => 'decimal:2',
         'settlement_amount' => 'decimal:2',
+        'approved_at' => 'datetime',
     ];
 
     public function branch(): BelongsTo
@@ -113,6 +124,22 @@ class AcExpenseIou extends Model
     public function scopePending(Builder $query): Builder
     {
         return $query->where('status', self::STATUS_PENDING);
+    }
+
+    /** Approved IOUs only — the cash has left the account, so expenses can be recorded against them. */
+    public function scopeApproved(Builder $query): Builder
+    {
+        return $query->where('approval_status', self::APPROVAL_APPROVED);
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->approval_status === self::APPROVAL_APPROVED;
+    }
+
+    public function approver(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\User::class, 'approved_by');
     }
 
     public function scopeAdjusted(Builder $query): Builder

@@ -1,6 +1,6 @@
 @extends('printMaster2')
 
-@section('title', 'Balance Receives')
+@section('title', 'Cash Receives')
 
 @section('contents')
 <div class="print-header">
@@ -10,7 +10,7 @@
             <div class="company-address">{{ config('acc-sfl.company.address') }}</div>
         </div>
     </div>
-    <div class="report-title"><span>Balance Receives List</span></div>
+    <div class="report-title"><span>Cash Receives List</span></div>
 </div>
 
 @include('acc-sfl::admin.balance-receives.partials.table', ['balanceReceives' => $balanceReceives])

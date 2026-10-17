@@ -28,7 +28,10 @@ use ME\AccSfl\Models\AcParticular;
  */
 class BalanceReceiveImportService
 {
-    private const SHEET_NAME = 'Balance Receive';
+    private const SHEET_NAME = 'Cash Receive';
+
+    /** Templates downloaded before the rename still name the sheet "Balance Receive". */
+    private const LEGACY_SHEET_NAME = 'Balance Receive';
 
     private const REQUIRED_HEADINGS = ['Date', 'Branch', 'Account', 'Particular Code', 'Amount'];
 
@@ -52,7 +55,7 @@ class BalanceReceiveImportService
             return ['error' => 'Could not read this file. Please make sure it is a valid .xlsx/.xls file.', 'rows' => []];
         }
 
-        $sheet = $this->findSheet($spreadsheet, self::SHEET_NAME);
+        $sheet = $this->findSheet($spreadsheet, [self::SHEET_NAME, self::LEGACY_SHEET_NAME]);
         $grid = $sheet->toArray(null, true, true, false);
 
         if (empty($grid)) {
@@ -171,7 +174,7 @@ class BalanceReceiveImportService
 
         if (empty($errors) && $save) {
             try {
-                AcBalanceReceive::create([
+                $receive = AcBalanceReceive::create([
                     'receive_date' => $date->toDateString(),
                     'branch_id' => $branch->id,
                     'account_id' => $account->id,
@@ -179,6 +182,17 @@ class BalanceReceiveImportService
                     'amount' => $amount,
                     'description' => $description !== '' ? $description : null,
                     'created_by' => Auth::id(),
+                ]);
+
+                // Same as the Add Balance Receive form: nothing posts until approved, so every
+                // imported row raises its own approval request (and mails the approvers).
+                app(\App\Services\ApprovalService::class)->request([
+                    'module' => 'accounts.balance_receive',
+                    'approvable' => $receive,
+                    'title' => "Cash Receive Approval - {$receive->receive_no}",
+                    'description' => 'Imported cash receive of '.number_format($amount, 2).'.',
+                    'route_name' => 'acc-sfl.balance-receives.index',
+                    'requested_by' => Auth::id(),
                 ]);
                 $result['saved'] = true;
             } catch (\Throwable $e) {
@@ -189,11 +203,13 @@ class BalanceReceiveImportService
         return $result;
     }
 
-    private function findSheet(Spreadsheet $spreadsheet, string $preferredName): Worksheet
+    private function findSheet(Spreadsheet $spreadsheet, array $preferredNames): Worksheet
     {
-        foreach ($spreadsheet->getSheetNames() as $name) {
-            if (strcasecmp($name, $preferredName) === 0) {
-                return $spreadsheet->getSheetByName($name);
+        foreach ($preferredNames as $preferredName) {
+            foreach ($spreadsheet->getSheetNames() as $name) {
+                if (strcasecmp($name, $preferredName) === 0) {
+                    return $spreadsheet->getSheetByName($name);
+                }
             }
         }
 

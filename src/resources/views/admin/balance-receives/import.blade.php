@@ -1,7 +1,7 @@
 @extends(adminTheme().'layouts.app')
 
 @section('title')
-    <title>{{ websiteTitle('Import Balance Receive') }}</title>
+    <title>{{ websiteTitle('Import Cash Receive') }}</title>
 @endsection
 
 @section('contents')
@@ -9,7 +9,7 @@
     @include('acc-sfl::admin.partials.alerts')
 
     @include('acc-sfl::admin.partials.excel-import-page', [
-        'title' => 'Import Balance Receive from Excel',
+        'title' => 'Import Cash Receive from Excel',
         'backUrl' => route('acc-sfl.balance-receives.index'),
         'previewUrl' => route('acc-sfl.balance-receives.import.preview'),
         'saveUrl' => route('acc-sfl.balance-receives.import.save'),

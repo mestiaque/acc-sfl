@@ -1,6 +1,6 @@
 @extends('printMaster2')
 
-@section('title', 'Balance Receive Report')
+@section('title', 'Cash Receive Report')
 
 @section('contents')
 @include('acc-sfl::admin.reports.partials.print-loader')
@@ -11,7 +11,7 @@
             <div class="company-address">{{ config('acc-sfl.company.address') }}</div>
         </div>
     </div>
-    <div class="report-title"><span>Balance Receive Report</span></div>
+    <div class="report-title"><span>Cash Receive Report</span></div>
 </div>
 
 @include('acc-sfl::admin.reports.partials.balance-receive-report-table', ['grouped' => $grouped, 'totals' => $totals])
