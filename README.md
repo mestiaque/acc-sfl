@@ -59,6 +59,7 @@ Page: **Reports > Day End Report** (`/admin/acc-sfl/reports/day-end`). It shows 
 The same report is mailed as an HTML email every day to every user with the `ac_day_end_report.view` permission (Roles Setup) and a valid email. It can be turned off, or sent to hand-picked people instead, from **Settings > Mail Notifications > Accounts: Day End Report**.
 
 > If `APPROVAL_TEST_RECIPIENTS` is set in `.env`, every mail goes only to those addresses. Remove it on the live server.
+> Several addresses are separated by commas, e.g. `APPROVAL_TEST_RECIPIENTS=info@mestiaque.com,accounts@example.com`.
 
 #### Cron setup (required for the daily mail)
 
