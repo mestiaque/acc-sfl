@@ -143,7 +143,10 @@ class DayEndReport
         return $receives->toBase()->concat($expenses)->concat($ious)->values();
     }
 
-    /** Users with the permission (valid email), unless Settings > Mail Notifications picks others. */
+    /**
+     * Users with the permission (valid email), unless Settings > Mail Notifications picks others,
+     * plus APPROVAL_TEST_RECIPIENTS — added to them, not replacing them as for other mail.
+     */
     public function recipients(): Collection
     {
         $override = class_exists(\App\Models\MailNotificationSetting::class)
@@ -152,22 +155,31 @@ class DayEndReport
             ->filter(fn (User $user) => (int) ($user->status ?? 1) === 1 && $user->hasPermission(self::PERMISSION))
             ->pluck('email');
 
-        if ($test = config('approval.test_recipients', [])) {
-            $emails = collect($test);
-        }
-
-        return $emails->filter(fn ($e) => filter_var($e, FILTER_VALIDATE_EMAIL) !== false)->unique()->values();
+        return $this->withTestRecipients($emails);
     }
 
-    /** Mails the report; returns the addresses it went to (empty = disabled / nobody to send to). */
-    public function send(Carbon $date, ?array $to = null): array
+    private function withTestRecipients(Collection $emails): Collection
+    {
+        // One mail per address even if it is both a permission user and a test recipient.
+        return $emails->concat(config('approval.test_recipients', []))
+            ->map(fn ($e) => strtolower(trim((string) $e)))
+            ->filter(fn ($e) => filter_var($e, FILTER_VALIDATE_EMAIL) !== false)->unique()->values();
+    }
+
+    /**
+     * Mails the report; returns the addresses it went to (empty = disabled / nobody to send to).
+     * Every attempt is written to the Laravel log ($trigger: schedule / manual).
+     */
+    public function send(Carbon $date, ?array $to = null, string $trigger = 'schedule'): array
     {
         if ($to === null && ! $this->mailEnabled()) {
+            $this->log($date, $trigger, 'skipped', [], null, 'Mail is off in Settings > Mail Notifications.');
+
             return [];
         }
-        $emails = $to ?? $this->recipients()->all();
+        $emails = $to !== null ? $this->withTestRecipients(collect($to))->all() : $this->recipients()->all();
         if ($emails === []) {
-            \Illuminate\Support\Facades\Log::warning('Day end report mail skipped: no user with '.self::PERMISSION.' has a valid email.');
+            $this->log($date, $trigger, 'skipped', [], null, 'No user with the Day End Report permission has a valid email.');
 
             return [];
         }
@@ -175,14 +187,34 @@ class DayEndReport
         $report = $this->build($date);
         $closing = number_format($report['totals']['closing'], 2);
         $pendingCount = $report['pending']->count();
-        \Illuminate\Support\Facades\Mail::send('acc-sfl::emails.day-end-report', [
-            'report' => $report,
-            'url' => route('acc-sfl.reports.day-end.index', ['date' => $date->toDateString()]),
-        ], fn ($message) => $message->to($emails)
-            ->subject('Day End Report '.$date->format('d M Y')." - Cash in Hand Tk {$closing}, Expenses Tk ".number_format($report['expense_totals']['approved'], 2)
-                .($pendingCount ? ", {$pendingCount} waiting approval" : '')));
+        $subject = 'Day End Report '.$date->format('d M Y')." - Cash in Hand Tk {$closing}, Expenses Tk ".number_format($report['expense_totals']['approved'], 2)
+            .($pendingCount ? ", {$pendingCount} waiting approval" : '');
+        try {
+            \Illuminate\Support\Facades\Mail::send('acc-sfl::emails.day-end-report', [
+                'report' => $report,
+                'url' => route('acc-sfl.reports.day-end.index', ['date' => $date->toDateString()]),
+            ], function ($message) use ($emails, $subject) {
+                $message->to($emails)->subject($subject);
+                // Tells the host's test-mode redirect to keep these recipients (it only adds the test ones).
+                $message->getHeaders()->addTextHeader('X-Keep-Recipients', '1');
+            });
+        } catch (\Throwable $e) {
+            $this->log($date, $trigger, 'failed', $emails, $subject, $e->getMessage());
+
+            throw $e;
+        }
+        $this->log($date, $trigger, 'sent', $emails, $subject);
 
         return $emails;
+    }
+
+    /** One line in the Laravel log (storage/logs) per attempt: sent / skipped as info, failed as error. */
+    private function log(Carbon $date, string $trigger, string $status, array $recipients, ?string $subject, ?string $error = null): void
+    {
+        $by = auth()->user()?->name;
+        \Illuminate\Support\Facades\Log::log($status === 'failed' ? 'error' : 'info', "Day end report mail {$status} ({$trigger}".($by ? " by {$by}" : '').') for '.$date->toDateString(), array_filter([
+            'to' => $recipients ?: null, 'subject' => $subject, 'reason' => $error,
+        ]));
     }
 
     public function mailEnabled(): bool

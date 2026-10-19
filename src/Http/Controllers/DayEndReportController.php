@@ -36,7 +36,7 @@ class DayEndReportController extends Controller
     public function send(Request $request): RedirectResponse
     {
         $this->authorize(DayEndReport::PERMISSION);
-        $sent = $this->report->send($this->date($request));
+        $sent = $this->report->send($this->date($request), null, 'manual');
 
         return back()->with($sent ? 'success' : 'error', $sent
             ? 'Day end report mailed to '.count($sent).' user(s): '.implode(', ', $sent)
