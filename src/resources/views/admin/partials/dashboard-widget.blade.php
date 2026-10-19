@@ -18,7 +18,8 @@
     $branchNames = $s['branchBalances']->pluck('name')->toJson();
     $branchAmounts = $s['branchBalances']->pluck('balance')->toJson();
     $widgetId = 'ac_widget_'.uniqid();
-    $monthNet = $s['monthReceipts'] - $s['monthExpenses'];
+    // Approved cash in − out this month from the ledger (receives, expenses and IOUs).
+    $monthNet = $s['monthNetCash'] ?? 0;
 @endphp
 
 <style>

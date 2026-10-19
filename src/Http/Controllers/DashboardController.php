@@ -35,10 +35,16 @@ class DashboardController extends Controller
             $monthStart = $today->copy()->startOfMonth();
 
             $totalCashOnHand = (float) AcAccount::query()->active()->sum('current_balance');
-            $todaysReceipts = (float) AcBalanceReceive::query()->whereDate('receive_date', $today)->sum('amount');
-            $todaysExpenses = (float) AcExpense::query()->whereDate('expense_date', $today)->sum('total_amount');
-            $monthReceipts = (float) AcBalanceReceive::query()->whereDate('receive_date', '>=', $monthStart)->sum('amount');
-            $monthExpenses = (float) AcExpense::query()->whereDate('expense_date', '>=', $monthStart)->sum('total_amount');
+            // Only approved entries touch an account — pending / rejected receives and expenses are left out.
+            $todaysReceipts = (float) AcBalanceReceive::query()->approved()->whereDate('receive_date', $today)->sum('amount');
+            $todaysExpenses = (float) AcExpense::query()->approved()->whereDate('expense_date', $today)->sum('total_amount');
+            $monthReceipts = (float) AcBalanceReceive::query()->approved()->whereDate('receive_date', '>=', $monthStart)->sum('amount');
+            $monthExpenses = (float) AcExpense::query()->approved()->whereDate('expense_date', '>=', $monthStart)->sum('total_amount');
+
+            // Cash in / out as posted to the ledger (posted only on approval): receives, expenses,
+            // IOU issue / settlement — the opening balance is not a movement of the period.
+            $ledger = fn () => AcTransaction::query()->where('transaction_type', '!=', AcTransaction::TYPE_OPENING_BALANCE);
+            $monthNetCash = (float) $ledger()->whereDate('transaction_date', '>=', $monthStart)->selectRaw('COALESCE(SUM(debit), 0) - COALESCE(SUM(credit), 0) net')->value('net');
 
             $pendingIous = AcExpenseIou::query()->pending();
             $pendingIouCount = (clone $pendingIous)->count();
@@ -49,16 +55,16 @@ class DashboardController extends Controller
             $adjustedIouAmount = (float) (clone $adjustedThisMonth)->sum('amount');
 
             // ── Last 30 days cash flow (receipts vs payments) ──
+            $byDay = $ledger()->whereDate('transaction_date', '>=', $today->copy()->subDays(29))
+                ->selectRaw('DATE(transaction_date) d, SUM(debit) receipts, SUM(credit) payments')->groupByRaw('DATE(transaction_date)')->get()->keyBy('d');
             $last30 = collect();
             for ($i = 29; $i >= 0; $i--) {
                 $date = $today->copy()->subDays($i);
-                $receipts = (float) AcBalanceReceive::query()->whereDate('receive_date', $date)->sum('amount');
-                $payments = (float) AcExpense::query()->whereDate('expense_date', $date)->sum('total_amount');
                 $last30->push([
                     'date' => $date->toDateString(),
                     'label' => $date->format('d M'),
-                    'receipts' => $receipts,
-                    'payments' => $payments,
+                    'receipts' => (float) ($byDay[$date->toDateString()]->receipts ?? 0),
+                    'payments' => (float) ($byDay[$date->toDateString()]->payments ?? 0),
                 ]);
             }
 
@@ -66,16 +72,12 @@ class DashboardController extends Controller
             $monthlyTrend = collect();
             for ($i = 5; $i >= 0; $i--) {
                 $month = $today->copy()->subMonthsNoOverflow($i);
-                $receipts = (float) AcBalanceReceive::query()
-                    ->whereYear('receive_date', $month->year)->whereMonth('receive_date', $month->month)
-                    ->sum('amount');
-                $payments = (float) AcExpense::query()
-                    ->whereYear('expense_date', $month->year)->whereMonth('expense_date', $month->month)
-                    ->sum('total_amount');
+                $row = $ledger()->whereYear('transaction_date', $month->year)->whereMonth('transaction_date', $month->month)
+                    ->selectRaw('COALESCE(SUM(debit), 0) receipts, COALESCE(SUM(credit), 0) payments')->first();
                 $monthlyTrend->push([
                     'label' => $month->format('M Y'),
-                    'receipts' => $receipts,
-                    'payments' => $payments,
+                    'receipts' => (float) $row->receipts,
+                    'payments' => (float) $row->payments,
                 ]);
             }
 
@@ -93,6 +95,7 @@ class DashboardController extends Controller
                 ->join('ac_particulars', 'ac_particulars.id', '=', 'ac_expense_details.particular_id')
                 ->join('ac_master_particulars', 'ac_master_particulars.id', '=', 'ac_particulars.master_particular_id')
                 ->whereDate('ac_expenses.expense_date', '>=', $monthStart)
+                ->where('ac_expenses.status', AcExpense::STATUS_APPROVED)
                 ->selectRaw('ac_master_particulars.name as name, SUM(ac_expense_details.amount) as total')
                 ->groupBy('ac_master_particulars.name')
                 ->orderByDesc('total')
@@ -122,7 +125,7 @@ class DashboardController extends Controller
             $accountBalances = AcAccount::query()->active()->with('branch')->orderByDesc('current_balance')->get();
 
             return compact(
-                'totalCashOnHand', 'todaysReceipts', 'todaysExpenses', 'monthReceipts', 'monthExpenses',
+                'totalCashOnHand', 'todaysReceipts', 'todaysExpenses', 'monthReceipts', 'monthExpenses', 'monthNetCash',
                 'pendingIouCount', 'pendingIouAmount', 'adjustedIouCount', 'adjustedIouAmount',
                 'last30', 'monthlyTrend', 'branchBalances', 'topExpenseCategories',
                 'recentTransactions', 'recentBalanceReceives', 'recentExpenses', 'accountBalances',
@@ -130,7 +133,7 @@ class DashboardController extends Controller
         } catch (\Throwable $e) {
             return [
                 'totalCashOnHand' => 0, 'todaysReceipts' => 0, 'todaysExpenses' => 0,
-                'monthReceipts' => 0, 'monthExpenses' => 0,
+                'monthReceipts' => 0, 'monthExpenses' => 0, 'monthNetCash' => 0,
                 'pendingIouCount' => 0, 'pendingIouAmount' => 0, 'adjustedIouCount' => 0, 'adjustedIouAmount' => 0,
                 'last30' => collect(), 'monthlyTrend' => collect(), 'branchBalances' => collect(), 'topExpenseCategories' => collect(),
                 'recentTransactions' => collect(), 'recentBalanceReceives' => collect(), 'recentExpenses' => collect(), 'accountBalances' => collect(),

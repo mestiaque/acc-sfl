@@ -5,6 +5,7 @@ namespace ME\AccSfl\Services;
 use Illuminate\Support\Carbon;
 use ME\AccSfl\Models\AcAccount;
 use ME\AccSfl\Models\AcBalanceReceive;
+use ME\AccSfl\Models\AcExpense;
 use ME\AccSfl\Models\AcExpenseDetail;
 use ME\AccSfl\Models\AcMasterParticular;
 use ME\AccSfl\Models\AcParticular;
@@ -218,7 +219,7 @@ class CashFlowReportService
         ?int $masterParticularId = null,
         ?array $particularIds = null,
     ): array {
-        $rows = AcBalanceReceive::query()
+        $rows = AcBalanceReceive::query()->approved()
             ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->when($accountId, fn ($q) => $q->where('account_id', $accountId))
             ->when($particularIds, fn ($q) => $q->whereIn('particular_id', $particularIds))
@@ -248,6 +249,7 @@ class CashFlowReportService
     ): array {
         $rows = AcExpenseDetail::query()
             ->join('ac_expenses', 'ac_expenses.id', '=', 'ac_expense_details.expense_id')
+            ->where('ac_expenses.status', AcExpense::STATUS_APPROVED)
             ->when($branchId, fn ($q) => $q->where('ac_expenses.branch_id', $branchId))
             ->when($accountId, fn ($q) => $q->where('ac_expenses.account_id', $accountId))
             ->when($particularIds, fn ($q) => $q->whereIn('ac_expense_details.particular_id', $particularIds))
@@ -274,7 +276,7 @@ class CashFlowReportService
             ->when($accountId, fn ($q) => $q->where('id', $accountId))
             ->sum('opening_balance');
 
-        $receipts = (float) AcBalanceReceive::query()
+        $receipts = (float) AcBalanceReceive::query()->approved()
             ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->when($accountId, fn ($q) => $q->where('account_id', $accountId))
             ->where('receive_date', '<=', $date->toDateString())
@@ -282,6 +284,7 @@ class CashFlowReportService
 
         $payments = (float) AcExpenseDetail::query()
             ->join('ac_expenses', 'ac_expenses.id', '=', 'ac_expense_details.expense_id')
+            ->where('ac_expenses.status', AcExpense::STATUS_APPROVED)
             ->when($branchId, fn ($q) => $q->where('ac_expenses.branch_id', $branchId))
             ->when($accountId, fn ($q) => $q->where('ac_expenses.account_id', $accountId))
             ->where('ac_expenses.expense_date', '<=', $date->toDateString())
