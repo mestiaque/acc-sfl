@@ -32,7 +32,7 @@
                         <select name="branch_id" class="form-control" required>
                             <option value="">-- Select --</option>
                             @foreach($branches as $branch)
-                            <option value="{{ $branch->id }}" @selected($expense->branch_id === $branch->id)>{{ $branch->name }}</option>
+                            <option value="{{ $branch->id }}" @selected((int) $expense->branch_id === (int) $branch->id)>{{ $branch->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -41,7 +41,7 @@
                         <select name="account_id" id="expenseAccount" class="form-control" required>
                             <option value="">-- Select --</option>
                             @foreach($accounts as $account)
-                            <option value="{{ $account->id }}" @selected($expense->account_id === $account->id)>{{ $account->name }}</option>
+                            <option value="{{ $account->id }}" @selected((int) $expense->account_id === (int) $account->id)>{{ $account->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -50,7 +50,7 @@
                         <select name="payment_method_id" class="form-control" required>
                             <option value="">-- Select --</option>
                             @foreach($paymentMethods as $method)
-                            <option value="{{ $method->id }}" @selected($expense->payment_method_id === $method->id)>{{ $method->name }}</option>
+                            <option value="{{ $method->id }}" @selected((int) $expense->payment_method_id === (int) $method->id)>{{ $method->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -72,7 +72,7 @@
                         <select name="employee_id" id="expenseEmployee" class="form-control">
                             <option value="">-- None --</option>
                             @foreach($employees as $employee)
-                            <option value="{{ $employee->id }}" @selected($expense->employee_id === $employee->id)>{{ $employee->employee_id }} - {{ $employee->name }}{{ $employee->department ? ' ('.$employee->department->name.(($employee->designation) ? ' / '.$employee->designation->name : '').')' : '' }}</option>
+                            <option value="{{ $employee->id }}" @selected((int) $expense->employee_id === (int) $employee->id)>{{ $employee->employee_id }} - {{ $employee->name }}{{ $employee->department ? ' ('.$employee->department->name.(($employee->designation) ? ' / '.$employee->designation->name : '').')' : '' }}</option>
                             @endforeach
                         </select>
                     </div>
