@@ -107,11 +107,8 @@
                         @foreach($expense->attachments as $file)
                         <li class="d-flex align-items-center justify-content-between border rounded px-2 py-1 mb-1">
                             <a href="{{ $file->file_url }}" target="_blank">{{ $file->original_name ?: $file->file_name }}</a>
-                            <form action="{{ route('acc-sfl.expenses.attachments.destroy', [$expense, $file]) }}" method="POST" onsubmit="return confirm('Remove this attachment?')" class="ml-2">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-link btn-sm text-danger p-0">Remove</button>
-                            </form>
+                            {{-- Submits its own form below (outside this one) - a nested form tag would close the edit form early and leave Update outside it. --}}
+                            <button type="submit" form="removeAttachmentForm{{ $file->id }}" class="btn btn-link btn-sm text-danger p-0 ml-2">Remove</button>
                         </li>
                         @endforeach
                     </ul>
@@ -123,6 +120,13 @@
                     <button type="submit" class="btn btn-primary btn-sm">Update Expense</button>
                 </div>
             </form>
+
+            @foreach($expense->attachments as $file)
+            <form id="removeAttachmentForm{{ $file->id }}" action="{{ route('acc-sfl.expenses.attachments.destroy', [$expense, $file]) }}" method="POST" onsubmit="return confirm('Remove this attachment?')" class="d-none">
+                @csrf
+                @method('DELETE')
+            </form>
+            @endforeach
         </div>
     </div>
 </div>
