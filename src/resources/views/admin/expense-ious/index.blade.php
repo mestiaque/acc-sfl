@@ -171,7 +171,7 @@
                                     data-employee="{{ $iou->employee->name ?? '-' }}" data-payment-method="{{ $iou->paymentMethod->name }}"
                                     data-amount="{{ number_format($iou->amount, 2) }}" data-status="{{ $iou->status }}"
                                     data-description="{{ $iou->description }}"
-                                    data-attachments="{{ $iou->attachments->map(fn ($file) => ['url' => $file->file_url, 'name' => $file->original_name ?: $file->file_name])->toJson() }}">
+                                    data-attachments="{{ json_encode($iou->galleryFiles()) }}">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
                                 @can('ac_expense_iou.edit')
@@ -406,7 +406,7 @@
                     <tr><th>Amount</th><td id="view_iou_amount"></td></tr>
                     <tr><th>Status</th><td id="view_iou_status"></td></tr>
                     <tr><th>Description</th><td id="view_iou_description"></td></tr>
-                    <tr><th>Attachments</th><td id="view_iou_attachments"></td></tr>
+                    <tr><th>Attachments</th><td id="view_iou_attachments" style="min-width:280px;"></td></tr>
                 </table>
             </div>
             <div class="modal-footer">
@@ -474,6 +474,7 @@
 @endsection
 
 @push('js')
+@include('acc-sfl::admin.partials.attachment-gallery-assets')
 @include('acc-sfl::admin.partials.select2-init')
 <script>
     $(function () {
@@ -549,16 +550,7 @@
             $('#view_iou_status').text(btn.data('status'));
             $('#view_iou_description').text(btn.data('description') || '-');
 
-            var attachments = btn.data('attachments') || [];
-            var $attachmentsCell = $('#view_iou_attachments').empty();
-            if (attachments.length === 0) {
-                $attachmentsCell.text('-');
-            } else {
-                attachments.forEach(function (file) {
-                    $('<a>', { href: file.url, target: '_blank', text: file.name }).appendTo($attachmentsCell);
-                    $attachmentsCell.append('<br>');
-                });
-            }
+            $('#view_iou_attachments').html(acGalleryHtml(btn.data('attachments') || []));
         });
     });
 </script>

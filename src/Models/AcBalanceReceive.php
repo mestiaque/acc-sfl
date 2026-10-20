@@ -9,9 +9,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\HasAudit;
+use ME\AccSfl\Models\Concerns\HasAttachmentGallery;
 
 class AcBalanceReceive extends Model
 {
+    use HasAttachmentGallery;
     use HasAudit;
     use ActivityLoggable;
     use HasFactory;
@@ -83,6 +85,18 @@ class AcBalanceReceive extends Model
     public function scopeRejected($query)
     {
         return $query->where('status', self::STATUS_REJECTED);
+    }
+
+    /**
+     * Supporting documents in the central files table, alongside the legacy single
+     * `attachment` column. Not a morphMany - see AcExpense::attachments() for why.
+     */
+    public function attachments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(\App\Models\File::class, 'fileable_id')
+            ->where('fileable_type', self::class)
+            ->where('use_case', 'attachment')
+            ->orderBy('created_at');
     }
 
     public function transactions(): MorphMany

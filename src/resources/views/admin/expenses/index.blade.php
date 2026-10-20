@@ -276,7 +276,7 @@
                         </div>
                         <div class="col-12 form-group">
                             <label>Attachment (upload to replace)</label>
-                            <input type="file" name="attachment" class="form-control-file">
+                            <input type="file" name="attachments[]" class="form-control-file" multiple>
                         </div>
                     </div>
                 </div>
@@ -368,6 +368,7 @@
 @endsection
 
 @push('js')
+@include('acc-sfl::admin.partials.attachment-gallery-assets')
 @include('acc-sfl::admin.partials.select2-init')
 <script src="https://cdn.jsdelivr.net/npm/tinymce@6.8.5/tinymce.min.js" referrerpolicy="origin"></script>
 <script>

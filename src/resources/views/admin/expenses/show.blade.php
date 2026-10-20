@@ -1,16 +1,4 @@
-@php
-    // Legacy single `attachment` column + the files-table attachments, as one list.
-    $acImageExt = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
-    $acFiles = collect();
-    if ($expense->attachment) {
-        $acFiles->push(['url' => asset('storage/'.$expense->attachment), 'name' => basename($expense->attachment),
-            'image' => in_array(strtolower(pathinfo($expense->attachment, PATHINFO_EXTENSION)), $acImageExt, true)]);
-    }
-    foreach ($expense->attachments as $file) {
-        $acFiles->push(['url' => $file->file_url, 'name' => $file->original_name ?: $file->file_name,
-            'image' => str_starts_with((string) $file->file_type, 'image/') || in_array(strtolower((string) $file->extension), $acImageExt, true)]);
-    }
-@endphp
+@php $acFiles = collect($expense->galleryFiles()); @endphp
 
 {{--
     The attachment preview floats top-right at 40% width; each info row is its own flex box
@@ -29,22 +17,7 @@
 
 <div class="ac-exp-info">
     <div class="ac-exp-preview">
-        @forelse($acFiles as $acFile)
-            @if($acFile['image'])
-            <a href="{{ $acFile['url'] }}" target="_blank" title="Open full size" class="d-block mb-2 border rounded bg-light text-center">
-                <img src="{{ $acFile['url'] }}" alt="{{ $acFile['name'] }}" style="max-width:100%;max-height:420px;object-fit:contain;">
-            </a>
-            @else
-            <a href="{{ $acFile['url'] }}" target="_blank" class="d-flex align-items-center mb-2 p-2 border rounded bg-light text-decoration-none">
-                <i class="fa-solid {{ str_ends_with(strtolower($acFile['name']), '.pdf') ? 'fa-file-pdf text-danger' : 'fa-file' }} fa-2x mr-2"></i>
-                <span class="text-truncate">{{ $acFile['name'] }}</span>
-            </a>
-            @endif
-        @empty
-            <div class="border rounded bg-light d-flex align-items-center justify-content-center text-muted" style="min-height:160px;">
-                <span><i class="fa-regular fa-image mr-1"></i> No attachment</span>
-            </div>
-        @endforelse
+        @include('acc-sfl::admin.partials.attachment-gallery', ['files' => $acFiles->all()])
     </div>
 
     <div class="ac-exp-row"><div class="ac-exp-label">Expense No.</div><div class="ac-exp-value">{{ $expense->expense_no }}</div></div>

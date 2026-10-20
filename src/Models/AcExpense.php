@@ -10,9 +10,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\HasAudit;
+use ME\AccSfl\Models\Concerns\HasAttachmentGallery;
 
 class AcExpense extends Model
 {
+    use HasAttachmentGallery;
     use HasAudit;
     use ActivityLoggable;
     use HasFactory;

@@ -63,7 +63,7 @@ class BalanceReceiveController extends Controller
     private function filteredQuery(Request $request): Builder
     {
         return AcBalanceReceive::query()
-            ->with(['branch', 'account', 'particular.masterParticular', 'creator'])
+            ->with(['branch', 'account', 'particular.masterParticular', 'creator', 'attachments'])
             ->when(AcAccount::currentUserTiedAccountIds(), fn ($q, $tiedIds) => $q->whereIn('account_id', $tiedIds))
             ->when($request->filled('search'), fn ($q) => $q->where('receive_no', 'like', '%'.$request->string('search').'%'))
             ->when($request->filled('branch_id'), fn ($q) => $q->where('branch_id', $request->integer('branch_id')))
@@ -82,13 +82,17 @@ class BalanceReceiveController extends Controller
     {
         $receive = DB::transaction(function () use ($request) {
             $data = $request->validated();
+            unset($data['attachments']);
             $data['created_by'] = $request->user()?->id;
 
             if ($request->hasFile('attachment')) {
                 $data['attachment'] = $request->file('attachment')->store('acc-sfl/balance-receives', 'public');
             }
 
-            return AcBalanceReceive::create($data);
+            $receive = AcBalanceReceive::create($data);
+            $this->storeAttachments($receive, $request);
+
+            return $receive;
         });
 
         app(ApprovalService::class)->request([
@@ -115,10 +119,37 @@ class BalanceReceiveController extends Controller
                 $data['attachment'] = $request->file('attachment')->store('acc-sfl/balance-receives', 'public');
             }
 
+            unset($data['attachments']);
             $balanceReceive->update($data);
+            $this->storeAttachments($balanceReceive, $request);
         });
 
         return back()->with('success', 'Cash receive updated successfully.');
+    }
+
+    private function storeAttachments(AcBalanceReceive $receive, Request $request): void
+    {
+        foreach ($request->file('attachments', []) as $uploadedFile) {
+            if (! $uploadedFile) {
+                continue;
+            }
+
+            $path = $uploadedFile->store('acc-sfl/balance-receives', 'public');
+
+            $receive->attachments()->create([
+                'fileable_type' => AcBalanceReceive::class,
+                'use_case' => 'attachment',
+                'file_name' => (string) \Illuminate\Support\Str::uuid(),
+                'original_name' => $uploadedFile->getClientOriginalName(),
+                'file_path' => $path,
+                'file_full_path' => asset('storage/'.$path),
+                'disk' => 'public',
+                'extension' => $uploadedFile->getClientOriginalExtension(),
+                'size' => $uploadedFile->getSize(),
+                'file_type' => $uploadedFile->getMimeType(),
+                'addedby_id' => $request->user()?->id,
+            ]);
+        }
     }
 
     public function destroy(AcBalanceReceive $balanceReceive): RedirectResponse
@@ -161,6 +192,13 @@ class BalanceReceiveController extends Controller
 
             if ($balanceReceive->attachment) {
                 Storage::disk('public')->delete($balanceReceive->attachment);
+            }
+
+            foreach ($balanceReceive->attachments as $file) {
+                if ($file->file_path) {
+                    Storage::disk($file->disk ?: 'public')->delete($file->file_path);
+                }
+                $file->delete();
             }
 
             $balanceReceive->forceDelete();

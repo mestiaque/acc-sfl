@@ -137,7 +137,7 @@
                                     data-branch="{{ $receive->branch->name }}" data-account="{{ $receive->account->name }}"
                                     data-particular="{{ $receive->particular->code }} - {{ $receive->particular->name }}" data-amount="{{ number_format($receive->amount, 2) }}"
                                     data-description="{{ $receive->description }}"
-                                    data-attachment="{{ $receive->attachment ? \Illuminate\Support\Facades\Storage::url($receive->attachment) : '' }}"
+                                    data-attachments="{{ json_encode($receive->galleryFiles()) }}"
                                     data-creator="{{ $receive->creator->name ?? '-' }}">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
@@ -259,7 +259,7 @@
                         </div>
                         <div class="col-12 form-group">
                             <label>Attachment</label>
-                            <input type="file" name="attachment" class="form-control-file">
+                            <input type="file" name="attachments[]" class="form-control-file" multiple>
                         </div>
                     </div>
                 </div>
@@ -330,7 +330,7 @@
                         </div>
                         <div class="col-12 form-group">
                             <label>Attachment (upload to replace)</label>
-                            <input type="file" name="attachment" class="form-control-file">
+                            <input type="file" name="attachments[]" class="form-control-file" multiple>
                         </div>
                     </div>
                 </div>
@@ -362,7 +362,7 @@
                     </div>
                     <div class="form-group">
                         <label>Attachment (upload to replace)</label>
-                        <input type="file" name="attachment" class="form-control-file">
+                        <input type="file" name="attachments[]" class="form-control-file" multiple>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -391,7 +391,7 @@
                     <tr><th>Particular</th><td id="view_receive_particular"></td></tr>
                     <tr><th>Amount</th><td id="view_receive_amount"></td></tr>
                     <tr><th>Description</th><td id="view_receive_description"></td></tr>
-                    <tr><th>Attachment</th><td id="view_receive_attachment"></td></tr>
+                    <tr><th>Attachments</th><td id="view_receive_attachment" style="min-width:280px;"></td></tr>
                     <tr><th>Recorded By</th><td id="view_receive_creator"></td></tr>
                 </table>
             </div>
@@ -463,6 +463,7 @@
 @endsection
 
 @push('js')
+@include('acc-sfl::admin.partials.attachment-gallery-assets')
 @include('acc-sfl::admin.partials.select2-init')
 <script>
     $(function () {
@@ -500,8 +501,7 @@
             $('#view_receive_particular').text(btn.data('particular'));
             $('#view_receive_amount').text(btn.data('amount'));
             $('#view_receive_description').text(btn.data('description') || '-');
-            var attachment = btn.data('attachment');
-            $('#view_receive_attachment').html(attachment ? '<a href="' + attachment + '" target="_blank">View file</a>' : '-');
+            $('#view_receive_attachment').html(acGalleryHtml(btn.data('attachments') || []));
             $('#view_receive_creator').text(btn.data('creator'));
         });
     });

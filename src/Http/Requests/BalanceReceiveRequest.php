@@ -29,6 +29,8 @@ class BalanceReceiveRequest extends FormRequest
             return [
                 'description' => ['nullable', 'string'],
                 'attachment' => ['nullable', 'file', 'max:5120'],
+                'attachments' => ['nullable', 'array'],
+                'attachments.*' => ['file', 'max:5120'],
             ];
         }
 
@@ -48,6 +50,8 @@ class BalanceReceiveRequest extends FormRequest
             'amount' => ['required', 'numeric', 'min:0.01'],
             'description' => ['nullable', 'string'],
             'attachment' => ['nullable', 'file', 'max:5120'],
+            'attachments' => ['nullable', 'array'],
+            'attachments.*' => ['file', 'max:5120'],
         ];
     }
 }
