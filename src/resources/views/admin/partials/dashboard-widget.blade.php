@@ -53,15 +53,15 @@
 {{-- ── Stat Cards ── --}}
 <div class="row g-3 mb-4">
     <div class="col-6 col-md-4 col-lg">
-        @if(Route::has('acc-sfl.accounts.index'))<a href="{{ route('acc-sfl.accounts.index') }}" class="ac-stat-card-link">@endif
+        @if(Route::has('acc-sfl.balance-receives.index'))<a href="{{ route('acc-sfl.balance-receives.index') }}" class="ac-stat-card-link">@endif
         <div class="ac-stat-card">
-            <div class="ac-stat-icon" style="background:#ecfdf5;"><i class="fa-solid fa-sack-dollar" style="color:#10b981;"></i></div>
+            <div class="ac-stat-icon" style="background:#eef2ff;"><i class="fa-solid fa-sack-dollar" style="color:#6366f1;"></i></div>
             <div>
-                <div class="ac-stat-val" style="color:#10b981;">{{ number_format($s['totalCashOnHand'], 0) }}</div>
-                <div class="ac-stat-lbl">Total Cash on Hand</div>
+                <div class="ac-stat-val" style="color:#6366f1;">{{ number_format($s['totalReceipts'], 0) }}</div>
+                <div class="ac-stat-lbl">Total Receive</div>
             </div>
         </div>
-        @if(Route::has('acc-sfl.accounts.index'))</a>@endif
+        @if(Route::has('acc-sfl.balance-receives.index'))</a>@endif
     </div>
     <div class="col-6 col-md-4 col-lg">
         @if(Route::has('acc-sfl.balance-receives.index'))<a href="{{ route('acc-sfl.balance-receives.index') }}" class="ac-stat-card-link">@endif
@@ -98,15 +98,16 @@
         @if(Route::has('acc-sfl.expense-ious.index'))</a>@endif
     </div>
     <div class="col-6 col-md-4 col-lg">
-        @if(Route::has('acc-sfl.reports.cash-flow.monthly'))<a href="{{ route('acc-sfl.reports.cash-flow.monthly') }}" class="ac-stat-card-link">@endif
+        @if(Route::has('acc-sfl.accounts.index'))<a href="{{ route('acc-sfl.accounts.index') }}" class="ac-stat-card-link">@endif
         <div class="ac-stat-card">
-            <div class="ac-stat-icon" style="background:{{ $monthNet >= 0 ? '#ecfdf5' : '#fff1f2' }};"><i class="fa-solid fa-chart-line" style="color:{{ $monthNet >= 0 ? '#10b981' : '#f43f5e' }};"></i></div>
+            <div class="ac-stat-icon" style="background:{{ $s['totalCashOnHand'] >= 0 ? '#ecfdf5' : '#fff1f2' }};"><i class="fa-solid fa-wallet" style="color:{{ $s['totalCashOnHand'] >= 0 ? '#10b981' : '#f43f5e' }};"></i></div>
             <div>
-                <div class="ac-stat-val" style="color:{{ $monthNet >= 0 ? '#10b981' : '#f43f5e' }};">{{ number_format($monthNet, 0) }}</div>
-                <div class="ac-stat-lbl">Net Cash This Month</div>
+                <div class="ac-stat-val" style="color:{{ $s['totalCashOnHand'] >= 0 ? '#10b981' : '#f43f5e' }};">{{ number_format($s['totalCashOnHand'], 0) }}</div>
+                <div class="ac-stat-lbl">Cash in Hand</div>
+                <div class="text-muted" style="font-size:11px;">current balance</div>
             </div>
         </div>
-        @if(Route::has('acc-sfl.reports.cash-flow.monthly'))</a>@endif
+        @if(Route::has('acc-sfl.accounts.index'))</a>@endif
     </div>
 </div>
 

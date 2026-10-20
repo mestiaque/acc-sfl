@@ -35,6 +35,7 @@ class DashboardController extends Controller
             $monthStart = $today->copy()->startOfMonth();
 
             $totalCashOnHand = (float) AcAccount::query()->active()->sum('current_balance');
+            $totalReceipts = (float) AcBalanceReceive::query()->approved()->sum('amount');
             // Only approved entries touch an account — pending / rejected receives and expenses are left out.
             $todaysReceipts = (float) AcBalanceReceive::query()->approved()->whereDate('receive_date', $today)->sum('amount');
             $todaysExpenses = (float) AcExpense::query()->approved()->whereDate('expense_date', $today)->sum('total_amount');
@@ -125,14 +126,14 @@ class DashboardController extends Controller
             $accountBalances = AcAccount::query()->active()->with('branch')->orderByDesc('current_balance')->get();
 
             return compact(
-                'totalCashOnHand', 'todaysReceipts', 'todaysExpenses', 'monthReceipts', 'monthExpenses', 'monthNetCash',
+                'totalCashOnHand', 'totalReceipts', 'todaysReceipts', 'todaysExpenses', 'monthReceipts', 'monthExpenses', 'monthNetCash',
                 'pendingIouCount', 'pendingIouAmount', 'adjustedIouCount', 'adjustedIouAmount',
                 'last30', 'monthlyTrend', 'branchBalances', 'topExpenseCategories',
                 'recentTransactions', 'recentBalanceReceives', 'recentExpenses', 'accountBalances',
             );
         } catch (\Throwable $e) {
             return [
-                'totalCashOnHand' => 0, 'todaysReceipts' => 0, 'todaysExpenses' => 0,
+                'totalCashOnHand' => 0, 'totalReceipts' => 0, 'todaysReceipts' => 0, 'todaysExpenses' => 0,
                 'monthReceipts' => 0, 'monthExpenses' => 0, 'monthNetCash' => 0,
                 'pendingIouCount' => 0, 'pendingIouAmount' => 0, 'adjustedIouCount' => 0, 'adjustedIouAmount' => 0,
                 'last30' => collect(), 'monthlyTrend' => collect(), 'branchBalances' => collect(), 'topExpenseCategories' => collect(),

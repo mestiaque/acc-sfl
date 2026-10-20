@@ -1,37 +1,70 @@
-<table class="table table-sm">
-    <tr><th>Expense No.</th><td>{{ $expense->expense_no }}</td></tr>
-    <tr><th>Date</th><td>{{ $expense->expense_date->format('d M Y') }}</td></tr>
-    <tr><th>Billing Date</th><td>{{ $expense->billing_date?->format('d M Y') ?? '-' }}</td></tr>
-    <tr><th>Branch</th><td>{{ $expense->branch->name }}</td></tr>
-    <tr><th>Account</th><td>{{ $expense->account->name }}</td></tr>
-    <tr><th>Payment Method</th><td>{{ $expense->paymentMethod->name }}</td></tr>
-    <tr><th>Company Name</th><td>{{ $expense->company_name ?: '-' }}</td></tr>
-    <tr><th>Receiver</th><td>{{ $expense->receiver_name ?: '-' }} {{ $expense->receiver_mobile ? '('.$expense->receiver_mobile.')' : '' }}</td></tr>
-    <tr><th>Employee</th><td>{{ $expense->employee->name ?? '-' }}</td></tr>
-    @if($expense->iou)
-    <tr><th>Against IOU</th><td>{{ $expense->iou->iou_no }} <small class="text-muted">(paid from IOU — posted to the ledger when the IOU is adjusted)</small></td></tr>
-    @endif
-    <tr><th>Invoice</th><td>{{ $expense->invoice ?: '-' }}</td></tr>
-    <tr><th>Description</th><td>{{ $expense->description ?: '-' }}</td></tr>
-    <tr>
-        <th>Attachments</th>
-        <td>
-            @if($expense->attachment)
-                <a href="{{ asset('storage/'.$expense->attachment) }}" target="_blank">View file</a><br>
+@php
+    // Legacy single `attachment` column + the files-table attachments, as one list.
+    $acImageExt = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
+    $acFiles = collect();
+    if ($expense->attachment) {
+        $acFiles->push(['url' => asset('storage/'.$expense->attachment), 'name' => basename($expense->attachment),
+            'image' => in_array(strtolower(pathinfo($expense->attachment, PATHINFO_EXTENSION)), $acImageExt, true)]);
+    }
+    foreach ($expense->attachments as $file) {
+        $acFiles->push(['url' => $file->file_url, 'name' => $file->original_name ?: $file->file_name,
+            'image' => str_starts_with((string) $file->file_type, 'image/') || in_array(strtolower((string) $file->extension), $acImageExt, true)]);
+    }
+@endphp
+
+{{--
+    The attachment preview floats top-right at 40% width; each info row is its own flex box
+    (a new block formatting context), so rows beside the preview narrow to fit and the rows
+    below it run full width.
+--}}
+<style>
+    .ac-exp-info { overflow: hidden; }
+    .ac-exp-preview { float: right; width: 40%; margin: 0 0 12px 16px; }
+    .ac-exp-row { display: flex; border-top: 1px solid #dee2e6; padding: .3rem .3rem; font-size: 13px; }
+    .ac-exp-row > .ac-exp-label { flex: 0 0 160px; font-weight: 600; }
+    .ac-exp-row > .ac-exp-value { flex: 1 1 auto; min-width: 0; }
+    .ac-exp-row:last-child { border-bottom: 1px solid #dee2e6; }
+    @media (max-width: 575.98px) { .ac-exp-preview { float: none; width: 100%; margin: 0 0 12px; } }
+</style>
+
+<div class="ac-exp-info">
+    <div class="ac-exp-preview">
+        @forelse($acFiles as $acFile)
+            @if($acFile['image'])
+            <a href="{{ $acFile['url'] }}" target="_blank" title="Open full size" class="d-block mb-2 border rounded bg-light text-center">
+                <img src="{{ $acFile['url'] }}" alt="{{ $acFile['name'] }}" style="max-width:100%;max-height:420px;object-fit:contain;">
+            </a>
+            @else
+            <a href="{{ $acFile['url'] }}" target="_blank" class="d-flex align-items-center mb-2 p-2 border rounded bg-light text-decoration-none">
+                <i class="fa-solid {{ str_ends_with(strtolower($acFile['name']), '.pdf') ? 'fa-file-pdf text-danger' : 'fa-file' }} fa-2x mr-2"></i>
+                <span class="text-truncate">{{ $acFile['name'] }}</span>
+            </a>
             @endif
-            @forelse($expense->attachments as $file)
-                <a href="{{ $file->file_url }}" target="_blank">{{ $file->original_name ?: $file->file_name }}</a><br>
-            @empty
-                @if(!$expense->attachment)
-                    -
-                @endif
-            @endforelse
-        </td>
-    </tr>
-    <tr><th>Recorded By</th><td>{{ $expense->creator->name ?? '-' }}</td></tr>
-    <tr>
-        <th>Status</th>
-        <td>
+        @empty
+            <div class="border rounded bg-light d-flex align-items-center justify-content-center text-muted" style="min-height:160px;">
+                <span><i class="fa-regular fa-image mr-1"></i> No attachment</span>
+            </div>
+        @endforelse
+    </div>
+
+    <div class="ac-exp-row"><div class="ac-exp-label">Expense No.</div><div class="ac-exp-value">{{ $expense->expense_no }}</div></div>
+    <div class="ac-exp-row"><div class="ac-exp-label">Date</div><div class="ac-exp-value">{{ $expense->expense_date->format('d M Y') }}</div></div>
+    <div class="ac-exp-row"><div class="ac-exp-label">Billing Date</div><div class="ac-exp-value">{{ $expense->billing_date?->format('d M Y') ?? '-' }}</div></div>
+    <div class="ac-exp-row"><div class="ac-exp-label">Branch</div><div class="ac-exp-value">{{ $expense->branch->name }}</div></div>
+    <div class="ac-exp-row"><div class="ac-exp-label">Account</div><div class="ac-exp-value">{{ $expense->account->name }}</div></div>
+    <div class="ac-exp-row"><div class="ac-exp-label">Payment Method</div><div class="ac-exp-value">{{ $expense->paymentMethod->name }}</div></div>
+    <div class="ac-exp-row"><div class="ac-exp-label">Company Name</div><div class="ac-exp-value">{{ $expense->company_name ?: '-' }}</div></div>
+    <div class="ac-exp-row"><div class="ac-exp-label">Receiver</div><div class="ac-exp-value">{{ $expense->receiver_name ?: '-' }} {{ $expense->receiver_mobile ? '('.$expense->receiver_mobile.')' : '' }}</div></div>
+    <div class="ac-exp-row"><div class="ac-exp-label">Employee</div><div class="ac-exp-value">{{ $expense->employee->name ?? '-' }}</div></div>
+    @if($expense->iou)
+    <div class="ac-exp-row"><div class="ac-exp-label">Against IOU</div><div class="ac-exp-value">{{ $expense->iou->iou_no }} <small class="text-muted">(paid from IOU — posted to the ledger when the IOU is adjusted)</small></div></div>
+    @endif
+    <div class="ac-exp-row"><div class="ac-exp-label">Invoice</div><div class="ac-exp-value">{{ $expense->invoice ?: '-' }}</div></div>
+    <div class="ac-exp-row"><div class="ac-exp-label">Attachments</div><div class="ac-exp-value">{{ $acFiles->count() ?: '-' }}</div></div>
+    <div class="ac-exp-row"><div class="ac-exp-label">Recorded By</div><div class="ac-exp-value">{{ $expense->creator->name ?? '-' }}</div></div>
+    <div class="ac-exp-row">
+        <div class="ac-exp-label">Status</div>
+        <div class="ac-exp-value">
             <span class="badge {{ ['pending' => 'badge-warning', 'approved' => 'badge-success', 'rejected' => 'badge-danger'][$expense->status] ?? 'badge-secondary' }} p-1">{{ ucfirst($expense->status) }}</span>
             @if($expense->status !== 'pending')
                 by {{ $expense->approver->name ?? '-' }} on {{ $expense->approved_at?->format('d M Y h:i A') }}
@@ -39,9 +72,9 @@
                     — {{ $expense->approval_remarks }}
                 @endif
             @endif
-        </td>
-    </tr>
-</table>
+        </div>
+    </div>
+</div>
 
 <h6 class="mt-3">Expense Items</h6>
 <div class="table-responsive">
@@ -74,3 +107,6 @@
         </tfoot>
     </table>
 </div>
+
+<h6 class="mt-3">Description</h6>
+<div class="border rounded p-2 bg-light" style="white-space:pre-line;font-size:13px;">{{ trim(html_entity_decode(strip_tags(str_replace(['</p>', '<br>', '<br/>', '<br />'], "\n", (string) $expense->description)))) ?: '-' }}</div>

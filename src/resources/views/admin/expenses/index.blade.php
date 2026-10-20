@@ -128,9 +128,9 @@
                         <tr>
                             <th>Expense No.</th>
                             <th>Date</th>
-                            <th>Branch</th>
                             <th>Account</th>
                             <th>Particular</th>
+                            <th>Description</th>
                             <th>Payment Method</th>
                             <th>Employee</th>
                             <th>Total Amount</th>
@@ -142,6 +142,7 @@
                         @foreach($expenses as $expense)
                         @php
                             $detail = $expense->details->first();
+                            $fullDescription = trim(preg_replace('/\s+/', ' ', html_entity_decode(strip_tags(str_replace(['</p>', '<br>', '<br/>', '<br />'], ' ', (string) $expense->description)))));
                         @endphp
                         <tr>
                             <td>{{ $expense->expense_no }}</td>
@@ -151,9 +152,9 @@
                                 <br><small class="text-muted">Bill: {{ $expense->billing_date->format('d M Y') }}</small>
                                 @endif
                             </td>
-                            <td>{{ $expense->branch->name }}</td>
                             <td>{{ $expense->account->name }}</td>
                             <td>{{ $detail && $detail->particular ? $detail->particular->code.' - '.$detail->particular->name : '-' }}</td>
+                            <td title="{{ $fullDescription }}" style="max-width:220px;">{{ $fullDescription !== '' ? \Illuminate\Support\Str::limit($fullDescription, 40) : '-' }}</td>
                             <td>{{ $expense->paymentMethod->name }}</td>
                             <td>{{ $expense->employee->name ?? '-' }}</td>
                             <td>{{ number_format($expense->total_amount, 2) }}</td>
