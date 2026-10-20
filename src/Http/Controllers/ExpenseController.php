@@ -2,6 +2,7 @@
 
 namespace ME\AccSfl\Http\Controllers;
 
+use ME\AccSfl\Http\Controllers\Concerns\SortsListing;
 use App\Models\Approval;
 use App\Services\ApprovalService;
 use Illuminate\Database\Eloquent\Builder;
@@ -24,11 +25,13 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ExpenseController extends Controller
 {
+    use SortsListing;
+
     public function index(Request $request): View
     {
         $this->authorize('ac_expense.list');
 
-        $expenses = $this->filteredQuery($request)->latest('expense_date')->latest('id')->paginate(20)->withQueryString();
+        $expenses = $this->applyListSort($this->filteredQuery($request), $request, 'expense_date', 'expense_no')->paginate(20)->withQueryString();
 
 
         return view('acc-sfl::admin.expenses.index', array_merge(compact('expenses'), $this->formOptions()));
@@ -96,7 +99,7 @@ class ExpenseController extends Controller
     {
         $this->authorize('ac_expense.list');
 
-        $expenses = $this->filteredQuery($request)->latest('expense_date')->latest('id')->get();
+        $expenses = $this->applyListSort($this->filteredQuery($request), $request, 'expense_date', 'expense_no')->get();
 
         return view('acc-sfl::admin.expenses.print', compact('expenses'));
     }
@@ -116,7 +119,7 @@ class ExpenseController extends Controller
     {
         $this->authorize('ac_expense.list');
 
-        $expenses = $this->filteredQuery($request)->latest('expense_date')->latest('id')->get();
+        $expenses = $this->applyListSort($this->filteredQuery($request), $request, 'expense_date', 'expense_no')->get();
 
         return Excel::download(new ExpenseExport($expenses), 'expenses.xlsx');
     }

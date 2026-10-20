@@ -2,6 +2,7 @@
 
 namespace ME\AccSfl\Http\Controllers;
 
+use ME\AccSfl\Http\Controllers\Concerns\SortsListing;
 use App\Models\Approval;
 use App\Services\ApprovalService;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,11 +23,13 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class BalanceReceiveController extends Controller
 {
+    use SortsListing;
+
     public function index(Request $request): View
     {
         $this->authorize('ac_balance_receive.list');
 
-        $balanceReceives = $this->filteredQuery($request)->latest('id')->paginate(20)->withQueryString();
+        $balanceReceives = $this->applyListSort($this->filteredQuery($request), $request, 'receive_date', 'receive_no')->paginate(20)->withQueryString();
 
         $branches = AcBranch::query()->active()->orderBy('name')->get();
         $accounts = AcAccount::query()->active()->visibleToCurrentUser()->orderBy('name')->get();
@@ -43,7 +46,7 @@ class BalanceReceiveController extends Controller
     {
         $this->authorize('ac_balance_receive.list');
 
-        $balanceReceives = $this->filteredQuery($request)->latest('id')->get();
+        $balanceReceives = $this->applyListSort($this->filteredQuery($request), $request, 'receive_date', 'receive_no')->get();
 
         return view('acc-sfl::admin.balance-receives.print', compact('balanceReceives'));
     }
@@ -52,7 +55,7 @@ class BalanceReceiveController extends Controller
     {
         $this->authorize('ac_balance_receive.list');
 
-        $balanceReceives = $this->filteredQuery($request)->latest('id')->get();
+        $balanceReceives = $this->applyListSort($this->filteredQuery($request), $request, 'receive_date', 'receive_no')->get();
 
         return Excel::download(new BalanceReceiveExport($balanceReceives), 'balance-receives.xlsx');
     }

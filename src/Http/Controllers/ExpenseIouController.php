@@ -4,6 +4,7 @@ namespace ME\AccSfl\Http\Controllers;
 
 use App\Models\Approval;
 use App\Services\ApprovalService;
+use ME\AccSfl\Http\Controllers\Concerns\SortsListing;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,11 +22,13 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ExpenseIouController extends Controller
 {
+    use SortsListing;
+
     public function index(Request $request): View
     {
         $this->authorize('ac_expense_iou.list');
 
-        $expenseIous = $this->filteredQuery($request)->latest('issue_date')->latest('id')->paginate(20)->withQueryString();
+        $expenseIous = $this->applyListSort($this->filteredQuery($request), $request, 'issue_date', 'iou_no')->paginate(20)->withQueryString();
 
         $branches = AcBranch::query()->active()->orderBy('name')->get();
         $accounts = AcAccount::query()->active()->visibleToCurrentUser()->orderBy('name')->get();
@@ -39,7 +42,7 @@ class ExpenseIouController extends Controller
     {
         $this->authorize('ac_expense_iou.list');
 
-        $expenseIous = $this->filteredQuery($request)->latest('issue_date')->latest('id')->get();
+        $expenseIous = $this->applyListSort($this->filteredQuery($request), $request, 'issue_date', 'iou_no')->get();
 
         return view('acc-sfl::admin.expense-ious.print', compact('expenseIous'));
     }
@@ -48,7 +51,7 @@ class ExpenseIouController extends Controller
     {
         $this->authorize('ac_expense_iou.list');
 
-        $expenseIous = $this->filteredQuery($request)->latest('issue_date')->latest('id')->get();
+        $expenseIous = $this->applyListSort($this->filteredQuery($request), $request, 'issue_date', 'iou_no')->get();
 
         return Excel::download(new ExpenseIouExport($expenseIous), 'expense-ious.xlsx');
     }

@@ -76,6 +76,7 @@
                     <label class="form-label mb-1">To Date</label>
                     <input type="date" name="to_date" value="{{ request('to_date') }}" class="form-control form-control-sm">
                 </div>
+                @include('acc-sfl::admin.partials.sort-filter', ['noLabel' => 'IOU No.'])
                 <div class="col-md-2 mb-2">
                     <button class="btn btn-secondary btn-sm w-100">Filter</button>
                 </div>

@@ -96,6 +96,7 @@
                         <option value="rejected" @selected(request('status') === 'rejected')>Rejected</option>
                     </select>
                 </div>
+                @include('acc-sfl::admin.partials.sort-filter', ['noLabel' => 'Receive No.'])
                 <div class="col-md-2 mb-2">
                     <button class="btn btn-secondary btn-sm w-100">Filter</button>
                 </div>
