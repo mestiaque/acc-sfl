@@ -59,7 +59,8 @@ class ExpenseIouController extends Controller
     private function filteredQuery(Request $request): Builder
     {
         return AcExpenseIou::query()
-            ->with(['branch', 'account', 'employee', 'paymentMethod', 'attachments'])
+            ->with(['branch', 'account', 'employee', 'paymentMethod', 'attachments',
+                'expenses' => fn ($q) => $q->with('details.particular')->orderBy('expense_date')->orderBy('id')])
             ->withSum(['expenses as approved_expense_total' => fn ($q) => $q->where('status', AcExpense::STATUS_APPROVED)], 'total_amount')
             ->withCount(['expenses as pending_expense_count' => fn ($q) => $q->where('status', AcExpense::STATUS_PENDING)])
             ->when(AcAccount::currentUserTiedAccountIds(), fn ($q, $tiedIds) => $q->whereIn('account_id', $tiedIds))

@@ -171,7 +171,15 @@
                                     data-employee="{{ $iou->employee->name ?? '-' }}" data-payment-method="{{ $iou->paymentMethod->name }}"
                                     data-amount="{{ number_format($iou->amount, 2) }}" data-status="{{ $iou->status }}"
                                     data-description="{{ $iou->description }}"
-                                    data-attachments="{{ json_encode($iou->galleryFiles()) }}">
+                                    data-attachments="{{ json_encode($iou->galleryFiles()) }}"
+                                    data-expenses="{{ $iou->expenses->map(fn ($expense) => [
+                                        'no' => $expense->expense_no,
+                                        'date' => $expense->expense_date->format('d M Y'),
+                                        'particulars' => $expense->details->map(fn ($d) => $d->particular?->name)->filter()->unique()->implode(', '),
+                                        'amount' => (float) $expense->total_amount,
+                                        'status' => $expense->status,
+                                        'url' => route('acc-sfl.expenses.index', ['search' => $expense->expense_no]),
+                                    ])->values()->toJson() }}">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
                                 @can('ac_expense_iou.edit')
@@ -388,7 +396,7 @@
 
 {{-- View Modal --}}
 <div class="modal fade" id="viewIouModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Expense IOU Details</h5>
@@ -406,6 +414,7 @@
                     <tr><th>Amount</th><td id="view_iou_amount"></td></tr>
                     <tr><th>Status</th><td id="view_iou_status"></td></tr>
                     <tr><th>Description</th><td id="view_iou_description"></td></tr>
+                    <tr><th>Expenses</th><td id="view_iou_expenses"></td></tr>
                     <tr><th>Attachments</th><td id="view_iou_attachments" style="min-width:280px;"></td></tr>
                 </table>
             </div>
@@ -551,6 +560,32 @@
             $('#view_iou_description').text(btn.data('description') || '-');
 
             $('#view_iou_attachments').html(acGalleryHtml(btn.data('attachments') || []));
+
+            // Expenses recorded "Against IOU" for this IOU; only approved ones count towards Spent.
+            var expenses = btn.data('expenses') || [];
+            var $expensesCell = $('#view_iou_expenses').empty();
+            if (!expenses.length) {
+                $expensesCell.text('No expense recorded against this IOU yet.');
+            } else {
+                var badges = { pending: 'badge-warning', approved: 'badge-success', rejected: 'badge-danger' };
+                var $table = $('<table class="table table-sm table-bordered mb-0"><thead><tr><th>Expense No.</th><th>Date</th><th>Particular</th><th class="text-right">Amount</th><th>Status</th></tr></thead><tbody></tbody></table>');
+                var approvedTotal = 0;
+                expenses.forEach(function (expense) {
+                    if (expense.status === 'approved') { approvedTotal += expense.amount; }
+                    $('<tr>')
+                        .append($('<td>').append($('<a>', { href: expense.url, target: '_blank', text: expense.no })))
+                        .append($('<td>').text(expense.date))
+                        .append($('<td>').text(expense.particulars || '-'))
+                        .append($('<td class="text-right">').text(expense.amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })))
+                        .append($('<td>').append($('<span class="badge p-1">').addClass(badges[expense.status] || 'badge-secondary').text(expense.status.charAt(0).toUpperCase() + expense.status.slice(1))))
+                        .appendTo($table.find('tbody'));
+                });
+                $table.append($('<tfoot>').append($('<tr>')
+                    .append($('<th colspan="3" class="text-right">').text('Approved total'))
+                    .append($('<th class="text-right">').text(approvedTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })))
+                    .append('<th></th>')));
+                $expensesCell.append($table);
+            }
         });
     });
 </script>
