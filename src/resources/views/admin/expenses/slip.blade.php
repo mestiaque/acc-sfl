@@ -10,6 +10,7 @@
             <div class="slip-sl">SL: <strong>{{ str_pad($expense->id, 10, '0', STR_PAD_LEFT) }}</strong></div>
         </div>
         <div class="slip-heading">
+            @if(report_logo_url())<img src="{{ report_logo_url() }}" alt="Logo" class="slip-logo">@endif
             <div class="slip-company-name">{{ config('acc-sfl.company.name') }}</div>
             @if(config('acc-sfl.company.subtitle'))
             <div class="slip-company-subtitle">({{ config('acc-sfl.company.subtitle') }})</div>
@@ -123,6 +124,7 @@
     .slip-barcode { text-align: center; }
     .slip-sl { font-size: 12px; margin-top: 2px; }
     .slip-heading { text-align: center; flex: 1; }
+    .slip-logo { display: block; height: 50px; max-width: 160px; object-fit: contain; margin: 0 auto 4px; }
     .slip-company-name { font-size: 24px; font-weight: bold; }
     .slip-company-subtitle, .slip-company-address, .slip-company-contact { font-size: 12px; }
     .slip-date { font-size: 13px; white-space: nowrap; }
