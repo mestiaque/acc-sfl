@@ -38,6 +38,6 @@
         <input type="checkbox" class="item-manual-amount" title="Enter amount manually" @checked($isManualAmount)>
     </td>
     <td class="text-center">
-        <button type="button" class="btn btn-outline-danger btn-sm remove-expense-item-row" title="Remove line"><i class="fa-solid fa-minus"></i></button>
+        <button type="button" class="btn btn-outline-danger btn-sm remove-expense-item-row btn-icon" title="Remove line"><i class="fa-solid fa-minus"></i></button>
     </td>
 </tr>

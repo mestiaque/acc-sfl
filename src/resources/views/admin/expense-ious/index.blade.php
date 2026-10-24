@@ -10,12 +10,8 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0"><i class="fa-solid fa-file-invoice-dollar mr-2 text-warning"></i>Expense IOU</h4>
             <div>
-                <a href="{{ route('acc-sfl.expense-ious.print', request()->query()) }}" target="_blank" class="btn btn-light btn-sm">
-                    <i class="fa-solid fa-print mr-1"></i> Print
-                </a>
-                <a href="{{ route('acc-sfl.expense-ious.export', request()->query()) }}" class="btn btn-light btn-sm">
-                    <i class="fa-solid fa-file-excel mr-1"></i> Export Excel
-                </a>
+                <a href="{{ route('acc-sfl.expense-ious.print', request()->query()) }}" target="_blank" class="btn btn-light btn-sm btn-icon" title="Print"><i class="fa-solid fa-print"></i></a>
+                <a href="{{ route('acc-sfl.expense-ious.export', request()->query()) }}" class="btn btn-light btn-sm btn-icon" title="Export Excel"><i class="fa-solid fa-file-excel"></i></a>
                 @can('ac_expense_iou.add')
                 <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" data-toggle="modal" data-target="#createIouModal">
                     <i class="fa-solid fa-plus"></i> Issue IOU
@@ -77,11 +73,9 @@
                     <input type="date" name="to_date" value="{{ request('to_date') }}" class="form-control form-control-sm">
                 </div>
                 @include('acc-sfl::admin.partials.sort-filter', ['noLabel' => 'IOU No.'])
-                <div class="col-md-2 mb-2">
-                    <button class="btn btn-secondary btn-sm w-100">Filter</button>
-                </div>
-                <div class="col-md-2 mb-2">
-                    <a href="{{ route('acc-sfl.expense-ious.index') }}" class="btn btn-light btn-sm w-100">Reset</a>
+                <div class="col-md-2">
+                    <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
+                    <a href="{{ route('acc-sfl.expense-ious.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
                 </div>
             </form>
 
@@ -164,7 +158,7 @@
                                     </button>
                                     @endif
                                 @endcan
-                                <button type="button" class="btn-custom" title="View" data-toggle="modal" data-target="#viewIouModal"
+                                <button type="button" class="btn-custom success" title="View" data-toggle="modal" data-target="#viewIouModal"
                                     data-no="{{ $iou->iou_no }}" data-issue-date="{{ $iou->issue_date->format('d M Y') }}"
                                     data-adjust-date="{{ $iou->adjust_date?->format('d M Y') ?? '-' }}"
                                     data-branch="{{ $iou->branch->name }}" data-account="{{ $iou->account->name }}"

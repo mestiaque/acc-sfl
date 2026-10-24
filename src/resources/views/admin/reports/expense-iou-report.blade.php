@@ -10,13 +10,9 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0"><i class="fa-solid fa-file-invoice-dollar mr-2 text-warning"></i>Expense IOU Report</h4>
             <div>
-                <a href="{{ route('acc-sfl.reports.expense-iou.print', request()->query()) }}" target="_blank" class="btn btn-light btn-sm">
-                    <i class="fa-solid fa-print mr-1"></i> Print
-                </a>
+                <a href="{{ route('acc-sfl.reports.expense-iou.print', request()->query()) }}" target="_blank" class="btn btn-light btn-sm btn-icon" title="Print"><i class="fa-solid fa-print"></i></a>
                 @can('ac_report.export')
-                <a href="{{ route('acc-sfl.reports.expense-iou.export', request()->query()) }}" class="btn btn-light btn-sm">
-                    <i class="fa-solid fa-file-excel mr-1"></i> Export Excel
-                </a>
+                <a href="{{ route('acc-sfl.reports.expense-iou.export', request()->query()) }}" class="btn btn-light btn-sm btn-icon" title="Export Excel"><i class="fa-solid fa-file-excel"></i></a>
                 @endcan
             </div>
         </div>
@@ -88,11 +84,9 @@
                     <label class="form-label mb-1">Max Amount</label>
                     <input type="number" step="0.01" name="max_amount" value="{{ request('max_amount') }}" class="form-control form-control-sm">
                 </div> --}}
-                <div class="col-md-2 mb-2">
-                    <button class="btn btn-secondary btn-sm w-100">Filter</button>
-                </div>
-                <div class="col-md-2 mb-2">
-                    <a href="{{ route('acc-sfl.reports.expense-iou.index') }}" class="btn btn-light btn-sm w-100">Reset</a>
+                <div class="col-md-2">
+                    <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
+                    <a href="{{ route('acc-sfl.reports.expense-iou.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
                 </div>
                 <div class="col-md-2 mb-2">
                     <div class="badge badge-warning p-2" style="font-size: 0.85rem;">Pending: BDT {{ number_format($totals['pending_amount'], 2) }}</div>

@@ -10,16 +10,10 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0"><i class="fa-solid fa-list-check mr-2 text-primary"></i>Master Particulars</h4>
             <div>
-                <a href="{{ route('acc-sfl.master-particulars.print', request()->query()) }}" target="_blank" class="btn btn-light btn-sm">
-                    <i class="fa-solid fa-print mr-1"></i> Print
-                </a>
-                <a href="{{ route('acc-sfl.master-particulars.export', request()->query()) }}" class="btn btn-light btn-sm">
-                    <i class="fa-solid fa-file-excel mr-1"></i> Export Excel
-                </a>
+                <a href="{{ route('acc-sfl.master-particulars.print', request()->query()) }}" target="_blank" class="btn btn-light btn-sm btn-icon" title="Print"><i class="fa-solid fa-print"></i></a>
+                <a href="{{ route('acc-sfl.master-particulars.export', request()->query()) }}" class="btn btn-light btn-sm btn-icon" title="Export Excel"><i class="fa-solid fa-file-excel"></i></a>
                 @can('ac_master_particular.add')
-                <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" data-toggle="modal" data-target="#createMasterParticularModal">
-                    <i class="fa-solid fa-plus"></i> Add Master Particular
-                </button>
+                <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 btn-icon" data-toggle="modal" data-target="#createMasterParticularModal" title="Add Master Particular"><i class="fa-solid fa-plus"></i></button>
                 @endcan
             </div>
         </div>
@@ -48,10 +42,8 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <button class="btn btn-secondary btn-sm w-100">Filter</button>
-                </div>
-                <div class="col-md-2">
-                    <a href="{{ route('acc-sfl.master-particulars.index') }}" class="btn btn-light btn-sm w-100">Reset</a>
+                    <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
+                    <a href="{{ route('acc-sfl.master-particulars.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
                 </div>
             </form>
 
@@ -82,7 +74,7 @@
                                 <span class="badge {{ $masterParticular->is_active ? 'badge-success' : 'badge-secondary' }}">{{ $masterParticular->is_active ? 'Active' : 'Inactive' }}</span>
                             </td>
                             <td class="text-center">
-                                <button type="button" class="btn-custom" title="View" data-toggle="modal" data-target="#viewMasterParticularModal"
+                                <button type="button" class="btn-custom success" title="View" data-toggle="modal" data-target="#viewMasterParticularModal"
                                     data-name="{{ $masterParticular->name }}"
                                     data-description="{{ $masterParticular->description }}"
                                     data-type="{{ $masterParticular->type === 'debit' ? 'Debit' : 'Credit' }}"

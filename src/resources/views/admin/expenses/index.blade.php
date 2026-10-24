@@ -10,24 +10,16 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0"><i class="fa-solid fa-money-bill-wave mr-2 text-warning"></i>Expenses</h4>
             <div>
-                <a href="{{ route('acc-sfl.expenses.print', request()->query()) }}" target="_blank" class="btn btn-light btn-sm">
-                    <i class="fa-solid fa-print mr-1"></i> Print
-                </a>
-                <a href="{{ route('acc-sfl.expenses.export', request()->query()) }}" class="btn btn-light btn-sm">
-                    <i class="fa-solid fa-file-excel mr-1"></i> Export Excel
-                </a>
+                <a href="{{ route('acc-sfl.expenses.print', request()->query()) }}" target="_blank" class="btn btn-light btn-sm btn-icon" title="Print"><i class="fa-solid fa-print"></i></a>
+                <a href="{{ route('acc-sfl.expenses.export', request()->query()) }}" class="btn btn-light btn-sm btn-icon" title="Export Excel"><i class="fa-solid fa-file-excel"></i></a>
                 @can('ac_expense.import')
-                <a href="{{ route('acc-sfl.import-template.download') }}" class="btn btn-light btn-sm d-none">
-                    <i class="fa-solid fa-download mr-1"></i> Download Import Template
-                </a>
+                <a href="{{ route('acc-sfl.import-template.download') }}" class="btn btn-light btn-sm d-none btn-icon" title="Download Import Template"><i class="fa-solid fa-download"></i></a>
                 <a href="{{ route('acc-sfl.expenses.import') }}" class="btn btn-light btn-sm">
                     <i class="fa-solid fa-file-import mr-1"></i> Expense Import
                 </a>
                 @endcan
                 @can('ac_expense.add')
-                <a href="{{ route('acc-sfl.expenses.create') }}" class="btn btn-primary btn-sm rounded-pill px-3">
-                    <i class="fa-solid fa-plus"></i> Add Expense
-                </a>
+                <a href="{{ route('acc-sfl.expenses.create') }}" class="btn btn-primary btn-sm rounded-pill px-3 btn-icon" title="Add Expense"><i class="fa-solid fa-plus"></i></a>
                 @endcan
             </div>
         </div>
@@ -115,11 +107,9 @@
                     </select>
                 </div>
                 @include('acc-sfl::admin.partials.sort-filter', ['noLabel' => 'Expense No.'])
-                <div class="col-md-2 mb-2">
-                    <button class="btn btn-secondary btn-sm w-100">Filter</button>
-                </div>
-                <div class="col-md-2 mb-2">
-                    <a href="{{ route('acc-sfl.expenses.index') }}" class="btn btn-light btn-sm w-100">Reset</a>
+                <div class="col-md-2">
+                    <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
+                    <a href="{{ route('acc-sfl.expenses.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
                 </div>
             </form>
 
@@ -163,10 +153,10 @@
                                 <span class="badge {{ ['pending' => 'badge-warning', 'approved' => 'badge-success', 'rejected' => 'badge-danger'][$expense->status] ?? 'badge-secondary' }} p-1">{{ ucfirst($expense->status) }}</span>
                             </td>
                             <td class="text-center">
-                                <button type="button" class="btn-custom btn-view-expense" title="View" data-url="{{ route('acc-sfl.expenses.show', $expense) }}">
+                                <button type="button" class="btn-custom btn-view-expense success" title="View" data-url="{{ route('acc-sfl.expenses.show', $expense) }}">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
-                                <a class="btn-custom" title="Print Slip" target="_blank" href="{{ route('acc-sfl.expenses.slip', $expense) }}">
+                                <a class="btn-custom primary" title="Print Slip" target="_blank" href="{{ route('acc-sfl.expenses.slip', $expense) }}">
                                     <i class="fa-solid fa-print"></i>
                                 </a>
                                 @if(view()->exists('components.approval-remind'))<x-approval-remind :model="$expense" />@endif

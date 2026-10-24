@@ -66,7 +66,7 @@
                 '<div class="ac-gallery-bar">' +
                     '<button type="button" class="btn btn-light btn-sm ac-gallery-prev"' + (files.length < 2 ? ' disabled' : '') + '><i class="fa-solid fa-chevron-left"></i> Prev</button>' +
                     '<span class="small text-muted">' + (index + 1) + ' / ' + files.length + '</span>' +
-                    '<button type="button" class="btn btn-primary btn-sm ac-gallery-view"><i class="fa-solid fa-eye mr-1"></i> View</button>' +
+                    '<button type="button" class="btn btn-primary btn-sm ac-gallery-view btn-icon" title="View"><i class="fa-solid fa-eye"></i></button>' +
                     '<button type="button" class="btn btn-light btn-sm ac-gallery-next"' + (files.length < 2 ? ' disabled' : '') + '>Next <i class="fa-solid fa-chevron-right"></i></button>' +
                 '</div>'
             );

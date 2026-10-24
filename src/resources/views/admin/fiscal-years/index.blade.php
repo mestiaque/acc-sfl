@@ -17,16 +17,10 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0"><i class="fa-solid fa-calendar-days mr-2 text-secondary"></i>Fiscal Years</h4>
             <div>
-                <a href="{{ route('acc-sfl.fiscal-years.print', request()->query()) }}" target="_blank" class="btn btn-light btn-sm">
-                    <i class="fa-solid fa-print mr-1"></i> Print
-                </a>
-                <a href="{{ route('acc-sfl.fiscal-years.export', request()->query()) }}" class="btn btn-light btn-sm">
-                    <i class="fa-solid fa-file-excel mr-1"></i> Export Excel
-                </a>
+                <a href="{{ route('acc-sfl.fiscal-years.print', request()->query()) }}" target="_blank" class="btn btn-light btn-sm btn-icon" title="Print"><i class="fa-solid fa-print"></i></a>
+                <a href="{{ route('acc-sfl.fiscal-years.export', request()->query()) }}" class="btn btn-light btn-sm btn-icon" title="Export Excel"><i class="fa-solid fa-file-excel"></i></a>
                 @can('ac_fiscal_year.add')
-                <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" data-toggle="modal" data-target="#createFiscalYearModal">
-                    <i class="fa-solid fa-plus"></i> Add Fiscal Year
-                </button>
+                <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 btn-icon" data-toggle="modal" data-target="#createFiscalYearModal" title="Add Fiscal Year"><i class="fa-solid fa-plus"></i></button>
                 @endcan
             </div>
         </div>
@@ -47,10 +41,8 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <button class="btn btn-secondary btn-sm w-100">Filter</button>
-                </div>
-                <div class="col-md-2">
-                    <a href="{{ route('acc-sfl.fiscal-years.index') }}" class="btn btn-light btn-sm w-100">Reset</a>
+                    <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
+                    <a href="{{ route('acc-sfl.fiscal-years.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
                 </div>
             </form>
 
