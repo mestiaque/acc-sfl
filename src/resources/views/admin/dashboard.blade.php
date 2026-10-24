@@ -5,7 +5,7 @@
 @endsection
 
 @section('contents')
-<div class="flex-grow-1 p-4">
+<div class="flex-grow-1">
     @include('acc-sfl::admin.partials.alerts')
     @include('acc-sfl::admin.partials.dashboard-widget')
 </div>

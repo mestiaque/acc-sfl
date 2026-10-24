@@ -5,7 +5,7 @@
 @endsection
 
 @section('contents')
-<div class="flex-grow-1 p-4">
+<div class="flex-grow-1">
     <div class="card mb-3">
         <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
             <h4 class="mb-0"><i class="fa-solid fa-cash-register mr-2 text-success"></i>Day End Report</h4>
