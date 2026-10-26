@@ -14,18 +14,22 @@ return new class extends Migration
             $table->string('transaction_type');
             $table->string('reference_type');
             $table->unsignedBigInteger('reference_id');
-            $table->foreignId('branch_id')->constrained('ac_branches')->restrictOnDelete();
-            $table->foreignId('account_id')->constrained('ac_accounts')->restrictOnDelete();
-            $table->foreignId('payment_method_id')->nullable()->constrained('ac_payment_methods')->nullOnDelete();
-            $table->decimal('debit', 15, 2)->default(0);
-            $table->decimal('credit', 15, 2)->default(0);
-            $table->decimal('balance', 15, 2)->default(0);
+            $table->unsignedBigInteger('branch_id');
+            $table->unsignedBigInteger('account_id');
+            $table->unsignedBigInteger('payment_method_id')->nullable();
+            $table->decimal('debit', 15, 2)->default(0.00);
+            $table->decimal('credit', 15, 2)->default(0.00);
+            $table->decimal('balance', 15, 2)->default(0.00);
             $table->text('description')->nullable();
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamps();
-
-            $table->index(['reference_type', 'reference_id']);
             $table->index(['account_id', 'transaction_date']);
+            $table->index(['reference_type', 'reference_id']);
+
+            $table->foreign('account_id')->references('id')->on('ac_accounts')->restrictOnDelete();
+            $table->foreign('branch_id')->references('id')->on('ac_branches')->restrictOnDelete();
+            $table->foreign('created_by')->references('id')->on('users')->nullOnDelete();
+            $table->foreign('payment_method_id')->references('id')->on('ac_payment_methods')->nullOnDelete();
         });
     }
 
