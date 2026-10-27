@@ -10,16 +10,14 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0"><i class="fa-solid fa-hand-holding-dollar mr-2 text-success"></i>Cash Receive</h4>
             <div>
-                <a href="{{ route('acc-sfl.balance-receives.print', request()->query()) }}" target="_blank" class="btn btn-light btn-sm btn-icon" title="Print"><i class="fa-solid fa-print"></i></a>
-                <a href="{{ route('acc-sfl.balance-receives.export', request()->query()) }}" class="btn btn-light btn-sm btn-icon" title="Export Excel"><i class="fa-solid fa-file-excel"></i></a>
+                <a href="{{ route('acc-sfl.balance-receives.print', request()->query()) }}" target="_blank" class="btn btn-sm ui-act ui-act-print" title="Print"><i class="fa-solid fa-print"></i> Print</a>
+                <a href="{{ route('acc-sfl.balance-receives.export', request()->query()) }}" class="btn btn-sm ui-act ui-act-excel" title="Export Excel"><i class="fa-solid fa-file-excel"></i> Export Excel</a>
                 @can('ac_balance_receive.import')
-                <a href="{{ route('acc-sfl.import-template.download') }}" class="btn btn-light btn-sm d-none btn-icon" title="Download Import Template"><i class="fa-solid fa-download"></i></a>
-                <a href="{{ route('acc-sfl.balance-receives.import') }}" class="btn btn-light btn-sm">
-                    <i class="fa-solid fa-file-import mr-1"></i> Balance Import
-                </a>
+                <a href="{{ route('acc-sfl.import-template.download') }}" class="btn btn-sm d-none ui-act ui-act-download" title="Download Import Template"><i class="fa-solid fa-download"></i> Download Import Template</a>
+                <a href="{{ route('acc-sfl.balance-receives.import') }}" class="btn btn-sm ui-act ui-act-import" title="Balance Import"><i class="fa-solid fa-file-import"></i> Balance Import</a>
                 @endcan
                 @can('ac_balance_receive.add')
-                <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 btn-icon" data-toggle="modal" data-target="#createReceiveModal" title="Add Cash Receive"><i class="fa-solid fa-plus"></i></button>
+                <button type="button" class="btn btn-sm rounded-pill px-3 ui-act ui-act-create" data-toggle="modal" data-target="#createReceiveModal" title="Add Cash Receive"><i class="fa-solid fa-plus"></i> Add Cash Receive</button>
                 @endcan
             </div>
         </div>
@@ -90,8 +88,8 @@
                 </div>
                 @include('acc-sfl::admin.partials.sort-filter', ['noLabel' => 'Receive No.'])
                 <div class="col-md-2">
-                    <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
-                    <a href="{{ route('acc-sfl.balance-receives.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+                    <button class="btn btn-sm ui-act ui-act-filter" title="Filter"><i class="fa-solid fa-filter"></i> Filter</button>
+                    <a href="{{ route('acc-sfl.balance-receives.index') }}" class="btn btn-sm ui-act ui-act-reset" title="Reset"><i class="fa-solid fa-rotate-left"></i> Reset</a>
                 </div>
             </form>
 
@@ -122,60 +120,46 @@
                                 <span class="badge {{ ['pending' => 'badge-warning', 'approved' => 'badge-success', 'rejected' => 'badge-danger'][$receive->status] ?? 'badge-secondary' }} p-1">{{ ucfirst($receive->status) }}</span>
                             </td>
                             <td class="text-center">
-                                <button type="button" class="btn-custom success" title="View" data-toggle="modal" data-target="#viewReceiveModal"
+                                <button type="button" class="btn-custom ui-act ui-act-view" title="View" data-toggle="modal" data-target="#viewReceiveModal"
                                     data-no="{{ $receive->receive_no }}" data-date="{{ $receive->receive_date->format('d M Y') }}"
                                     data-branch="{{ $receive->branch->name }}" data-account="{{ $receive->account->name }}"
                                     data-particular="{{ $receive->particular->code }} - {{ $receive->particular->name }}" data-amount="{{ number_format($receive->amount, 2) }}"
                                     data-description="{{ $receive->description }}"
                                     data-attachments="{{ json_encode($receive->galleryFiles()) }}"
-                                    data-creator="{{ $receive->creator->name ?? '-' }}">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
+                                    data-creator="{{ $receive->creator->name ?? '-' }}"><i class="fa-solid fa-eye"></i></button>
                                 @if(view()->exists('components.approval-remind'))<x-approval-remind :model="$receive" />@endif
                                 @can('ac_balance_receive.approve')
                                 @if($receive->status === 'pending')
-                                <button type="button" class="btn-custom success" title="Approve" data-toggle="modal" data-target="#approveReceiveModal"
-                                    data-action="{{ route('acc-sfl.balance-receives.approve', $receive) }}">
-                                    <i class="fa-solid fa-check"></i>
-                                </button>
-                                <button type="button" class="btn-custom danger" title="Reject" data-toggle="modal" data-target="#rejectReceiveModal"
-                                    data-action="{{ route('acc-sfl.balance-receives.reject', $receive) }}">
-                                    <i class="fa-solid fa-xmark"></i>
-                                </button>
+                                <button type="button" class="btn-custom ui-act ui-act-approve" title="Approve" data-toggle="modal" data-target="#approveReceiveModal"
+                                    data-action="{{ route('acc-sfl.balance-receives.approve', $receive) }}"><i class="fa-solid fa-check"></i></button>
+                                <button type="button" class="btn-custom ui-act ui-act-reject" title="Reject" data-toggle="modal" data-target="#rejectReceiveModal"
+                                    data-action="{{ route('acc-sfl.balance-receives.reject', $receive) }}"><i class="fa-solid fa-xmark"></i></button>
                                 @endif
                                 @endcan
                                 @can('ac_balance_receive.edit')
                                 @if($receive->status === 'pending')
-                                <button type="button" class="btn-custom yellow" title="Edit" data-toggle="modal" data-target="#editReceiveFullModal"
+                                <button type="button" class="btn-custom ui-act ui-act-edit" title="Edit" data-toggle="modal" data-target="#editReceiveFullModal"
                                     data-action="{{ route('acc-sfl.balance-receives.update', $receive) }}"
                                     data-receive-date="{{ $receive->receive_date->toDateString() }}"
                                     data-branch-id="{{ $receive->branch_id }}" data-account-id="{{ $receive->account_id }}"
                                     data-particular-id="{{ $receive->particular_id }}" data-amount="{{ $receive->amount }}"
-                                    data-description="{{ $receive->description }}">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
+                                    data-description="{{ $receive->description }}"><i class="fa-solid fa-pen-to-square"></i></button>
                                 @else
-                                <button type="button" class="btn-custom yellow" title="Edit" data-toggle="modal" data-target="#editReceiveModal"
+                                <button type="button" class="btn-custom ui-act ui-act-edit" title="Edit" data-toggle="modal" data-target="#editReceiveModal"
                                     data-action="{{ route('acc-sfl.balance-receives.update', $receive) }}"
-                                    data-description="{{ $receive->description }}">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
+                                    data-description="{{ $receive->description }}"><i class="fa-solid fa-pen-to-square"></i></button>
                                 @endif
                                 @endcan
                                 @can('ac_balance_receive.delete')
                                 @if($receive->status !== 'approved')
-                                <button type="button" class="btn-custom danger" title="Delete" data-toggle="modal" data-target="#deleteReceiveModal"
-                                    data-action="{{ route('acc-sfl.balance-receives.destroy', $receive) }}">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
+                                <button type="button" class="btn-custom ui-act ui-act-delete" title="Delete" data-toggle="modal" data-target="#deleteReceiveModal"
+                                    data-action="{{ route('acc-sfl.balance-receives.destroy', $receive) }}"><i class="fa-solid fa-trash"></i></button>
                                 @endif
                                 @endcan
                                 @can('ac_balance_receive.force_delete')
                                 @if($receive->status === 'approved')
-                                <button type="button" class="btn-custom danger d-none" title="Force Delete (reverses posted transaction)" data-toggle="modal" data-target="#forceDeleteReceiveModal"
-                                    data-action="{{ route('acc-sfl.balance-receives.force-delete', $receive) }}">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
+                                <button type="button" class="btn-custom d-none ui-act ui-act-delete" title="Force Delete (reverses posted transaction)" data-toggle="modal" data-target="#forceDeleteReceiveModal"
+                                    data-action="{{ route('acc-sfl.balance-receives.force-delete', $receive) }}"><i class="fa-solid fa-trash"></i></button>
                                 @endif
                                 @endcan
                             </td>
@@ -254,8 +238,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button>
                 </div>
             </form>
         </div>
@@ -325,8 +309,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Update"><i class="fa-solid fa-floppy-disk"></i> Update</button>
                 </div>
             </form>
         </div>
@@ -356,8 +340,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Update"><i class="fa-solid fa-floppy-disk"></i> Update</button>
                 </div>
             </form>
         </div>
@@ -386,7 +370,7 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
             </div>
         </div>
     </div>
@@ -418,8 +402,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-success btn-sm"><i class="fa-solid fa-check mr-1"></i> Approve</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-approve" title="Approve"><i class="fa-solid fa-check"></i> Approve</button>
                 </div>
             </form>
         </div>
@@ -443,8 +427,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-xmark mr-1"></i> Reject</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-reject" title="Reject"><i class="fa-solid fa-xmark"></i> Reject</button>
                 </div>
             </form>
         </div>

@@ -27,7 +27,7 @@
                 <button type="button" class="btn btn-light btn-sm" id="acLightboxPrev"><i class="fa-solid fa-chevron-left mr-1"></i> Prev</button>
                 <span class="small text-muted" id="acLightboxCounter"></span>
                 <div>
-                    <a href="#" target="_blank" class="btn btn-light btn-sm" id="acLightboxOpen"><i class="fa-solid fa-up-right-from-square mr-1"></i> Open</a>
+                    <a href="#" target="_blank" class="btn btn-sm ui-act ui-act-link" id="acLightboxOpen" title="Open"><i class="fa-solid fa-arrow-up-right-from-square"></i> Open</a>
                     <button type="button" class="btn btn-light btn-sm" id="acLightboxNext">Next <i class="fa-solid fa-chevron-right ml-1"></i></button>
                 </div>
             </div>
@@ -66,7 +66,7 @@
                 '<div class="ac-gallery-bar">' +
                     '<button type="button" class="btn btn-light btn-sm ac-gallery-prev"' + (files.length < 2 ? ' disabled' : '') + '><i class="fa-solid fa-chevron-left"></i> Prev</button>' +
                     '<span class="small text-muted">' + (index + 1) + ' / ' + files.length + '</span>' +
-                    '<button type="button" class="btn btn-primary btn-sm ac-gallery-view btn-icon" title="View"><i class="fa-solid fa-eye"></i></button>' +
+                    '<button type="button" class="btn btn-sm ac-gallery-view btn-icon ui-act ui-act-view" title="View"><i class="fa-solid fa-eye"></i></button>' +
                     '<button type="button" class="btn btn-light btn-sm ac-gallery-next"' + (files.length < 2 ? ' disabled' : '') + '>Next <i class="fa-solid fa-chevron-right"></i></button>' +
                 '</div>'
             );

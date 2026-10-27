@@ -5,7 +5,7 @@
 --}}
 <div class="d-flex justify-content-between align-items-center mb-2">
     <label class="mb-0">Line Items <span class="text-danger">*</span></label>
-    <button type="button" class="btn btn-outline-primary btn-sm add-expense-item-row" data-container="#expenseItemsBody"><i class="fa-solid fa-plus"></i> Add Line</button>
+    <button type="button" class="btn btn-sm add-expense-item-row ui-act ui-act-create" data-container="#expenseItemsBody" title="Add Line"><i class="fa-solid fa-plus"></i> Add Line</button>
 </div>
 <div class="table-responsive">
     <table class="table table-sm table-bordered mb-2">

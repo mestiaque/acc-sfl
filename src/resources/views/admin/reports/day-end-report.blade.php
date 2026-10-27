@@ -10,10 +10,10 @@
         <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
             <h4 class="mb-0"><i class="fa-solid fa-cash-register mr-2 text-success"></i>Day End Report</h4>
             <div>
-                <a href="{{ route('acc-sfl.reports.day-end.print', request()->query()) }}" target="_blank" class="btn btn-light btn-sm btn-icon" title="Print"><i class="fa-solid fa-print"></i></a>
+                <a href="{{ route('acc-sfl.reports.day-end.print', request()->query()) }}" target="_blank" class="btn btn-sm ui-act ui-act-print" title="Print"><i class="fa-solid fa-print"></i> Print</a>
                 <form method="POST" action="{{ route('acc-sfl.reports.day-end.send', ['date' => $report['date']->toDateString()]) }}" class="d-inline" onsubmit="return confirm('Mail this day end report now?');">
                     @csrf
-                    <button type="submit" class="btn btn-primary btn-sm"><i class="fa-solid fa-envelope mr-1"></i> Send Mail Now</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-mail" title="Send Mail Now"><i class="fa-solid fa-envelope"></i> Send Mail Now</button>
                 </form>
             </div>
         </div>
@@ -26,8 +26,8 @@
                     <input type="date" name="date" value="{{ $report['date']->toDateString() }}" max="{{ today()->toDateString() }}" class="form-control form-control-sm">
                 </div>
                 <div class="col-md-3 mb-2">
-                    <button type="submit" class="btn btn-primary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
-                    <a href="{{ route('acc-sfl.reports.day-end.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-filter" title="Filter"><i class="fa-solid fa-filter"></i> Filter</button>
+                    <a href="{{ route('acc-sfl.reports.day-end.index') }}" class="btn btn-sm ui-act ui-act-reset" title="Reset"><i class="fa-solid fa-rotate-left"></i> Reset</a>
                 </div>
             </form>
 

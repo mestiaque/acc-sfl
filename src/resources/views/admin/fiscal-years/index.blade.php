@@ -17,10 +17,10 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0"><i class="fa-solid fa-calendar-days mr-2 text-secondary"></i>Fiscal Years</h4>
             <div>
-                <a href="{{ route('acc-sfl.fiscal-years.print', request()->query()) }}" target="_blank" class="btn btn-light btn-sm btn-icon" title="Print"><i class="fa-solid fa-print"></i></a>
-                <a href="{{ route('acc-sfl.fiscal-years.export', request()->query()) }}" class="btn btn-light btn-sm btn-icon" title="Export Excel"><i class="fa-solid fa-file-excel"></i></a>
+                <a href="{{ route('acc-sfl.fiscal-years.print', request()->query()) }}" target="_blank" class="btn btn-sm ui-act ui-act-print" title="Print"><i class="fa-solid fa-print"></i> Print</a>
+                <a href="{{ route('acc-sfl.fiscal-years.export', request()->query()) }}" class="btn btn-sm ui-act ui-act-excel" title="Export Excel"><i class="fa-solid fa-file-excel"></i> Export Excel</a>
                 @can('ac_fiscal_year.add')
-                <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 btn-icon" data-toggle="modal" data-target="#createFiscalYearModal" title="Add Fiscal Year"><i class="fa-solid fa-plus"></i></button>
+                <button type="button" class="btn btn-sm rounded-pill px-3 ui-act ui-act-create" data-toggle="modal" data-target="#createFiscalYearModal" title="Add Fiscal Year"><i class="fa-solid fa-plus"></i> Add Fiscal Year</button>
                 @endcan
             </div>
         </div>
@@ -41,8 +41,8 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
-                    <a href="{{ route('acc-sfl.fiscal-years.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+                    <button class="btn btn-sm ui-act ui-act-filter" title="Filter"><i class="fa-solid fa-filter"></i> Filter</button>
+                    <a href="{{ route('acc-sfl.fiscal-years.index') }}" class="btn btn-sm ui-act ui-act-reset" title="Reset"><i class="fa-solid fa-rotate-left"></i> Reset</a>
                 </div>
             </form>
 
@@ -68,21 +68,17 @@
                             </td>
                             <td class="text-center">
                                 @can('ac_fiscal_year.edit')
-                                <button type="button" class="btn-custom yellow" title="Edit" data-toggle="modal" data-target="#editFiscalYearModal"
+                                <button type="button" class="btn-custom ui-act ui-act-edit" title="Edit" data-toggle="modal" data-target="#editFiscalYearModal"
                                     data-action="{{ route('acc-sfl.fiscal-years.update', $fiscalYear) }}"
                                     data-start-month="{{ $fiscalYear->start_month }}"
                                     data-start-year="{{ $fiscalYear->start_year }}"
                                     data-end-month="{{ $fiscalYear->end_month }}"
                                     data-end-year="{{ $fiscalYear->end_year }}"
-                                    data-active="{{ $fiscalYear->is_active ? '1' : '0' }}">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
+                                    data-active="{{ $fiscalYear->is_active ? '1' : '0' }}"><i class="fa-solid fa-pen-to-square"></i></button>
                                 @endcan
                                 @can('ac_fiscal_year.delete')
-                                <button type="button" class="btn-custom danger" title="Delete" data-toggle="modal" data-target="#deleteFiscalYearModal"
-                                    data-action="{{ route('acc-sfl.fiscal-years.destroy', $fiscalYear) }}">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
+                                <button type="button" class="btn-custom ui-act ui-act-delete" title="Delete" data-toggle="modal" data-target="#deleteFiscalYearModal"
+                                    data-action="{{ route('acc-sfl.fiscal-years.destroy', $fiscalYear) }}"><i class="fa-solid fa-trash"></i></button>
                                 @endcan
                             </td>
                         </tr>
@@ -144,8 +140,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button>
                 </div>
             </form>
         </div>
@@ -202,8 +198,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Update"><i class="fa-solid fa-floppy-disk"></i> Update</button>
                 </div>
             </form>
         </div>

@@ -10,10 +10,10 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0"><i class="fa-solid fa-list mr-2 text-primary"></i>Particulars</h4>
             <div>
-                <a href="{{ route('acc-sfl.particulars.print', request()->query()) }}" target="_blank" class="btn btn-light btn-sm btn-icon" title="Print"><i class="fa-solid fa-print"></i></a>
-                <a href="{{ route('acc-sfl.particulars.export', request()->query()) }}" class="btn btn-light btn-sm btn-icon" title="Export Excel"><i class="fa-solid fa-file-excel"></i></a>
+                <a href="{{ route('acc-sfl.particulars.print', request()->query()) }}" target="_blank" class="btn btn-sm ui-act ui-act-print" title="Print"><i class="fa-solid fa-print"></i> Print</a>
+                <a href="{{ route('acc-sfl.particulars.export', request()->query()) }}" class="btn btn-sm ui-act ui-act-excel" title="Export Excel"><i class="fa-solid fa-file-excel"></i> Export Excel</a>
                 @can('ac_particular.add')
-                <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 btn-icon" data-toggle="modal" data-target="#createParticularModal" title="Add Particular"><i class="fa-solid fa-plus"></i></button>
+                <button type="button" class="btn btn-sm rounded-pill px-3 ui-act ui-act-create" data-toggle="modal" data-target="#createParticularModal" title="Add Particular"><i class="fa-solid fa-plus"></i> Add Particular</button>
                 @endcan
             </div>
         </div>
@@ -43,8 +43,8 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
-                    <a href="{{ route('acc-sfl.particulars.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+                    <button class="btn btn-sm ui-act ui-act-filter" title="Filter"><i class="fa-solid fa-filter"></i> Filter</button>
+                    <a href="{{ route('acc-sfl.particulars.index') }}" class="btn btn-sm ui-act ui-act-reset" title="Reset"><i class="fa-solid fa-rotate-left"></i> Reset</a>
                 </div>
             </form>
 
@@ -74,32 +74,26 @@
                                 <span class="badge {{ $particular->is_active ? 'badge-success' : 'badge-secondary' }}">{{ $particular->is_active ? 'Active' : 'Inactive' }}</span>
                             </td>
                             <td class="text-center">
-                                <button type="button" class="btn-custom success" title="View" data-toggle="modal" data-target="#viewParticularModal"
+                                <button type="button" class="btn-custom ui-act ui-act-view" title="View" data-toggle="modal" data-target="#viewParticularModal"
                                     data-name="{{ $particular->name }}"
                                     data-code="{{ $particular->code }}"
                                     data-description="{{ $particular->description }}"
                                     data-master-particular="{{ $particular->masterParticular->name }}"
                                     data-salary-advance="{{ $particular->is_salary_advance ? 'Yes' : 'No' }}"
-                                    data-status="{{ $particular->is_active ? 'Active' : 'Inactive' }}">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
+                                    data-status="{{ $particular->is_active ? 'Active' : 'Inactive' }}"><i class="fa-solid fa-eye"></i></button>
                                 @can('ac_particular.edit')
-                                <button type="button" class="btn-custom yellow" title="Edit" data-toggle="modal" data-target="#editParticularModal"
+                                <button type="button" class="btn-custom ui-act ui-act-edit" title="Edit" data-toggle="modal" data-target="#editParticularModal"
                                     data-action="{{ route('acc-sfl.particulars.update', $particular) }}"
                                     data-name="{{ $particular->name }}"
                                     data-code="{{ $particular->code }}"
                                     data-description="{{ $particular->description }}"
                                     data-master-particular-id="{{ $particular->master_particular_id }}"
                                     data-salary-advance="{{ $particular->is_salary_advance ? '1' : '0' }}"
-                                    data-active="{{ $particular->is_active ? '1' : '0' }}">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
+                                    data-active="{{ $particular->is_active ? '1' : '0' }}"><i class="fa-solid fa-pen-to-square"></i></button>
                                 @endcan
                                 @can('ac_particular.delete')
-                                <button type="button" class="btn-custom danger" title="Delete" data-toggle="modal" data-target="#deleteParticularModal"
-                                    data-action="{{ route('acc-sfl.particulars.destroy', $particular) }}">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
+                                <button type="button" class="btn-custom ui-act ui-act-delete" title="Delete" data-toggle="modal" data-target="#deleteParticularModal"
+                                    data-action="{{ route('acc-sfl.particulars.destroy', $particular) }}"><i class="fa-solid fa-trash"></i></button>
                                 @endcan
                             </td>
                         </tr>
@@ -163,8 +157,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button>
                 </div>
             </form>
         </div>
@@ -223,8 +217,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Update"><i class="fa-solid fa-floppy-disk"></i> Update</button>
                 </div>
             </form>
         </div>
@@ -250,7 +244,7 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
             </div>
         </div>
     </div>

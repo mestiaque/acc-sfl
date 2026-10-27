@@ -10,8 +10,8 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0"><i class="fa-solid fa-right-left mr-2 text-info"></i>Transactions</h4>
             <div>
-                <a href="{{ route('acc-sfl.transactions.print', request()->query()) }}" target="_blank" class="btn btn-light btn-sm btn-icon" title="Print"><i class="fa-solid fa-print"></i></a>
-                <a href="{{ route('acc-sfl.transactions.export', request()->query()) }}" class="btn btn-light btn-sm btn-icon" title="Export Excel"><i class="fa-solid fa-file-excel"></i></a>
+                <a href="{{ route('acc-sfl.transactions.print', request()->query()) }}" target="_blank" class="btn btn-sm ui-act ui-act-print" title="Print"><i class="fa-solid fa-print"></i> Print</a>
+                <a href="{{ route('acc-sfl.transactions.export', request()->query()) }}" class="btn btn-sm ui-act ui-act-excel" title="Export Excel"><i class="fa-solid fa-file-excel"></i> Export Excel</a>
             </div>
         </div>
         <div class="card-body">
@@ -67,8 +67,8 @@
                     <input type="date" name="to_date" value="{{ request('to_date') }}" class="form-control form-control-sm">
                 </div>
                 <div class="col-md-2">
-                    <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
-                    <a href="{{ route('acc-sfl.transactions.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+                    <button class="btn btn-sm ui-act ui-act-filter" title="Filter"><i class="fa-solid fa-filter"></i> Filter</button>
+                    <a href="{{ route('acc-sfl.transactions.index') }}" class="btn btn-sm ui-act ui-act-reset" title="Reset"><i class="fa-solid fa-rotate-left"></i> Reset</a>
                 </div>
             </form>
 

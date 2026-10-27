@@ -10,10 +10,10 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0"><i class="fa-solid fa-wallet mr-2 text-primary"></i>Accounts</h4>
             <div>
-                <a href="{{ route('acc-sfl.accounts.print', request()->query()) }}" target="_blank" class="btn btn-light btn-sm btn-icon" title="Print"><i class="fa-solid fa-print"></i></a>
-                <a href="{{ route('acc-sfl.accounts.export', request()->query()) }}" class="btn btn-light btn-sm btn-icon" title="Export Excel"><i class="fa-solid fa-file-excel"></i></a>
+                <a href="{{ route('acc-sfl.accounts.print', request()->query()) }}" target="_blank" class="btn btn-sm ui-act ui-act-print" title="Print"><i class="fa-solid fa-print"></i> Print</a>
+                <a href="{{ route('acc-sfl.accounts.export', request()->query()) }}" class="btn btn-sm ui-act ui-act-excel" title="Export Excel"><i class="fa-solid fa-file-excel"></i> Export Excel</a>
                 @can('ac_account.add')
-                <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 btn-icon" data-toggle="modal" data-target="#createAccountModal" title="Add Account"><i class="fa-solid fa-plus"></i></button>
+                <button type="button" class="btn btn-sm rounded-pill px-3 ui-act ui-act-create" data-toggle="modal" data-target="#createAccountModal" title="Add Account"><i class="fa-solid fa-plus"></i> Add Account</button>
                 @endcan
             </div>
         </div>
@@ -43,8 +43,8 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
-                    <a href="{{ route('acc-sfl.accounts.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+                    <button class="btn btn-sm ui-act ui-act-filter" title="Filter"><i class="fa-solid fa-filter"></i> Filter</button>
+                    <a href="{{ route('acc-sfl.accounts.index') }}" class="btn btn-sm ui-act ui-act-reset" title="Reset"><i class="fa-solid fa-rotate-left"></i> Reset</a>
                 </div>
             </form>
 
@@ -73,7 +73,7 @@
                                 <span class="badge {{ $account->is_active ? 'badge-success' : 'badge-secondary' }}">{{ $account->is_active ? 'Active' : 'Inactive' }}</span>
                             </td>
                             <td class="text-center">
-                                <button type="button" class="btn-custom success" title="View" data-toggle="modal" data-target="#viewAccountModal"
+                                <button type="button" class="btn-custom ui-act ui-act-view" title="View" data-toggle="modal" data-target="#viewAccountModal"
                                     data-name="{{ $account->name }}"
                                     data-employee-id="{{ $account->employee_id }}"
                                     data-designation="{{ $account->designation }}"
@@ -81,11 +81,9 @@
                                     data-user="{{ $account->user->name ?? '-' }}"
                                     data-opening-balance="{{ number_format($account->opening_balance, 2) }}"
                                     data-current-balance="{{ number_format($account->current_balance, 2) }}"
-                                    data-status="{{ $account->is_active ? 'Active' : 'Inactive' }}">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
+                                    data-status="{{ $account->is_active ? 'Active' : 'Inactive' }}"><i class="fa-solid fa-eye"></i></button>
                                 @can('ac_account.edit')
-                                <button type="button" class="btn-custom yellow" title="Edit" data-toggle="modal" data-target="#editAccountModal"
+                                <button type="button" class="btn-custom ui-act ui-act-edit" title="Edit" data-toggle="modal" data-target="#editAccountModal"
                                     data-action="{{ route('acc-sfl.accounts.update', $account) }}"
                                     data-name="{{ $account->name }}"
                                     data-employee-id="{{ $account->employee_id }}"
@@ -94,15 +92,11 @@
                                     data-user-id="{{ $account->user_id }}"
                                     data-current-balance="{{ number_format($account->current_balance, 2) }}"
                                     data-active="{{ $account->is_active ? '1' : '0' }}"
-                                    data-particular-ids="{{ $account->particulars->pluck('id')->toJson() }}">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
+                                    data-particular-ids="{{ $account->particulars->pluck('id')->toJson() }}"><i class="fa-solid fa-pen-to-square"></i></button>
                                 @endcan
                                 @can('ac_account.delete')
-                                <button type="button" class="btn-custom danger" title="Delete" data-toggle="modal" data-target="#deleteAccountModal"
-                                    data-action="{{ route('acc-sfl.accounts.destroy', $account) }}">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
+                                <button type="button" class="btn-custom ui-act ui-act-delete" title="Delete" data-toggle="modal" data-target="#deleteAccountModal"
+                                    data-action="{{ route('acc-sfl.accounts.destroy', $account) }}"><i class="fa-solid fa-trash"></i></button>
                                 @endcan
                             </td>
                         </tr>
@@ -187,8 +181,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button>
                 </div>
             </form>
         </div>
@@ -267,8 +261,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Update"><i class="fa-solid fa-floppy-disk"></i> Update</button>
                 </div>
             </form>
         </div>
@@ -296,7 +290,7 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
             </div>
         </div>
     </div>

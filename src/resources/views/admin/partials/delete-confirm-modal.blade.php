@@ -12,8 +12,8 @@
                     <p class="mb-0">{{ $warning ?? "Are you sure you want to delete this ".($label ?? 'record')."? This action cannot be undone." }}</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-trash mr-1"></i> {{ $buttonLabel ?? 'Delete' }}</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-delete" title="Delete"><i class="fa-solid fa-trash"></i> {{ $buttonLabel ?? 'Delete' }}</button>
                 </div>
             </form>
         </div>

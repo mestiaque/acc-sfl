@@ -10,12 +10,10 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0"><i class="fa-solid fa-file-invoice-dollar mr-2 text-warning"></i>Expense IOU</h4>
             <div>
-                <a href="{{ route('acc-sfl.expense-ious.print', request()->query()) }}" target="_blank" class="btn btn-light btn-sm btn-icon" title="Print"><i class="fa-solid fa-print"></i></a>
-                <a href="{{ route('acc-sfl.expense-ious.export', request()->query()) }}" class="btn btn-light btn-sm btn-icon" title="Export Excel"><i class="fa-solid fa-file-excel"></i></a>
+                <a href="{{ route('acc-sfl.expense-ious.print', request()->query()) }}" target="_blank" class="btn btn-sm ui-act ui-act-print" title="Print"><i class="fa-solid fa-print"></i> Print</a>
+                <a href="{{ route('acc-sfl.expense-ious.export', request()->query()) }}" class="btn btn-sm ui-act ui-act-excel" title="Export Excel"><i class="fa-solid fa-file-excel"></i> Export Excel</a>
                 @can('ac_expense_iou.add')
-                <button type="button" class="btn btn-primary btn-sm rounded-pill px-3" data-toggle="modal" data-target="#createIouModal">
-                    <i class="fa-solid fa-plus"></i> Issue IOU
-                </button>
+                <button type="button" class="btn btn-sm rounded-pill px-3 ui-act ui-act-create" data-toggle="modal" data-target="#createIouModal" title="Issue IOU"><i class="fa-solid fa-plus"></i> Issue IOU</button>
                 @endcan
             </div>
         </div>
@@ -74,8 +72,8 @@
                 </div>
                 @include('acc-sfl::admin.partials.sort-filter', ['noLabel' => 'IOU No.'])
                 <div class="col-md-2">
-                    <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
-                    <a href="{{ route('acc-sfl.expense-ious.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+                    <button class="btn btn-sm ui-act ui-act-filter" title="Filter"><i class="fa-solid fa-filter"></i> Filter</button>
+                    <a href="{{ route('acc-sfl.expense-ious.index') }}" class="btn btn-sm ui-act ui-act-reset" title="Reset"><i class="fa-solid fa-rotate-left"></i> Reset</a>
                 </div>
             </form>
 
@@ -136,29 +134,23 @@
                                 @if($iou->approval_status === 'pending')
                                     @if(view()->exists('components.approval-remind'))<x-approval-remind :model="$iou" />@endif
                                     @can('ac_expense_iou.approve')
-                                    <button type="button" class="btn-custom success" title="Approve" data-toggle="modal" data-target="#approveIouModal"
-                                        data-action="{{ route('acc-sfl.expense-ious.approve', $iou) }}" data-no="{{ $iou->iou_no }}" data-amount="{{ number_format($iou->amount, 2) }}">
-                                        <i class="fa-solid fa-check-double"></i>
-                                    </button>
-                                    <button type="button" class="btn-custom danger" title="Reject" data-toggle="modal" data-target="#rejectIouModal"
-                                        data-action="{{ route('acc-sfl.expense-ious.reject', $iou) }}" data-no="{{ $iou->iou_no }}">
-                                        <i class="fa-solid fa-xmark"></i>
-                                    </button>
+                                    <button type="button" class="btn-custom ui-act ui-act-approve" title="Approve" data-toggle="modal" data-target="#approveIouModal"
+                                        data-action="{{ route('acc-sfl.expense-ious.approve', $iou) }}" data-no="{{ $iou->iou_no }}" data-amount="{{ number_format($iou->amount, 2) }}"><i class="fa-solid fa-check"></i></button>
+                                    <button type="button" class="btn-custom ui-act ui-act-reject" title="Reject" data-toggle="modal" data-target="#rejectIouModal"
+                                        data-action="{{ route('acc-sfl.expense-ious.reject', $iou) }}" data-no="{{ $iou->iou_no }}"><i class="fa-solid fa-xmark"></i></button>
                                     @endcan
                                 @endif
                                 @can('ac_expense_iou.edit')
                                     @if($iou->status === 'Pending' && $iou->approval_status === 'approved')
-                                    <button type="button" class="btn-custom success" data-toggle="modal" data-target="#adjustIouModal"
+                                    <button type="button" class="btn-custom ui-act ui-act-approve" data-toggle="modal" data-target="#adjustIouModal"
                                         title="{{ $iou->pending_expense_count ? 'Approve or reject its pending expenses first' : 'Adjust' }}" @disabled($iou->pending_expense_count)
                                         data-action="{{ route('acc-sfl.expense-ious.adjust', $iou) }}" data-no="{{ $iou->iou_no }}"
                                         data-amount="{{ (float) $iou->amount }}" data-spent="{{ $spent }}"
                                         data-payment-method-id="{{ $iou->payment_method_id }}"
-                                        data-adjust-date="{{ $iou->adjust_date?->toDateString() }}">
-                                        <i class="fa-solid fa-check"></i>
-                                    </button>
+                                        data-adjust-date="{{ $iou->adjust_date?->toDateString() }}"><i class="fa-solid fa-check"></i></button>
                                     @endif
                                 @endcan
-                                <button type="button" class="btn-custom success" title="View" data-toggle="modal" data-target="#viewIouModal"
+                                <button type="button" class="btn-custom ui-act ui-act-view" title="View" data-toggle="modal" data-target="#viewIouModal"
                                     data-no="{{ $iou->iou_no }}" data-issue-date="{{ $iou->issue_date->format('d M Y') }}"
                                     data-adjust-date="{{ $iou->adjust_date?->format('d M Y') ?? '-' }}"
                                     data-branch="{{ $iou->branch->name }}" data-account="{{ $iou->account->name }}"
@@ -173,34 +165,26 @@
                                         'amount' => (float) $expense->total_amount,
                                         'status' => $expense->status,
                                         'url' => route('acc-sfl.expenses.index', ['search' => $expense->expense_no]),
-                                    ])->values()->toJson() }}">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
+                                    ])->values()->toJson() }}"><i class="fa-solid fa-eye"></i></button>
                                 @can('ac_expense_iou.edit')
-                                <button type="button" class="btn-custom yellow" title="Edit" data-toggle="modal" data-target="#editIouModal"
+                                <button type="button" class="btn-custom ui-act ui-act-edit" title="Edit" data-toggle="modal" data-target="#editIouModal"
                                     data-action="{{ route('acc-sfl.expense-ious.update', $iou) }}"
                                     data-status="{{ $iou->status }}"
                                     data-issue-date="{{ $iou->issue_date->format('Y-m-d') }}"
                                     data-amount="{{ $iou->amount }}"
                                     data-employee-id="{{ $iou->employee_id }}"
-                                    data-description="{{ $iou->description }}">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
+                                    data-description="{{ $iou->description }}"><i class="fa-solid fa-pen-to-square"></i></button>
                                 @endcan
                                 @can('ac_expense_iou.delete')
                                 @if($iou->status !== 'Adjusted')
-                                <button type="button" class="btn-custom danger" title="Delete" data-toggle="modal" data-target="#deleteIouModal"
-                                    data-action="{{ route('acc-sfl.expense-ious.destroy', $iou) }}">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
+                                <button type="button" class="btn-custom ui-act ui-act-delete" title="Delete" data-toggle="modal" data-target="#deleteIouModal"
+                                    data-action="{{ route('acc-sfl.expense-ious.destroy', $iou) }}"><i class="fa-solid fa-trash"></i></button>
                                 @endif
                                 @endcan
                                 @can('ac_expense_iou.force_delete')
                                 @if($iou->status === 'Adjusted')
-                                <button type="button" class="btn-custom danger d-none" title="Force Delete (reverses posted transactions)" data-toggle="modal" data-target="#forceDeleteIouModal"
-                                    data-action="{{ route('acc-sfl.expense-ious.force-delete', $iou) }}">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
+                                <button type="button" class="btn-custom d-none ui-act ui-act-delete" title="Force Delete (reverses posted transactions)" data-toggle="modal" data-target="#forceDeleteIouModal"
+                                    data-action="{{ route('acc-sfl.expense-ious.force-delete', $iou) }}"><i class="fa-solid fa-trash"></i></button>
                                 @endif
                                 @endcan
                             </td>
@@ -285,8 +269,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Save"><i class="fa-solid fa-floppy-disk"></i> Save</button>
                 </div>
             </form>
         </div>
@@ -341,8 +325,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary btn-sm">Update</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-save" title="Update"><i class="fa-solid fa-floppy-disk"></i> Update</button>
                 </div>
             </form>
         </div>
@@ -380,8 +364,8 @@
                     <p class="text-muted small mb-0" id="adjust_iou_note"></p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-success btn-sm">Mark Adjusted</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-approve" title="Mark Adjusted"><i class="fa-solid fa-check"></i> Mark Adjusted</button>
                 </div>
             </form>
         </div>
@@ -413,7 +397,7 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
             </div>
         </div>
     </div>
@@ -444,8 +428,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-success btn-sm"><i class="fa-solid fa-check mr-1"></i> Approve</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-approve" title="Approve"><i class="fa-solid fa-check"></i> Approve</button>
                 </div>
             </form>
         </div>
@@ -467,8 +451,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light btn-sm" data-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-xmark mr-1"></i> Reject</button>
+                    <button type="button" class="btn btn-sm ui-act ui-act-cancel" data-dismiss="modal" title="Close"><i class="fa-solid fa-ban"></i> Close</button>
+                    <button type="submit" class="btn btn-sm ui-act ui-act-reject" title="Reject"><i class="fa-solid fa-xmark"></i> Reject</button>
                 </div>
             </form>
         </div>

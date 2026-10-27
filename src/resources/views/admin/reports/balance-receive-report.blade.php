@@ -10,9 +10,9 @@
         <div class="card-header d-flex justify-content-between align-items-center">
             <h4 class="mb-0"><i class="fa-solid fa-hand-holding-dollar mr-2 text-success"></i>Cash Receive Report</h4>
             <div>
-                <a href="{{ route('acc-sfl.reports.balance-receive.print', request()->query()) }}" target="_blank" class="btn btn-light btn-sm btn-icon" title="Print"><i class="fa-solid fa-print"></i></a>
+                <a href="{{ route('acc-sfl.reports.balance-receive.print', request()->query()) }}" target="_blank" class="btn btn-sm ui-act ui-act-print" title="Print"><i class="fa-solid fa-print"></i> Print</a>
                 @can('ac_report.export')
-                <a href="{{ route('acc-sfl.reports.balance-receive.export', request()->query()) }}" class="btn btn-light btn-sm btn-icon" title="Export Excel"><i class="fa-solid fa-file-excel"></i></a>
+                <a href="{{ route('acc-sfl.reports.balance-receive.export', request()->query()) }}" class="btn btn-sm ui-act ui-act-excel" title="Export Excel"><i class="fa-solid fa-file-excel"></i> Export Excel</a>
                 @endcan
             </div>
         </div>
@@ -95,8 +95,8 @@
                     <input type="number" step="0.01" name="max_amount" value="{{ request('max_amount') }}" class="form-control form-control-sm">
                 </div> --}}
                 <div class="col-md-2">
-                    <button class="btn btn-secondary btn-sm btn-icon" title="Filter"><i class="fa-solid fa-filter"></i></button>
-                    <a href="{{ route('acc-sfl.reports.balance-receive.index') }}" class="btn btn-light btn-sm btn-icon" title="Reset"><i class="fa-solid fa-rotate-left"></i></a>
+                    <button class="btn btn-sm ui-act ui-act-filter" title="Filter"><i class="fa-solid fa-filter"></i> Filter</button>
+                    <a href="{{ route('acc-sfl.reports.balance-receive.index') }}" class="btn btn-sm ui-act ui-act-reset" title="Reset"><i class="fa-solid fa-rotate-left"></i> Reset</a>
                 </div>
                 <div class="col-md-2 mb-2 offset-md-4">
                     <div class="badge badge-primary p-2" style="font-size: 0.85rem;">Total Receive: BDT {{ number_format($totals['amount'], 2) }}</div>
